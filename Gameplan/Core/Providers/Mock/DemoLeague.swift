@@ -129,7 +129,7 @@ enum DemoLeague {
         Spec(name: "Emmett Reyes", position: .tightEnd, team: "KC", slot: .tightEnd,
              pointsPerGame: 10.7, projection: 11.1, opponent: "LV", isHome: true, depthRank: 1,
              snapShare: 0.84, routeParticipation: 0.81, targetShare: 0.19, targets: 6.4,
-             airYards: 44, byeWeek: 6, rostered: 0.97, defenseRankAgainstPosition: 27),
+             airYards: 44, byeWeek: 10, rostered: 0.97, defenseRankAgainstPosition: 27),
 
         Spec(name: "Silas Boone", position: .wideReceiver, team: "PIT", slot: .flex,
              pointsPerGame: 5.2, projection: 5.4, opponent: "BAL", isHome: false, depthRank: 3,
@@ -149,7 +149,7 @@ enum DemoLeague {
              pointsPerGame: 10.4, projection: 12.3, opponent: "CAR", isHome: true, depthRank: 2,
              snapShare: 0.81, routeParticipation: 0.86, targetShare: 0.21, targets: 7.2,
              airYards: 96, byeWeek: 11, rostered: 0.58, recentPointsPerGame: 13.8,
-             recentSnapShare: 0.88, defenseRankAgainstPosition: 30),
+             recentSnapShare: 0.91, defenseRankAgainstPosition: 30),
 
         Spec(name: "Amari Lindgren", position: .runningBack, team: "NYG", slot: .bench,
              pointsPerGame: 7.6, projection: 7.9, opponent: "WSH", isHome: false, depthRank: 2,
@@ -173,7 +173,7 @@ enum DemoLeague {
 
         Spec(name: "Everett Sloan", position: .runningBack, team: "LAR", slot: .bench,
              pointsPerGame: 6.8, projection: 6.4, opponent: "ARI", isHome: true, depthRank: 3,
-             snapShare: 0.29, carries: 6.1, byeWeek: 6, rostered: 0.19,
+             snapShare: 0.29, carries: 6.1, byeWeek: 8, rostered: 0.19,
              defenseRankAgainstPosition: 23)
     ]
 
@@ -197,7 +197,7 @@ enum DemoLeague {
         Spec(name: "Xavier Dumont", position: .wideReceiver, team: "MIN", slot: .wideReceiver,
              pointsPerGame: 18.2, projection: 18.9, opponent: "CHI", isHome: true, depthRank: 1,
              snapShare: 0.95, routeParticipation: 0.96, targetShare: 0.31, targets: 11.2,
-             airYards: 142, byeWeek: 6, rostered: 1.0, defenseRankAgainstPosition: 26),
+             airYards: 142, byeWeek: 9, rostered: 1.0, defenseRankAgainstPosition: 26),
 
         Spec(name: "Ronan Beck", position: .wideReceiver, team: "MIA", slot: .wideReceiver,
              pointsPerGame: 14.6, projection: 14.9, opponent: "BUF", isHome: false, depthRank: 1,
