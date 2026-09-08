@@ -52,6 +52,20 @@ struct AppEnvironment: Sendable {
         }
     }
 
+    /// Facts about the NFL rather than about a league: the week's games, the
+    /// betting line, depth charts and the injury report.
+    ///
+    /// The demo league carries its own schedule, so it needs none of this and
+    /// stays entirely offline.
+    func contextProvider(for preferences: AppPreferences) -> NFLContextProvider {
+        switch preferences.dataSource {
+        case .demo:
+            return EmptyNFLContextProvider()
+        case .espn:
+            return ESPNPublicProvider(session: urlSession)
+        }
+    }
+
     /// The remote narrator when the user has configured and enabled one,
     /// otherwise the on-device writer.
     func narrator(for preferences: AppPreferences) -> NarrationProvider {
@@ -74,6 +88,7 @@ struct AppEnvironment: Sendable {
         AnalysisService(
             fantasyProvider: fantasyProvider(for: preferences),
             researchProvider: researchProvider(for: preferences),
+            contextProvider: contextProvider(for: preferences),
             narrator: narrator(for: preferences),
             cache: cache,
             calendar: calendar

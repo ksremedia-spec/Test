@@ -19,6 +19,7 @@ struct LeagueSnapshot: Sendable {
 struct AnalysisService: Sendable {
     var fantasyProvider: FantasyDataProvider
     var researchProvider: ResearchProvider
+    var contextProvider: NFLContextProvider
     var narrator: NarrationProvider
     var cache: Cache
     var calendar: SeasonCalendar
@@ -26,12 +27,14 @@ struct AnalysisService: Sendable {
     init(
         fantasyProvider: FantasyDataProvider,
         researchProvider: ResearchProvider = EmptyResearchProvider(),
+        contextProvider: NFLContextProvider = EmptyNFLContextProvider(),
         narrator: NarrationProvider = TemplateNarrator(),
         cache: Cache,
         calendar: SeasonCalendar = SeasonCalendar()
     ) {
         self.fantasyProvider = fantasyProvider
         self.researchProvider = researchProvider
+        self.contextProvider = contextProvider
         self.narrator = narrator
         self.cache = cache
         self.calendar = calendar
@@ -95,7 +98,13 @@ struct AnalysisService: Sendable {
 
         // Research enrichment is best-effort. A failure here degrades the
         // explanation, it does not fail the load.
-        let enriched = await enrich(matchup: matchup, waiverPool: waiverPool, week: week)
+        let enriched = await enrich(
+            matchup: matchup,
+            waiverPool: waiverPool,
+            season: resolvedSeason,
+            week: week,
+            allowCache: allowCache
+        )
         matchup = enriched.matchup
         waiverPool = enriched.waiverPool
 
@@ -159,39 +168,71 @@ struct AnalysisService: Sendable {
 
     // MARK: - Research enrichment
 
-    /// Attaches news and weather to the player contexts that need them.
+    /// Fills in everything the fantasy provider could not supply: which game each
+    /// player is in, the betting line, the weather, the depth chart, the injury
+    /// report, and any news.
+    ///
+    /// Order matters. The schedule has to come first, because a player's opponent
+    /// is what makes weather and matchup analysis possible at all — without it
+    /// there is no stadium to look up conditions for and no defense to grade the
+    /// matchup against.
     private func enrich(
         matchup: Matchup,
         waiverPool: [PlayerContext],
-        week: Int
+        season: Int,
+        week: Int,
+        allowCache: Bool
     ) async -> (matchup: Matchup, waiverPool: [PlayerContext]) {
         let allContexts = matchup.userTeam.roster.map(\.context)
             + (matchup.opponentTeam?.roster ?? []).map(\.context)
             + waiverPool
+        guard !allContexts.isEmpty else { return (matchup, waiverPool) }
 
-        let games = Set(allContexts.compactMap { context -> ScheduledGame? in
-            guard let environment = context.environment else { return nil }
-            let home = environment.isHome ? context.player.teamAbbreviation : environment.opponentAbbreviation
-            let away = environment.isHome ? environment.opponentAbbreviation : context.player.teamAbbreviation
-            return ScheduledGame(
-                homeTeamAbbreviation: home,
-                awayTeamAbbreviation: away,
-                kickoff: environment.kickoff,
-                week: week
-            )
-        })
-
-        guard !games.isEmpty else { return (matchup, waiverPool) }
-
-        let players = allContexts.map(\.player)
-        let gameList = Array(games)
-        let weather = await researchProvider.weather(for: gameList)
-        let news = await researchProvider.news(for: players, week: week)
-        let betting = await researchProvider.bettingContext(for: gameList)
-
-        guard !weather.isEmpty || !news.isEmpty || !betting.isEmpty else {
-            return (matchup, waiverPool)
+        // 1. The week's games. Cached for the day: an NFL schedule does not move.
+        let loadedGames: [NFLGame]? = await cachedOptional(
+            key: "schedule-\(season)-\(week)",
+            lifetime: CacheLifetime.schedule,
+            allowCache: allowCache
+        ) {
+            await contextProvider.games(season: season, week: week)
         }
+        let games = loadedGames ?? []
+
+        var gameByTeam: [String: NFLGame] = [:]
+        for game in games {
+            gameByTeam[game.homeTeamAbbreviation] = game
+            gameByTeam[game.awayTeamAbbreviation] = game
+        }
+
+        // 2. Player status that is the same league-wide.
+        let loadedDepthChart: [String: Int]? = await cachedOptional(
+            key: "depthchart-\(season)-\(week)",
+            lifetime: CacheLifetime.depthChart,
+            allowCache: allowCache
+        ) {
+            await contextProvider.depthChart(season: season)
+        }
+        let depthChart = loadedDepthChart ?? [:]
+
+        let loadedInjuries: [String: InjuryReport]? = await cachedOptional(
+            key: "injuries-\(season)-\(week)",
+            lifetime: CacheLifetime.injuries,
+            allowCache: allowCache
+        ) {
+            await contextProvider.injuryReports(season: season)
+        }
+        let injuries = loadedInjuries ?? [:]
+
+        // 3. Weather and news, both of which need the schedule to be useful.
+        let scheduled = games.map { $0.scheduled(week: week) }
+        let fallbackGames = scheduled.isEmpty ? existingGames(in: allContexts, week: week) : scheduled
+        let weather = fallbackGames.isEmpty ? [:] : await researchProvider.weather(for: fallbackGames)
+        let news = await researchProvider.news(for: allContexts.map(\.player), week: week)
+        let marketFallback = fallbackGames.isEmpty ? [:] : await researchProvider.bettingContext(for: fallbackGames)
+
+        let hasAnything = !gameByTeam.isEmpty || !depthChart.isEmpty || !injuries.isEmpty
+            || !weather.isEmpty || !news.isEmpty || !marketFallback.isEmpty
+        guard hasAnything else { return (matchup, waiverPool) }
 
         var newsByPlayer: [PlayerID: [NewsItem]] = [:]
         for item in news {
@@ -202,18 +243,50 @@ struct AnalysisService: Sendable {
 
         func apply(_ context: PlayerContext) -> PlayerContext {
             var updated = context
+            let team = context.player.teamAbbreviation
+
+            // The schedule builds an environment where none existed, and fills the
+            // gaps in one that did.
+            if let game = gameByTeam[team], let opponent = game.opponent(of: team) {
+                var environment = updated.environment ?? GameEnvironment(
+                    week: week,
+                    opponentAbbreviation: opponent,
+                    isHome: game.isHome(team)
+                )
+                environment.week = week
+                environment.opponentAbbreviation = opponent
+                environment.isHome = game.isHome(team)
+                environment.isIndoor = game.isIndoor
+                if environment.kickoff == nil { environment.kickoff = game.kickoff }
+                if environment.betting.overUnder == nil {
+                    environment.betting = game.bettingContext(for: team)
+                }
+                updated.environment = environment
+            }
+
             if var environment = updated.environment {
-                let home = environment.isHome
-                    ? context.player.teamAbbreviation
-                    : environment.opponentAbbreviation
+                let home = environment.isHome ? team : environment.opponentAbbreviation
                 if environment.weather == nil, let conditions = weather[home] {
                     environment.weather = conditions
                 }
-                if environment.betting.overUnder == nil, let market = betting[home] {
+                if environment.betting.overUnder == nil, let market = marketFallback[home] {
                     environment.betting = market
                 }
                 updated.environment = environment
             }
+
+            // Depth chart and injuries are keyed by the provider's player ID, so
+            // they only join onto players from that same provider.
+            let providerID = updated.player.id.value
+            if updated.player.depthChartRank == nil, let rank = depthChart[providerID] {
+                updated.player.depthChartRank = rank
+            }
+            // A richer injury report supersedes the bare designation the league
+            // feed carries, but never overrides a player already ruled out.
+            if let report = injuries[providerID], !updated.player.injury.status.isUnavailable {
+                updated.player.injury = report
+            }
+
             if let extra = newsByPlayer[context.id], !extra.isEmpty {
                 let existing = Set(updated.news.map(\.id))
                 updated.news += extra.filter { !existing.contains($0.id) }
@@ -237,6 +310,28 @@ struct AnalysisService: Sendable {
         }
 
         return (updatedMatchup, waiverPool.map(apply))
+    }
+
+    /// Games implied by environments the fantasy provider already supplied. The
+    /// demo league works this way, so it needs no schedule lookup.
+    private func existingGames(in contexts: [PlayerContext], week: Int) -> [ScheduledGame] {
+        let unique = Set(contexts.compactMap { context -> ScheduledGame? in
+            guard let environment = context.environment else { return nil }
+            let home = environment.isHome
+                ? context.player.teamAbbreviation
+                : environment.opponentAbbreviation
+            let away = environment.isHome
+                ? environment.opponentAbbreviation
+                : context.player.teamAbbreviation
+            return ScheduledGame(
+                homeTeamAbbreviation: home,
+                awayTeamAbbreviation: away,
+                kickoff: environment.kickoff,
+                week: week
+            )
+        })
+        // Set iteration order is undefined, so sort for a stable request order.
+        return unique.sorted { $0.id < $1.id }
     }
 
     // MARK: - Cache helpers

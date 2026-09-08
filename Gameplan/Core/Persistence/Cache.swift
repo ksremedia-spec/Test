@@ -24,6 +24,12 @@ enum CacheLifetime {
     static let roster: TimeInterval = 15 * 60
     static let matchup: TimeInterval = 10 * 60
     static let waiverPool: TimeInterval = 30 * 60
+    /// An NFL schedule does not move once published.
+    static let schedule: TimeInterval = 12 * 3600
+    /// Depth charts change weekly at most, and are expensive to fetch.
+    static let depthChart: TimeInterval = 12 * 3600
+    /// Injury reports move through the week, so this is deliberately short.
+    static let injuries: TimeInterval = 45 * 60
     static let news: TimeInterval = 15 * 60
     static let weather: TimeInterval = 3 * 3600
     static let analysis: TimeInterval = 6 * 3600

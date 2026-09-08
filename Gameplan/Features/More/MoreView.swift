@@ -147,6 +147,9 @@ struct MoreView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            NavigationLink("Diagnostics") {
+                DiagnosticsView()
+            }
             Button("Clear cached data") {
                 isClearingCache = true
                 Task {
