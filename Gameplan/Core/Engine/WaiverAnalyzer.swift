@@ -66,10 +66,8 @@ struct WaiverAnalyzer {
             .map { candidate in
                 evaluate(
                     candidate: candidate,
-                    roster: roster,
                     droppables: droppables,
                     currentLineup: currentLineup,
-                    optimizer: optimizer,
                     players: players
                 )
             }
@@ -85,10 +83,8 @@ struct WaiverAnalyzer {
 
     private func evaluate(
         candidate: AnalyzedPlayer,
-        roster: [AnalyzedPlayer],
         droppables: [AnalyzedPlayer],
         currentLineup: Lineup,
-        optimizer: LineupOptimizer,
         players: [PlayerID: AnalyzedPlayer]
     ) -> WaiverCandidate {
         let position = candidate.position
@@ -99,7 +95,6 @@ struct WaiverAnalyzer {
         let immediate = immediateUpgrade(
             candidate: candidate,
             currentLineup: currentLineup,
-            optimizer: optimizer,
             players: players
         )
 
@@ -151,7 +146,6 @@ struct WaiverAnalyzer {
     private func immediateUpgrade(
         candidate: AnalyzedPlayer,
         currentLineup: Lineup,
-        optimizer: LineupOptimizer,
         players: [PlayerID: AnalyzedPlayer]
     ) -> Double {
         var best = 0.0

@@ -110,8 +110,7 @@ struct GamePlanBuilder {
         let assessments = rosterAnalyzer.assess(
             team: matchup.userTeam,
             players: userPlayers,
-            replacementLevels: replacementLevels,
-            week: week
+            replacementLevels: replacementLevels
         )
         let weakness = rosterAnalyzer.biggestWeakness(from: assessments)
 

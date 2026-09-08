@@ -58,10 +58,9 @@ struct RosterAnalyzer {
     func assess(
         team: FantasyTeam,
         players: [PlayerID: AnalyzedPlayer],
-        replacementLevels: [Position: Double],
-        week: Int
+        replacementLevels: [Position: Double]
     ) -> [PositionAssessment] {
-        Position.allCases.compactMap { position in
+        Position.allCases.compactMap { position -> PositionAssessment? in
             let required = requiredStarters(at: position)
             guard required > 0 else { return nil }
 
@@ -100,11 +99,8 @@ struct RosterAnalyzer {
                 headline: headline(
                     position: position,
                     strength: strength,
-                    starters: starters,
                     shortfall: shortfall,
-                    depth: usableDepth,
-                    replacement: replacement,
-                    week: week
+                    depth: usableDepth
                 )
             )
         }
@@ -132,11 +128,8 @@ struct RosterAnalyzer {
     private func headline(
         position: Position,
         strength: Double,
-        starters: [AnalyzedPlayer],
         shortfall: Int,
-        depth: Int,
-        replacement: Double,
-        week: Int
+        depth: Int
     ) -> String {
         if shortfall > 0 {
             return "You're short a startable \(position.abbreviation) this week."

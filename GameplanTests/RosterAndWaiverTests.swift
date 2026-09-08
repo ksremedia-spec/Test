@@ -60,7 +60,7 @@ final class RosterAnalyzerTests: XCTestCase {
         let analyzer = RosterAnalyzer(league: league)
         let levels = analyzer.replacementLevels(waiverPool: waiverPool())
 
-        let assessments = analyzer.assess(team: team, players: players, replacementLevels: levels, week: week)
+        let assessments = analyzer.assess(team: team, players: players, replacementLevels: levels)
         let weakness = analyzer.biggestWeakness(from: assessments)
 
         XCTAssertEqual(weakness?.position, .wideReceiver)
@@ -80,8 +80,7 @@ final class RosterAnalyzerTests: XCTestCase {
         let assessments = analyzer.assess(
             team: team,
             players: players,
-            replacementLevels: analyzer.replacementLevels(waiverPool: waiverPool()),
-            week: 7
+            replacementLevels: analyzer.replacementLevels(waiverPool: waiverPool())
         )
 
         let receivers = assessments.first { $0.position == .wideReceiver }
@@ -153,7 +152,7 @@ final class WaiverAnalyzerTests: XCTestCase {
 
         let rosterAnalyzer = RosterAnalyzer(league: league)
         let levels = rosterAnalyzer.replacementLevels(waiverPool: pool)
-        let assessments = rosterAnalyzer.assess(team: team, players: players, replacementLevels: levels, week: week)
+        let assessments = rosterAnalyzer.assess(team: team, players: players, replacementLevels: levels)
 
         let analyzer = WaiverAnalyzer(
             league: league,

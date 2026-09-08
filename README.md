@@ -28,7 +28,10 @@ dependencies — everything is first-party frameworks (SwiftUI, Swift Charts,
 UserNotifications, CryptoKit, Security).
 
 The project uses Xcode's file-system-synchronized groups, so adding a file to a
-folder adds it to the target. No `.pbxproj` edits needed.
+folder adds it to the target — no `.pbxproj` edits needed. A `project.yml`
+(XcodeGen) spec is also committed as a regeneration path if the project file is
+ever damaged: `brew install xcodegen && make project`. `make help` lists the
+other shortcuts.
 
 You do **not** need any credentials to try the app. On first launch you can pick
 "Explore with a demo league" and every screen works end to end.
