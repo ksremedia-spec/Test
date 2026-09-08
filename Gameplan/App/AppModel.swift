@@ -128,6 +128,10 @@ final class AppModel {
 
         loadState = .loading(nil)
         let service = environment.analysisService(for: preferences)
+        // "New" only means new relative to a plan the user has already seen. On the
+        // very first analysis everything is new, and notifying about all of it
+        // would be exactly the kind of noise this app is supposed to remove.
+        let hadPreviousPlan = analysis != nil
         let previousUrgentIDs = Set((analysis?.plan.urgentMoves ?? []).map(\.id))
 
         do {
@@ -155,7 +159,9 @@ final class AppModel {
 
             self.analysis = analysis
             self.loadState = .loaded
-            self.newUrgentMoves = analysis.plan.urgentMoves.filter { !previousUrgentIDs.contains($0.id) }
+            self.newUrgentMoves = hadPreviousPlan
+                ? analysis.plan.urgentMoves.filter { !previousUrgentIDs.contains($0.id) }
+                : []
 
             update { $0.lastPlanFingerprint = analysis.plan.inputFingerprint }
             await scheduleNotifications(for: analysis)

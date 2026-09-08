@@ -271,7 +271,11 @@ struct GamePlanBuilder {
                 if lhs.category != rhs.category {
                     return categoryRank(lhs.category) < categoryRank(rhs.category)
                 }
-                return lhs.confidenceScore > rhs.confidenceScore
+                if lhs.confidenceScore != rhs.confidenceScore {
+                    return lhs.confidenceScore > rhs.confidenceScore
+                }
+                // Sorting is not guaranteed stable, so end on a total order.
+                return lhs.id < rhs.id
             }
             .prefix(limit)
             .map { $0 }

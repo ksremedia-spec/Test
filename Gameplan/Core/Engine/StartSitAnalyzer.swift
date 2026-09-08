@@ -45,7 +45,13 @@ struct StartSitAnalyzer {
         // lineup, and pair each with the player they displace.
         let incoming = optimalStarters.subtracting(currentStarters)
             .compactMap { players[$0] }
-            .sorted { $0.projection.mean > $1.projection.mean }
+            // Set iteration order is undefined, so the tie-break on ID is what
+            // makes the resulting advice identical run to run.
+            .sorted { lhs, rhs in
+                lhs.projection.mean == rhs.projection.mean
+                    ? lhs.id.rawValue < rhs.id.rawValue
+                    : lhs.projection.mean > rhs.projection.mean
+            }
 
         // Applying each accepted swap to the working lineup means later deltas are
         // measured against the improved lineup, so the reported gains add up

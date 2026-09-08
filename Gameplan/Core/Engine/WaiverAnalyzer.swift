@@ -74,7 +74,9 @@ struct WaiverAnalyzer {
                 )
             }
             .filter { $0.score > 0.08 }
-            .sorted { $0.score > $1.score }
+            .sorted { lhs, rhs in
+                lhs.score == rhs.score ? lhs.id.rawValue < rhs.id.rawValue : lhs.score > rhs.score
+            }
             .prefix(limit)
             .map { $0 }
     }

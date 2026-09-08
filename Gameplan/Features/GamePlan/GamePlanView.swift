@@ -66,6 +66,14 @@ struct GamePlanView: View {
         }
     }
 
+    /// Opening a move counts as having seen what changed.
+    private func open(_ move: Recommendation) {
+        selectedMove = move
+        if !model.newUrgentMoves.isEmpty {
+            withAnimation(Theme.Motion.quick) { model.acknowledgeNewMoves() }
+        }
+    }
+
     private var currentStage: AnalysisStage? {
         if case .loading(let stage) = model.loadState { return stage }
         return nil
@@ -115,6 +123,18 @@ struct GamePlanView: View {
                         .foregroundStyle(.tertiary)
                         .lineLimit(1)
                 }
+            }
+
+            if !model.newUrgentMoves.isEmpty {
+                Label(
+                    model.newUrgentMoves.count == 1
+                        ? "One recommendation changed since you last looked"
+                        : "\(model.newUrgentMoves.count) recommendations changed since you last looked",
+                    systemImage: "sparkles"
+                )
+                .font(Theme.Typography.micro)
+                .foregroundStyle(Theme.Palette.accent)
+                .transition(.opacity)
             }
 
             Text(plan.headline)
@@ -168,7 +188,7 @@ struct GamePlanView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(actionable.enumerated()), id: \.element.id) { index, move in
-                        Button { selectedMove = move } label: {
+                        Button { open(move) } label: {
                             MoveRow(move: move, index: index)
                                 .padding(.vertical, Theme.Spacing.medium)
                         }

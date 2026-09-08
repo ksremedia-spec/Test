@@ -98,7 +98,10 @@ struct WatchlistBuilder {
         // keep the most decision-relevant kinds first.
         var seenPlayers = Set<PlayerID>()
         var result: [WatchItem] = []
-        for item in items.sorted(by: { rank($0.kind) < rank($1.kind) }) {
+        let ordered = items.sorted { lhs, rhs in
+            rank(lhs.kind) == rank(rhs.kind) ? lhs.id < rhs.id : rank(lhs.kind) < rank(rhs.kind)
+        }
+        for item in ordered {
             if let playerID = item.playerID {
                 guard !seenPlayers.contains(playerID) else { continue }
                 seenPlayers.insert(playerID)
