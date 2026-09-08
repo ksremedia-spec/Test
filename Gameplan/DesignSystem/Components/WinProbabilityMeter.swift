@@ -9,6 +9,11 @@ struct WinProbabilityMeter: View {
     var posture: WeeklyPosture
     var isEstimate: Bool
 
+    /// Scales with Dynamic Type so the headline number stays readable at large
+    /// accessibility sizes.
+    @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 44
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var clamped: Double { min(0.99, max(0.01, probability)) }
 
     private var tint: Color {
@@ -23,7 +28,7 @@ struct WinProbabilityMeter: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.small) {
             HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.small) {
                 Text(clamped.percentLabel)
-                    .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
+                    .font(.system(size: numberSize, weight: .bold, design: .rounded).monospacedDigit())
                     .contentTransition(.numericText())
                 VStack(alignment: .leading, spacing: 0) {
                     Text("chance to win")
@@ -51,7 +56,7 @@ struct WinProbabilityMeter: View {
                 }
             }
             .frame(height: 10)
-            .animation(Theme.Motion.standard, value: clamped)
+            .animation(reduceMotion ? nil : Theme.Motion.standard, value: clamped)
 
             if isEstimate {
                 Text("Model estimate from projections, not a published number.")

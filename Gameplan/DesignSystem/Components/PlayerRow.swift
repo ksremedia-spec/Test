@@ -10,6 +10,9 @@ struct PlayerRow: View {
     var slot: RosterSlot? = nil
     var accessory: Accessory = .projection
     var isDimmed: Bool = false
+    /// Set when this player is the subject of a recommendation, so a roster list
+    /// shows at a glance which rows have something to decide.
+    var flaggedPriority: RecommendationPriority? = nil
 
     enum Accessory {
         case projection
@@ -28,6 +31,11 @@ struct PlayerRow: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: Theme.Spacing.tight) {
+                    if let flaggedPriority, flaggedPriority != .noAction {
+                        Circle()
+                            .fill(Theme.Palette.priority(flaggedPriority))
+                            .frame(width: 6, height: 6)
+                    }
                     Text(player.player.fullName)
                         .font(Theme.Typography.rowTitle)
                         .lineLimit(1)
@@ -81,13 +89,16 @@ struct PlayerRow: View {
         switch player.player.injury.status {
         case .out, .injuredReserve, .suspended, .physicallyUnableToPerform: return Theme.Palette.negative
         case .doubtful: return Theme.Palette.negative.opacity(0.8)
-        case .questionable: return Color(red: 0.90, green: 0.52, blue: 0.13)
+        case .questionable: return Theme.Palette.warning
         default: return .secondary
         }
     }
 
     private var accessibilityLabel: String {
         var parts: [String] = [player.player.fullName, player.position.displayName]
+        if let flaggedPriority, flaggedPriority != .noAction {
+            parts.append("\(flaggedPriority.displayName) recommendation")
+        }
         if player.player.injury.status != .active {
             parts.append(player.player.injury.status.displayName)
         }

@@ -30,15 +30,14 @@ struct TemplateNarrator: NarrationProvider {
         }
 
         if !mustDo.isEmpty {
-            let weakness = pack.positionAssessments
-                .filter { $0.pointsAboveReplacement < 0 }
-                .min { $0.pointsAboveReplacement < $1.pointsAboveReplacement }
-            if let weakness, mustDo.count == 1 {
-                return "One move to make, and \(weakness.position) is the reason."
+            if let weakness = weakestPosition(in: pack) {
+                return mustDo.count == 1
+                    ? "One move to make, and \(weakness.position) is the reason."
+                    : "\(mustDo.count) moves to make, and \(weakness.position) is the theme."
             }
             return mustDo.count == 1
-                ? "One move stands between you and your best lineup."
-                : "\(mustDo.count) moves stand between you and your best lineup."
+                ? "One move to make before kickoff."
+                : "\(mustDo.count) moves to make before kickoff."
         }
 
         switch probability {
@@ -47,6 +46,27 @@ struct TemplateNarrator: NarrationProvider {
         case 42..<58: return "This one's a coin flip."
         case 28..<42: return "You're an underdog — you'll need a big week from someone."
         default: return "You're a heavy underdog. Play for the ceiling."
+        }
+    }
+
+    /// The position group most worth naming.
+    ///
+    /// Kickers and defenses are skipped for the same reason the engine skips them
+    /// when picking a weakness: they are streamed weekly and naming one as the
+    /// story of the week would be accurate and useless.
+    private func weakestPosition(in pack: EvidencePack) -> EvidencePack.PositionFacts? {
+        pack.positionAssessments
+            .filter { $0.pointsAboveReplacement < 0 && $0.position != "K" && $0.position != "DST" }
+            .min { $0.pointsAboveReplacement < $1.pointsAboveReplacement }
+    }
+
+    /// "QB, RB and TE" — an Oxford-free list that reads like a person wrote it.
+    private func list(_ items: [String]) -> String {
+        switch items.count {
+        case 0: return ""
+        case 1: return items[0]
+        case 2: return "\(items[0]) and \(items[1])"
+        default: return items.dropLast().joined(separator: ", ") + " and " + (items.last ?? "")
         }
     }
 
@@ -106,8 +126,7 @@ struct TemplateNarrator: NarrationProvider {
         } else if strengths.count == 1 {
             sentences.append("Leave \(strengths[0]) alone — it's the strongest part of your roster.")
         } else {
-            let list = strengths.prefix(3).joined(separator: " and ")
-            sentences.append("Leave \(list) alone — those are settled.")
+            sentences.append("Leave \(list(Array(strengths.prefix(3)))) alone — those are settled.")
         }
 
         if watching > 0 {

@@ -44,11 +44,12 @@ struct RosterView: View {
 
     @ViewBuilder
     private func content(analysis: WeeklyAnalysis, plan: GamePlan) -> some View {
+        let flags = movePriorities(plan: plan)
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.section) {
                 assessmentSection(plan: plan)
-                lineupSection(analysis: analysis)
-                benchSection(analysis: analysis)
+                lineupSection(analysis: analysis, flags: flags)
+                benchSection(analysis: analysis, flags: flags)
             }
             .screenPadding()
             .padding(.vertical, Theme.Spacing.large)
@@ -103,7 +104,7 @@ struct RosterView: View {
         return .primary
     }
 
-    private func lineupSection(analysis: WeeklyAnalysis) -> some View {
+    private func lineupSection(analysis: WeeklyAnalysis, flags: [PlayerID: RecommendationPriority]) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.medium) {
             SectionHeader(
                 "Starting lineup",
@@ -112,7 +113,7 @@ struct RosterView: View {
             VStack(spacing: 0) {
                 let assignments = analysis.currentLineup.assignments
                 ForEach(Array(assignments.enumerated()), id: \.offset) { index, assignment in
-                    row(for: assignment, analysis: analysis)
+                    row(for: assignment, analysis: analysis, flags: flags)
                     if index < assignments.count - 1 {
                         Divider().padding(.leading, 58)
                     }
@@ -124,14 +125,15 @@ struct RosterView: View {
     }
 
     @ViewBuilder
-    private func row(for assignment: Lineup.Assignment, analysis: WeeklyAnalysis) -> some View {
+    private func row(for assignment: Lineup.Assignment, analysis: WeeklyAnalysis, flags: [PlayerID: RecommendationPriority]) -> some View {
         if let id = assignment.playerID, let player = analysis.userPlayers[id] {
             Button { selectedPlayerID = id } label: {
                 PlayerRow(
                     player: player,
                     slot: assignment.slot,
                     accessory: .projectionWithRange,
-                    isDimmed: player.player.isUnavailable(week: analysis.plan.week)
+                    isDimmed: player.player.isUnavailable(week: analysis.plan.week),
+                    flaggedPriority: flags[id]
                 )
                 .padding(.vertical, Theme.Spacing.small)
             }
@@ -150,6 +152,19 @@ struct RosterView: View {
         }
     }
 
+    /// The most urgent recommendation touching each player, so a roster row can
+    /// show that there is something to decide without repeating the advice.
+    private func movePriorities(plan: GamePlan) -> [PlayerID: RecommendationPriority] {
+        var result: [PlayerID: RecommendationPriority] = [:]
+        for move in plan.moves where move.priority != .noAction {
+            for id in move.action.playerIDs {
+                if let existing = result[id], existing <= move.priority { continue }
+                result[id] = move.priority
+            }
+        }
+        return result
+    }
+
     /// Everyone on the roster who isn't in a starting slot, best first.
     private func benchPlayers(analysis: WeeklyAnalysis) -> [AnalyzedPlayer] {
         let starting = analysis.currentLineup.startingPlayerIDs
@@ -161,7 +176,7 @@ struct RosterView: View {
     }
 
     @ViewBuilder
-    private func benchSection(analysis: WeeklyAnalysis) -> some View {
+    private func benchSection(analysis: WeeklyAnalysis, flags: [PlayerID: RecommendationPriority]) -> some View {
         let bench = benchPlayers(analysis: analysis)
         if !bench.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.medium) {
@@ -178,7 +193,8 @@ struct RosterView: View {
                                     player: player,
                                     slot: .bench,
                                     accessory: .projectionWithRange,
-                                    isDimmed: player.player.isUnavailable(week: analysis.plan.week)
+                                    isDimmed: player.player.isUnavailable(week: analysis.plan.week),
+                                    flaggedPriority: flags[player.id]
                                 )
                                 .padding(.vertical, Theme.Spacing.small)
                             }

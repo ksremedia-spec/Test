@@ -11,6 +11,8 @@ struct AnalysisLoadingView: View {
     var stage: AnalysisStage?
     var isDemo: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var stages: [AnalysisStage] { AnalysisStage.allCases }
 
     private var currentIndex: Int {
@@ -30,7 +32,7 @@ struct AnalysisLoadingView: View {
                     .font(Theme.Typography.title)
                     .multilineTextAlignment(.center)
                     .contentTransition(.opacity)
-                    .animation(Theme.Motion.standard, value: stage)
+                    .animation(reduceMotion ? nil : Theme.Motion.standard, value: stage)
 
                 Text("This runs on your device and takes a moment.")
                     .font(Theme.Typography.caption)
@@ -43,7 +45,7 @@ struct AnalysisLoadingView: View {
                     Capsule()
                         .fill(index <= currentIndex ? Theme.Palette.accent : Color.primary.opacity(0.12))
                         .frame(width: index == currentIndex ? 20 : 8, height: 4)
-                        .animation(Theme.Motion.standard, value: currentIndex)
+                        .animation(reduceMotion ? nil : Theme.Motion.standard, value: currentIndex)
                 }
             }
 

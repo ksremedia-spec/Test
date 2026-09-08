@@ -57,7 +57,7 @@ struct PlayerDetailView: View {
                     Pill(
                         player.player.injury.status.displayName,
                         systemImage: "cross.case.fill",
-                        tint: player.player.injury.status.isUnavailable ? Theme.Palette.negative : Color(red: 0.90, green: 0.52, blue: 0.13)
+                        tint: player.player.injury.status.isUnavailable ? Theme.Palette.negative : Theme.Palette.warning
                     )
                 }
                 if player.trend != .unknown && player.trend != .steady {

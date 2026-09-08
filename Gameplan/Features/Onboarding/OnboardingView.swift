@@ -11,6 +11,7 @@ struct OnboardingView: View {
     @Environment(AppModel.self) private var model
     @State private var step: Step = .welcome
     @State private var showsESPNSheet = false
+    @ScaledMetric(relativeTo: .largeTitle) private var wordmarkSize: CGFloat = 42
 
     enum Step {
         case welcome
@@ -47,7 +48,7 @@ struct OnboardingView: View {
 
             VStack(alignment: .leading, spacing: Theme.Spacing.medium) {
                 Text("Gameplan")
-                    .font(.system(size: 42, weight: .bold))
+                    .font(.system(size: wordmarkSize, weight: .bold))
                 Text("Every week, one clear answer: what should I do to win?")
                     .font(Theme.Typography.title)
                     .foregroundStyle(.secondary)

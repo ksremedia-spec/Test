@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// The app's visual language.
 ///
@@ -17,32 +18,65 @@ enum Theme {
         /// action and nothing else.
         static let accent = Color("AccentColor")
 
+        /// Builds a colour that resolves differently in light and dark.
+        ///
+        /// The signal colours have to be defined this way rather than as one fixed
+        /// value: a red that reads as urgent on white is muddy on black, and a
+        /// green that reads as "settled" on black glares on white.
+        private static func adaptive(
+            light: (Double, Double, Double),
+            dark: (Double, Double, Double)
+        ) -> Color {
+            Color(UIColor { traits in
+                let components = traits.userInterfaceStyle == .dark ? dark : light
+                return UIColor(
+                    red: CGFloat(components.0),
+                    green: CGFloat(components.1),
+                    blue: CGFloat(components.2),
+                    alpha: 1
+                )
+            })
+        }
+
         /// Priority colours. These are the only place saturated colour is used.
         static func priority(_ priority: RecommendationPriority) -> Color {
             switch priority {
-            case .mustDo: return Color(red: 0.85, green: 0.22, blue: 0.20)
-            case .stronglyConsider: return Color(red: 0.90, green: 0.52, blue: 0.13)
-            case .monitor: return Color(red: 0.86, green: 0.71, blue: 0.16)
-            case .noAction: return Color(red: 0.20, green: 0.62, blue: 0.38)
+            case .mustDo: return negative
+            case .stronglyConsider: return warning
+            case .monitor: return caution
+            case .noAction: return positive
             }
         }
 
         static func advantage(_ margin: Double) -> Color {
-            if margin > 1.5 { return Color(red: 0.20, green: 0.62, blue: 0.38) }
-            if margin < -1.5 { return Color(red: 0.85, green: 0.32, blue: 0.28) }
+            if margin > 1.5 { return positive }
+            if margin < -1.5 { return negative }
             return Color.secondary
         }
 
         static func evidence(_ level: EvidenceLevel) -> Color {
             switch level {
-            case .measured: return .secondary
-            case .derived: return .secondary
-            case .estimated: return Color(red: 0.86, green: 0.71, blue: 0.16)
+            case .measured, .derived: return .secondary
+            case .estimated: return caution
             }
         }
 
-        static let positive = Color(red: 0.20, green: 0.62, blue: 0.38)
-        static let negative = Color(red: 0.85, green: 0.32, blue: 0.28)
+        static let positive = adaptive(
+            light: (0.13, 0.55, 0.31),
+            dark: (0.34, 0.82, 0.52)
+        )
+        static let negative = adaptive(
+            light: (0.80, 0.18, 0.16),
+            dark: (1.00, 0.42, 0.38)
+        )
+        static let warning = adaptive(
+            light: (0.85, 0.47, 0.09),
+            dark: (1.00, 0.65, 0.28)
+        )
+        static let caution = adaptive(
+            light: (0.72, 0.56, 0.05),
+            dark: (0.98, 0.82, 0.32)
+        )
 
         /// Page background. `groupedBackground` gives the familiar iOS settings
         /// feel without needing a bespoke colour set.

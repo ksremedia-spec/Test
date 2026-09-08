@@ -2,7 +2,7 @@ import Foundation
 
 /// Stable identity for a player, namespaced by the provider that produced it so
 /// IDs from different sources can never silently collide.
-struct PlayerID: Codable, Hashable, Sendable, CustomStringConvertible {
+struct PlayerID: Hashable, Sendable, CustomStringConvertible {
     var source: String
     var value: String
 
@@ -22,6 +22,28 @@ extension PlayerID: RawRepresentable {
     }
 
     var rawValue: String { description }
+}
+
+/// Encoded as the single string `source:value` rather than as an object. Written
+/// out explicitly so the on-disk shape is obvious and stable, rather than
+/// depending on which of two possible synthesised conformances the compiler picks.
+extension PlayerID: Codable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        guard let decoded = PlayerID(rawValue: raw) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Expected a player ID of the form source:value, got \(raw)."
+            )
+        }
+        self = decoded
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
 }
 
 /// Identity and status for a single player. Deliberately free of analysis — the
