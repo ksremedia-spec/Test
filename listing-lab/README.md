@@ -31,6 +31,8 @@ backend/                  the entire production system, as deployed on 9 Sep 202
   wrangler.toml           deploy config; README.md / OPERATIONS.md / LAUNCH.md / TODO.md — how it's run
 reference/
   LabOwner-ios/           the owner's existing SwiftUI app (private back-office). Project format and code style to copy. Not the customer app.
+ios/                      the native iPhone app, built 9 Sep 2026 — open ios/ListingLab.xcodeproj (see HANDBACK.md)
+HANDBACK.md               what was built, what Kyle must do next, what was assumed
 ```
 
 Not in here, on purpose: API keys and secrets (the owner sets them with `npx wrangler secret put`), the golden-set images and pipeline outputs (hundreds of MB, irrelevant to the app), `node_modules`.
