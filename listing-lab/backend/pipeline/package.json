@@ -1,0 +1,15 @@
+{
+  "name": "pipeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "transform": "node transform.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "sharp": "^0.33.0"
+  }
+}

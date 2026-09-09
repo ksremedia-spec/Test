@@ -1,0 +1,2725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Listing Lab — AI enhancement built for real estate</title>
+<meta name="description" content="AI declutter, empty room, virtual staging and twilight for listing photos — every image checked before delivery, structure and fixtures never altered. No subscription. Built by a working real-estate photographer.">
+<meta property="og:title" content="Listing Lab">
+<meta property="og:description" content="AI enhancement built for real estate — declutter, virtual staging, empty rooms, twilight. Every image checked before delivery.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://thelistinglab.app/social-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://thelistinglab.app/social-card.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3">
+<style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Organization", "name": "Listing Lab", "url": "https://thelistinglab.app/", "logo": "https://thelistinglab.app/logo-full.png", "email": "support@thelistinglab.app", "parentOrganization": {"@type": "Organization", "name": "Horizon Home Media"}, "founder": {"@type": "Person", "name": "Kyle Silva", "url": "https://thelistinglab.app/founder"}}, {"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Listing Lab", "applicationCategory": "PhotographyApplication", "operatingSystem": "Web", "url": "https://thelistinglab.app/", "description": "AI declutter, empty room, virtual staging and twilight for listing photos — every image checked against the original before delivery, with a permanent disclosure stamp. Credit-based, no subscription.", "offers": [{"@type": "Offer", "name": "10 credits", "price": "19.99", "priceCurrency": "USD", "url": "https://thelistinglab.app/#pricing"}, {"@type": "Offer", "name": "30 credits", "price": "56.99", "priceCurrency": "USD", "url": "https://thelistinglab.app/#pricing"}, {"@type": "Offer", "name": "75 credits", "price": "137.99", "priceCurrency": "USD", "url": "https://thelistinglab.app/#pricing"}]}]</script>
+</head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   LISTING LAB — design tokens
+   Two deliberate registers, not OS-theme driven:
+   - "Studio Light": marketing / editorial surfaces (warm paper)
+   - "Studio Dark": the working canvas (AI Studio, dashboard, etc.)
+   Photo tools conventionally run a fixed dark workspace so imagery
+   reads correctly regardless of the visitor's OS theme; the
+   marketing site stays a warm paper register at all times so the
+   brand reads consistently. Both are explicit, not inherited.
+   ============================================================ */
+:root{
+  /* Horizon Home Media brand: azure blue (from the logo, ~#3E79B9),
+     black, white. Dark register site-wide — a blue-black canvas so the
+     light illustrations read as the photography, with the brand blue
+     as the single accent and a light azure in the secondary role.
+     (--pine/--brass keep their names as ROLE tokens: accent/secondary.) */
+  --paper: #0F141B;
+  --paper-2: #151C25;
+  --paper-3: #1B2431;
+  --ink: #E9EDF3;
+  --ink-soft: #A6B1BF;
+  --ink-faint: #75818F;
+  --pine: #4E8FD0;
+  --pine-deep: #14304F;
+  --pine-bright: #66A2DE;
+  --brass: #8FBEE8;
+  --brass-soft: #C9DFF2;
+  --terracotta: #E17A5C;
+  --line: #2A3545;
+  --mist: #E7EBDF;
+  --shadow: 215 25% 10%;
+
+  --studio-bg: #0C1118;
+  --studio-surface: #131A24;
+  --studio-surface-2: #19222E;
+  --studio-surface-3: #1F2938;
+  --studio-line: #293546;
+  --studio-text: #E9EDF3;
+  --studio-text-soft: #A0ABBA;
+  --studio-text-faint: #6B7787;
+  --studio-pine: #4E8FD0;
+  --studio-brass: #8FBEE8;
+  --studio-terracotta: #E17A5C;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 18px;
+  --r-xl: 28px;
+
+  --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--ui);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+img,svg{max-width:100%;display:block;}
+/* Default size for standalone inline icon SVGs (unsized ones otherwise
+   render at the browser's intrinsic replaced-element size). Components
+   with their own icon size (.mark svg, .ba-knob svg, etc.) override this
+   via higher-specificity selectors below. */
+svg{width:18px;height:18px;flex-shrink:0;}
+.pill svg{width:12px;height:12px;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:-0.01em;}
+p{margin:0;}
+::selection{background:var(--brass-soft);color:var(--pine-deep);}
+:focus-visible{outline:2px solid var(--pine);outline-offset:2px;}
+.studio :focus-visible{outline:2px solid var(--studio-pine);}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+}
+
+.eyebrow{
+  font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+  font-weight:600;color:var(--pine);
+}
+.studio .eyebrow{color:var(--studio-brass);}
+
+/* ---------- layout helpers ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
+@media(max-width:720px){.wrap{padding:0 20px;}}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 24px;border-radius:999px;border:1px solid transparent;
+  font-size:0.92rem;font-weight:600;letter-spacing:0.01em;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  white-space:nowrap;
+}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--pine);color:#0A1017;box-shadow:0 8px 22px -10px rgba(78,143,208,.45);}
+.btn-primary:hover{background:var(--pine-bright);box-shadow:0 10px 26px -10px rgba(78,143,208,.5);}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line);}
+.btn-ghost:hover{border-color:var(--ink-faint);background:var(--paper-2);}
+.btn-quiet{background:transparent;color:var(--ink-soft);padding:10px 6px;}
+.btn-quiet:hover{color:var(--ink);}
+.btn-sm{padding:9px 16px;font-size:0.82rem;}
+.btn-block{width:100%;}
+.btn[disabled]{opacity:.45;cursor:not-allowed;transform:none !important;}
+
+.studio .btn-primary{background:var(--studio-pine);color:#0A1017;box-shadow:0 8px 22px -10px rgba(78,143,208,.45);}
+.studio .btn-primary:hover{background:var(--pine-bright);}
+.studio .btn-ghost{color:var(--studio-text);border-color:var(--studio-line);}
+.studio .btn-ghost:hover{border-color:#3d4f45;background:var(--studio-surface-2);}
+.studio .btn-quiet{color:var(--studio-text-soft);}
+.studio .btn-quiet:hover{color:var(--studio-text);}
+
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:999px;font-size:0.72rem;font-weight:600;
+  letter-spacing:0.04em;text-transform:uppercase;
+}
+.pill-approved{background:#E1EEE5;color:var(--pine-deep);}
+.pill-rejected{background:#F3DED7;color:var(--terracotta);}
+.pill-processing{background:var(--paper-3);color:var(--ink-soft);}
+.studio .pill-approved{background:rgba(78,143,208,.16);color:var(--studio-pine);}
+.studio .pill-rejected{background:rgba(225,122,92,.16);color:var(--studio-terracotta);}
+.studio .pill-processing{background:var(--studio-surface-3);color:var(--studio-text-soft);}
+
+.card{
+  background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r-lg);
+  transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.studio .card{background:var(--studio-surface);border-color:var(--studio-line);}
+
+hr.rule{border:none;border-top:1px solid var(--line);margin:0;}
+.studio hr.rule{border-top:1px solid var(--studio-line);}
+
+/* ---------- mark / logo ----------
+   Lockup echoes the Horizon Home Media logo: heavy dark caps for the
+   lead word, lighter letterspaced blue caps for the second — the same
+   HORIZON / HOME MEDIA relationship, one register down. */
+.mark{display:inline-flex;align-items:center;gap:11px;font-family:var(--ui);font-weight:800;font-size:1.24rem;letter-spacing:0.11em;text-transform:uppercase;}
+.mark svg{width:27px;height:27px;flex:none;}
+.mark img{width:46px;height:46px;flex:none;}
+/* The logo has real detail — at desktop nav size it deserves room to be seen. */
+@media (min-width:880px){ .mark img{width:52px;height:52px;} }
+.mark .lab{color:var(--pine);font-weight:600;letter-spacing:0.16em;margin-left:1px;}
+.studio .mark .lab{color:var(--studio-pine);}
+.wordmark-lab{color:var(--brass);}
+.studio .wordmark-lab{color:var(--studio-brass);}
+
+/* ============================================================
+   MARKETING SITE
+   ============================================================ */
+.site{background:var(--paper);}
+.site-nav{
+  position:sticky;top:0;z-index:40;background:rgba(15,20,27,.88);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.site-nav-row{display:flex;align-items:center;justify-content:space-between;height:76px;}
+.site-nav-links{display:flex;align-items:center;gap:34px;font-size:0.9rem;font-weight:500;color:var(--ink-soft);}
+.site-nav-links a:hover{color:var(--ink);}
+.site-nav-cta{display:flex;align-items:center;gap:18px;}
+.nav-toggle{display:none;}
+@media(max-width:860px){
+  .site-nav-links{display:none;}
+}
+
+.hero{padding:76px 0 40px;position:relative;overflow:hidden;}
+.hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:56px;align-items:center;}
+@media(max-width:980px){.hero-grid{grid-template-columns:1fr;gap:40px;}}
+.hero-eyebrow{margin-bottom:22px;font-size:1.02rem;letter-spacing:0.16em;}
+.hero h1{font-size:clamp(2.5rem,5vw,3.7rem);line-height:1.05;color:var(--ink);}
+.hero-sub{margin-top:22px;font-size:1.13rem;line-height:1.6;color:var(--ink-soft);max-width:46ch;}
+.hero-cta{display:flex;gap:14px;margin-top:34px;flex-wrap:wrap;}
+.hero-proof{display:flex;gap:28px;margin-top:44px;flex-wrap:wrap;}
+/* Phones: three equal centered columns in one row — the flex wrap read as
+   lopsided once the middle label got longer (Kyle, 28 Aug 2026). */
+@media(max-width:640px){
+  .hero-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center;justify-items:center;}
+  .hero-proof-item{max-width:none;}
+}
+.hero-proof-item{font-size:0.82rem;color:var(--ink-faint);max-width:170px;line-height:1.45;}
+.hero-proof-item b{display:block;font-family:var(--display);font-size:1.5rem;color:var(--pine);font-weight:600;}
+
+/* ------- hero rotator: mobile-only slow crossfade through the 4 examples */
+.hero-rotator{display:grid;}
+.hero-slide{grid-area:1/1;opacity:1;transition:opacity .7s ease;}
+.hero-dots{display:none;}
+@media(max-width:980px){
+  .hero-slide:not(.on){opacity:0;pointer-events:none;}
+  .hero-dots{display:flex;gap:8px;justify-content:center;margin-top:16px;}
+  .hero-dots button{width:9px;height:9px;border-radius:99px;border:0;background:var(--line);cursor:pointer;padding:0;transition:width .25s,background .25s;}
+  .hero-dots button.on{background:var(--pine);width:24px;}
+}
+@media(min-width:981px){
+  .hero-slide:not(:first-child){display:none;}
+}
+@media(prefers-reduced-motion:reduce){.hero-slide{transition:none;}}
+
+/* before/after aperture reveal */
+.ba{
+  position:relative;border-radius:var(--r-xl);overflow:hidden;aspect-ratio:3/2;
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.6);border:1px solid var(--line);
+  user-select:none;background:var(--paper-2);
+}
+.ba .ba-layer{position:absolute;inset:0;}
+/* Dragging the handle to either end must never start selecting the page or
+   ghost-dragging the photo — that is the blue highlight Kyle saw. */
+.ba img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;pointer-events:none;}
+/* While any slider is being dragged, nothing on the page may be selected —
+   the drag's selection sweep is what highlighted the sections below. */
+body.ba-dragging, body.ba-dragging *{user-select:none !important;-webkit-user-select:none !important;}
+.ba .ba-after{clip-path:inset(0 0 0 var(--ba-pos,50%));}
+.ba-handle{
+  position:absolute;top:0;bottom:0;left:var(--ba-pos,50%);width:0;
+  transform:translateX(-50%);cursor:ew-resize;touch-action:none;
+}
+.ba-handle::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:#F7FAFD;transform:translateX(-50%);box-shadow:0 0 0 1px rgba(0,0,0,.08);}
+.ba-knob{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:52px;height:52px;border-radius:50%;background:#F7FAFD;color:#141B24;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  box-shadow:0 8px 18px -6px rgba(0,0,0,.35);
+}
+.ba-knob svg{width:14px;height:14px;}
+.ba-tag{
+  position:absolute;top:16px;padding:6px 13px;border-radius:999px;font-size:0.72rem;
+  font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:rgba(22,33,27,.72);
+  color:#F2F5F9;backdrop-filter:blur(4px);
+}
+.ba-tag.tag-before{left:16px;}
+.ba-tag.tag-after{right:16px;background:rgba(30,74,58,.82);}
+
+.marquee{
+  padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  overflow:hidden;white-space:nowrap;
+}
+.marquee-track{
+  display:inline-flex;gap:48px;align-items:baseline;width:max-content;
+  animation:marquee-roll 36s linear infinite;
+}
+.marquee:hover .marquee-track{animation-play-state:paused;}
+@keyframes marquee-roll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.marquee-track{animation:none;}}
+.marquee span{font-family:var(--display);font-size:1.35rem;color:var(--ink-soft);flex:none;}
+
+.section{padding:104px 0;}
+.section-head{max-width:640px;margin:0 auto 56px;text-align:center;}
+.section-head h2{font-size:clamp(1.9rem,3.4vw,2.6rem);margin-top:16px;}
+.section-head p{margin-top:16px;color:var(--ink-soft);font-size:1.05rem;line-height:1.6;}
+
+/* ---------- account page ---------- */
+.avatar-lg{
+  width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);
+  color:var(--studio-brass);font-weight:700;font-size:1.05rem;flex-shrink:0;
+}
+.via-chip{
+  display:inline-flex;align-items:center;gap:7px;padding:4px 10px;border-radius:999px;
+  background:var(--studio-surface-3);border:1px solid var(--studio-line);
+  font-size:0.76rem;color:var(--studio-text-soft);
+}
+.via-chip svg{width:14px;height:14px;}
+.acct-rows{display:flex;flex-direction:column;gap:2px;}
+.acct-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--studio-line);font-size:0.88rem;color:var(--studio-text-soft);}
+.acct-row:last-child{border-bottom:0;}
+.acct-row b{color:var(--studio-text);}
+
+/* ---------- topbar identity ---------- */
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.avatar-chip{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--studio-surface-3);border:1px solid var(--studio-line);color:var(--studio-brass);
+  font-size:0.76rem;font-weight:700;letter-spacing:.03em;flex-shrink:0;
+}
+.avatar-chip:hover{border-color:var(--studio-pine);color:var(--studio-text);}
+
+/* ---------- auth screens ---------- */
+.auth-wrap{min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr;background:var(--paper);}
+.auth-aside{
+  background:var(--pine-deep);color:#EEE9DA;padding:56px 52px;display:flex;flex-direction:column;
+  justify-content:space-between;border-right:1px solid #1F4064;
+}
+.auth-aside .mark{color:#EEE9DA;font-size:1.05rem;}
+.auth-aside h2{color:#EEE9DA;font-size:2.1rem;line-height:1.15;margin-bottom:18px;}
+.auth-aside p{color:#C2D2E4;font-size:0.95rem;line-height:1.65;max-width:38ch;}
+.auth-points{display:flex;flex-direction:column;gap:14px;margin-top:30px;}
+.auth-point{display:flex;gap:11px;align-items:flex-start;font-size:0.88rem;color:#C2D2E4;line-height:1.5;}
+.auth-point svg{color:var(--brass);margin-top:2px;}
+.auth-main{display:flex;align-items:center;justify-content:center;padding:56px 32px;}
+.auth-card{width:100%;max-width:392px;}
+.auth-card h1{font-size:1.9rem;margin-bottom:8px;}
+.auth-lede{color:var(--ink-soft);font-size:0.93rem;line-height:1.6;margin-bottom:28px;}
+.oauth-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:11px;padding:12px 16px;
+  border-radius:var(--r-md);border:1px solid var(--line);background:var(--paper-3);color:var(--ink);
+  font-size:0.93rem;font-weight:600;transition:border-color .18s ease,background .18s ease;
+}
+.oauth-btn:hover{border-color:var(--pine);background:var(--paper-2);}
+.oauth-btn svg{width:18px;height:18px;}
+.oauth-btn[disabled]{opacity:.65;cursor:progress;}
+.auth-or{display:flex;align-items:center;gap:14px;margin:22px 0;color:var(--ink-faint);font-size:0.78rem;letter-spacing:.08em;text-transform:uppercase;}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--line);}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:0.8rem;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+.field input{
+  width:100%;padding:11px 13px;border-radius:var(--r-md);border:1px solid var(--line);
+  background:var(--paper-3);color:var(--ink);font-family:var(--ui);font-size:0.93rem;
+}
+.field input:focus{outline:2px solid var(--pine);outline-offset:1px;}
+.field-row{display:flex;justify-content:space-between;align-items:baseline;}
+.field-row a{font-size:0.78rem;color:var(--pine-bright);font-weight:600;}
+.auth-alt{margin-top:22px;text-align:center;font-size:0.88rem;color:var(--ink-soft);}
+.auth-alt a{color:var(--pine-bright);font-weight:600;}
+.proto-note{
+  margin-top:26px;padding:12px 14px;border-radius:var(--r-md);border:1px dashed var(--line);
+  font-size:0.78rem;line-height:1.55;color:var(--ink-faint);
+}
+.auth-back{display:inline-flex;align-items:center;gap:7px;font-size:0.84rem;color:var(--ink-faint);margin-bottom:26px;}
+.auth-back:hover{color:var(--ink-soft);}
+@media(max-width:900px){
+  .auth-wrap{grid-template-columns:1fr;}
+  .auth-aside{display:none;}
+  .auth-main{padding:40px 22px;min-height:100vh;}
+}
+
+/* studio: optional client notes + chain callout */
+.notes-box{
+  width:100%;min-height:74px;resize:vertical;margin-top:4px;padding:10px 12px;
+  background:var(--studio-surface-3);border:1px solid var(--studio-line);border-radius:var(--r-md);
+  color:var(--studio-text);font-family:var(--ui);font-size:0.86rem;line-height:1.5;
+}
+.notes-box::placeholder{color:var(--studio-text-faint);}
+.notes-hint{margin-top:8px;font-size:0.76rem;line-height:1.5;color:var(--studio-text-faint);}
+.chain-note{
+  display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:var(--r-md);
+  background:var(--studio-surface-3);border:1px solid var(--studio-line);
+  font-size:0.84rem;line-height:1.55;color:var(--studio-text-soft);
+}
+.chain-note svg{color:var(--studio-brass);margin-top:2px;}
+.chain-note b{color:var(--studio-text);}
+
+/* compliance flow diagram */
+/* Seven steps don't divide evenly, so this is flex rather than grid: four
+   across, then a centred row of three instead of a gap on the right. Two on a
+   tablet, one on a phone where two columns squeeze the copy into ragged
+   five-line blocks. */
+.flow{display:flex;flex-wrap:wrap;justify-content:center;gap:34px 18px;margin-top:56px;}
+.flow > *{flex:0 1 calc(25% - 14px);}
+@media(max-width:900px){.flow > *{flex:0 1 calc(50% - 9px);}}
+@media(max-width:600px){.flow{gap:30px;}.flow > *{flex:0 1 100%;}}
+.flow-step{text-align:center;padding:0 4px;position:relative;}
+.flow-step .flow-num{
+  width:46px;height:46px;border-radius:50%;margin:0 auto 18px;background:var(--pine);
+  color:#0A1017;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:1.15rem;
+}
+.flow-step h4{font-size:1rem;margin-bottom:8px;}
+.flow-step p{font-size:0.85rem;color:var(--ink-faint);line-height:1.5;}
+.flow-connector{display:none;}
+@media(max-width:860px){
+  .flow{gap:26px 14px;}
+}
+
+.guard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-top:52px;padding-top:40px;border-top:1px solid #1F4064;}
+.guard h4{font-size:0.95rem;margin-bottom:10px;color:#EEE9DA;}
+.guard p{font-size:0.86rem;line-height:1.6;color:#AFC2D6;}
+
+.compliance-band{
+  background:var(--pine-deep);color:#EEE9DA;border-radius:var(--r-xl);padding:64px 56px;
+  border:1px solid #1F4064;
+}
+.compliance-band .section-head p{color:#C2D2E4;}
+.compliance-band .section-head{color:#EEE9DA;}
+.compliance-band .section-head h2{color:#EEE9DA;}
+.compliance-band .flow-step .flow-num{background:var(--brass);color:var(--pine-deep);}
+.compliance-band .flow-step h4{color:#EEE9DA;}
+.compliance-band .flow-step p{color:#AFC2D6;}
+@media(max-width:720px){.compliance-band{padding:48px 26px;}}
+
+/* capability sections */
+.capability{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:88px 0;}
+.capability:nth-child(even){direction:rtl;}
+.capability:nth-child(even) > *{direction:ltr;}
+@media(max-width:940px){.capability{grid-template-columns:1fr;gap:36px;direction:ltr !important;padding:56px 0;}
+  .capability > *{direction:ltr !important;}}
+.capability-copy .cap-index{font-family:var(--display);font-size:0.95rem;color:var(--brass);font-weight:600;}
+.capability-copy h3{font-size:clamp(1.7rem,3vw,2.3rem);margin-top:14px;}
+.capability-copy p{margin-top:18px;color:var(--ink-soft);font-size:1.03rem;line-height:1.65;max-width:44ch;}
+.cap-points{margin-top:26px;display:flex;flex-direction:column;gap:12px;}
+.cap-point{display:flex;gap:10px;align-items:flex-start;font-size:0.92rem;color:var(--ink-soft);}
+.cap-point svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--pine);}
+.cap-credit{margin-top:28px;display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border:1px solid var(--line);border-radius:999px;font-size:0.85rem;color:var(--ink-soft);}
+.cap-credit b{color:var(--ink);}
+
+/* trust: founder line (fix 1) — quiet */
+.founder-line{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:-32px;font-size:0.86rem;color:var(--ink-faint);text-align:center;}
+.founder-line img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid var(--line);flex:none;}
+.founder-line b{color:var(--ink-soft);font-weight:600;}
+.founder-line a{color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;}
+.founder-line a:hover{color:var(--ink);}
+@media(max-width:760px){.founder-line{margin-top:-20px;font-size:0.82rem;padding:0 8px;}}
+
+/* trust: payment marks (fix 2) */
+.pay-trust{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 34px;margin-top:34px;font-size:0.84rem;color:var(--ink-faint);}
+.pay-trust span{display:inline-flex;align-items:center;gap:8px;}
+.pay-trust svg{width:15px;height:15px;color:var(--pine);flex:none;}
+.pay-trust b{color:var(--ink-soft);font-weight:600;}
+
+/* trust: real numbers (fix 4) */
+.proof-line{display:inline-flex;align-items:center;gap:9px;margin-top:22px;padding:9px 16px;border:1px solid var(--line);border-radius:999px;font-size:0.82rem;color:var(--ink-soft);}
+.proof-line svg{width:14px;height:14px;color:var(--pine);flex:none;}
+.guard .n{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--brass);display:block;margin-bottom:10px;}
+.guard p b{color:#EEE9DA;font-weight:600;}
+.guard a{color:#EEE9DA;text-decoration:underline;text-underline-offset:3px;}
+
+/* pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:20px;}
+@media(max-width:860px){.pricing-grid{grid-template-columns:1fr;}}
+.price-card{padding:36px 30px;position:relative;}
+.price-card.featured{border-color:var(--pine);box-shadow:0 20px 40px -24px rgba(10,25,45,.4);}
+.price-card .featured-tag{position:absolute;top:-13px;left:30px;background:var(--pine);color:#0A1017;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;padding:5px 12px;border-radius:999px;}
+.price-card h4{font-size:1.05rem;color:var(--ink-soft);font-weight:600;}
+.price-card .price-num{font-family:var(--display);font-size:2.6rem;margin:14px 0 4px;color:var(--ink);}
+.price-card .price-num small{font-size:1rem;font-weight:500;color:var(--ink-faint);}
+.price-card .price-credits{font-size:0.85rem;color:var(--ink-faint);margin-bottom:26px;}
+.price-list{list-style:none;padding:0;margin:0 0 28px;display:flex;flex-direction:column;gap:10px;font-size:0.86rem;color:var(--ink-soft);}
+.price-list li{display:flex;gap:8px;}
+.price-list svg{width:16px;height:16px;color:var(--pine);flex:none;margin-top:2px;}
+
+.site-footer{background:#0A0E14;color:#C4CDD8;padding:64px 0 32px;border-top:1px solid var(--line);}
+.footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;}
+@media(max-width:780px){.footer-grid{grid-template-columns:1fr 1fr;}}
+.footer-grid h5{color:#7C8896;font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:16px;font-weight:600;}
+.footer-grid ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;font-size:0.88rem;}
+.footer-grid ul a:hover{color:#fff;}
+.footer-bottom{margin-top:56px;padding-top:24px;border-top:1px solid #27303E;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:0.8rem;color:#6B7684;}
+
+/* ============================================================
+   PHOTO FRAMES
+   Every room visual is a real photograph; the frame just crops it to
+   the container and gives uploads their preview treatment.
+   ============================================================ */
+.photo-frame{position:relative;width:100%;height:100%;border-radius:inherit;overflow:hidden;background:#0A0D12;}
+.photo-img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ============================================================
+   APP SHELL (dark canvas)
+   ============================================================ */
+.studio{background:var(--studio-bg);color:var(--studio-text);min-height:100vh;}
+.studio-topbar{
+  position:sticky;top:0;z-index:30;background:rgba(12,17,24,.9);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--studio-line);
+}
+.studio-topbar-row{display:flex;align-items:center;justify-content:space-between;height:68px;}
+.studio-nav{display:flex;align-items:center;gap:6px;}
+.studio-nav a{
+  padding:9px 15px;border-radius:999px;font-size:0.87rem;font-weight:500;color:var(--studio-text-soft);
+  display:flex;align-items:center;gap:7px;transition:background .15s ease,color .15s ease;
+}
+.studio-nav a:hover{color:var(--studio-text);background:var(--studio-surface-2);}
+.studio-nav a.active{background:var(--studio-surface-2);color:var(--studio-text);}
+.studio-nav svg{width:16px;height:16px;}
+@media(max-width:900px){.studio-nav span.nav-label{display:none;}}
+
+.credit-chip{
+  display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);font-size:0.85rem;font-weight:600;
+}
+.credit-chip svg{width:15px;height:15px;color:var(--studio-brass);}
+
+.crumbs{display:flex;align-items:center;gap:8px;font-size:0.83rem;color:var(--studio-text-faint);padding:20px 0 0;flex-wrap:wrap;}
+.crumbs a{color:var(--studio-text-soft);}
+.crumbs a:hover{color:var(--studio-text);}
+.crumbs .sep{opacity:.5;}
+.crumbs .current{color:var(--studio-text);font-weight:600;}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:18px 0 32px;flex-wrap:wrap;}
+.page-head h1{font-size:2rem;color:var(--studio-text);}
+.page-head p{color:var(--studio-text-soft);margin-top:8px;font-size:0.95rem;}
+
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+@media(max-width:960px){.grid-3{grid-template-columns:repeat(2,1fr);}.grid-4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+/* dashboard stat cards */
+.stat-row{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:20px;margin-bottom:40px;}
+@media(max-width:820px){.stat-row{grid-template-columns:1fr;}}
+.stat-card{padding:26px 28px;}
+.stat-card .stat-label{font-size:0.78rem;color:var(--studio-text-faint);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
+.stat-card .stat-value{font-family:var(--display);font-size:2.3rem;margin-top:10px;color:var(--studio-text);font-variant-numeric:tabular-nums;}
+.stat-card .stat-sub{font-size:0.85rem;color:var(--studio-text-soft);margin-top:8px;}
+
+/* listing card */
+.listing-card{overflow:hidden;cursor:pointer;}
+.listing-card:hover{transform:translateY(-3px);border-color:#3d4f45;}
+.listing-thumb{aspect-ratio:4/3;position:relative;}
+.listing-info{padding:20px 22px 22px;}
+.listing-info .addr{font-family:var(--display);font-size:1.15rem;color:var(--studio-text);}
+.listing-info .city{font-size:0.85rem;color:var(--studio-text-soft);margin-top:4px;}
+.listing-meta{display:flex;gap:16px;margin-top:16px;font-size:0.78rem;color:var(--studio-text-faint);}
+.listing-meta span{display:flex;align-items:center;gap:5px;}
+.listing-meta svg{width:13px;height:13px;}
+
+.recent-row{display:flex;align-items:center;gap:16px;padding:16px 0;}
+.recent-row + .recent-row{border-top:1px solid var(--studio-line);}
+.recent-thumb{width:56px;height:56px;border-radius:var(--r-md);overflow:hidden;flex:none;}
+.recent-body{flex:1;min-width:0;}
+.recent-body .r-title{font-size:0.92rem;font-weight:600;color:var(--studio-text);}
+.recent-body .r-sub{font-size:0.8rem;color:var(--studio-text-soft);margin-top:3px;}
+
+/* photo gallery */
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:960px){.photo-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:640px){.photo-grid{grid-template-columns:repeat(2,1fr);}}
+.photo-tile{position:relative;aspect-ratio:4/3;border-radius:var(--r-md);overflow:hidden;cursor:pointer;border:1px solid var(--studio-line);transition:transform .2s ease;}
+.photo-tile:hover{transform:scale(1.02);}
+.photo-tile .tile-badge{position:absolute;top:8px;left:8px;background:rgba(12,17,24,.78);color:var(--studio-brass);font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 8px;border-radius:999px;}
+.photo-tile .tile-room{position:absolute;bottom:8px;left:8px;color:#fff;font-size:0.72rem;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.5);}
+
+/* photo viewer */
+/* minmax(0,1fr): a plain 1fr track's min-size is content-based, and the
+   stage's aspect-ratio transfers the (taller) side panel's row height into
+   a min-content WIDTH, inflating the track until the panel overflows the
+   page. Clamping the min to 0 keeps the stage at the free space. */
+.viewer-shell{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:0;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--studio-line);}
+@media(max-width:900px){.viewer-shell{grid-template-columns:1fr;}}
+.viewer-stage{position:relative;background:#090D13;aspect-ratio:3/2;}
+.viewer-side{background:var(--studio-surface);padding:26px;display:flex;flex-direction:column;gap:22px;}
+.viewer-toggle{display:inline-flex;background:var(--studio-surface-3);border-radius:999px;padding:4px;gap:4px;align-self:flex-start;}
+.viewer-toggle button{padding:8px 16px;border-radius:999px;border:none;background:transparent;color:var(--studio-text-soft);font-size:0.82rem;font-weight:600;}
+.viewer-toggle button.active{background:var(--studio-pine);color:#0A1017;}
+.filmstrip{display:flex;gap:10px;overflow-x:auto;padding:16px 0 4px;}
+.filmstrip img,.filmstrip .fs-item{width:64px;height:48px;border-radius:6px;flex:none;border:2px solid transparent;cursor:pointer;overflow:hidden;}
+.filmstrip .fs-item.active{border-color:var(--studio-pine);}
+
+/* AI studio */
+.studio-shell{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--studio-line);}
+@media(max-width:940px){.studio-shell{grid-template-columns:1fr;}}
+.studio-stage{background:#090D13;position:relative;aspect-ratio:3/2;display:flex;align-items:center;justify-content:center;}
+.studio-stage .ba{width:100%;height:100%;border-radius:0;border:none;box-shadow:none;}
+.studio-panel{background:var(--studio-surface);display:flex;flex-direction:column;}
+.tf-tabs{display:flex;border-bottom:1px solid var(--studio-line);}
+.tf-tab{flex:1;padding:16px 8px;text-align:center;font-size:0.82rem;font-weight:600;color:var(--studio-text-faint);border-bottom:2px solid transparent;}
+.tf-tab.active{color:var(--studio-text);border-color:var(--studio-pine);}
+.tf-body{padding:24px;display:flex;flex-direction:column;gap:22px;flex:1;}
+.tf-desc{font-size:0.86rem;color:var(--studio-text-soft);line-height:1.55;}
+.opt-label{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--studio-text-faint);font-weight:700;margin-bottom:10px;}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.opt-chip{
+  padding:11px 12px;border-radius:var(--r-md);border:1px solid var(--studio-line);background:var(--studio-surface-2);
+  font-size:0.83rem;font-weight:600;color:var(--studio-text-soft);text-align:left;transition:all .15s ease;
+}
+.opt-chip:hover{border-color:#456;}
+.opt-chip.selected{border-color:var(--studio-pine);background:rgba(78,143,208,.14);color:var(--studio-text);}
+.opt-chip .swatch{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;}
+.tf-footer{margin-top:auto;padding:20px 24px;border-top:1px solid var(--studio-line);display:flex;flex-direction:column;gap:14px;}
+.cost-row{display:flex;align-items:center;justify-content:space-between;font-size:0.88rem;color:var(--studio-text-soft);}
+.cost-row b{color:var(--studio-text);font-size:1rem;}
+.demo-toggle{
+  display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--studio-text-faint);
+  border:1px dashed var(--studio-line);border-radius:var(--r-sm);padding:8px 10px;
+}
+.demo-toggle input{accent-color:var(--studio-terracotta);}
+
+/* watermark tag on generated images — small, discreet, bottom-right.
+   (Production bakes the disclosure into the file server-side; size and
+   wording stay configurable there.) */
+.wm-badge{
+  position:absolute;left:12px;top:12px;
+  background:rgba(9,13,19,.62);color:rgba(242,245,249,.85);
+  padding:4px 9px;border-radius:4px;font-size:0.58rem;font-weight:600;letter-spacing:0.07em;
+  text-transform:uppercase;white-space:nowrap;backdrop-filter:blur(2px);
+}
+.studio-stage .photo-frame{width:100%;height:100%;border-radius:0;}
+.result-stage .ba{width:100%;height:100%;border-radius:0;border:none;box-shadow:none;}
+.ba-layer .wm-badge{top:54px;left:16px;}
+
+/* generation overlay */
+.overlay{position:fixed;inset:0;background:rgba(7,10,15,.72);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+.overlay-card{width:100%;max-width:440px;background:var(--studio-surface);border:1px solid var(--studio-line);border-radius:var(--r-xl);padding:40px 36px;}
+.gen-steps{display:flex;flex-direction:column;gap:0;margin-top:28px;}
+.gen-step{display:flex;align-items:center;gap:14px;padding:11px 0;font-size:0.9rem;color:var(--studio-text-faint);}
+.gen-step .gs-icon{width:22px;height:22px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--studio-line);}
+.gen-step.done{color:var(--studio-text);}
+.gen-step.done .gs-icon{background:var(--studio-pine);border-color:var(--studio-pine);}
+.gen-step.done .gs-icon svg{width:12px;height:12px;color:#0A1017;}
+.gen-step.active{color:var(--studio-text);}
+.gen-step.active .gs-icon{border-color:var(--studio-pine);}
+.gen-step.failed .gs-icon{background:var(--studio-terracotta);border-color:var(--studio-terracotta);}
+.gen-step.failed{color:var(--studio-terracotta);}
+.spin{width:10px;height:10px;border-radius:50%;border:2px solid var(--studio-line);border-top-color:var(--studio-pine);animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.result-fail{text-align:center;padding:20px 6px 6px;}
+.result-fail .fail-icon{width:56px;height:56px;border-radius:50%;background:rgba(225,122,92,.14);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;}
+.result-fail .fail-icon svg{width:26px;height:26px;color:var(--studio-terracotta);}
+
+/* result screen */
+.result-shell{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;}
+@media(max-width:940px){.result-shell{grid-template-columns:1fr;}}
+.result-stage{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--studio-line);aspect-ratio:3/2;background:#090D13;}
+.result-actions{display:flex;flex-direction:column;gap:12px;}
+
+/* credits */
+.pack-card{padding:30px 26px;position:relative;}
+.pack-card.best{border-color:var(--studio-pine);}
+.pack-card .best-tag{position:absolute;top:-12px;left:26px;background:var(--studio-pine);color:#0A1017;font-size:0.65rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:5px 11px;border-radius:999px;}
+
+/* history table */
+.hist-table{width:100%;border-collapse:collapse;font-size:0.87rem;}
+.hist-table th{text-align:left;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--studio-text-faint);font-weight:700;padding:0 14px 12px;border-bottom:1px solid var(--studio-line);}
+.hist-table td{padding:14px;border-bottom:1px solid var(--studio-line);color:var(--studio-text-soft);vertical-align:middle;}
+.hist-table tr:last-child td{border-bottom:none;}
+.hist-thumb{width:52px;height:40px;border-radius:6px;overflow:hidden;}
+.hist-table .h-type{color:var(--studio-text);font-weight:600;}
+.filter-row{display:flex;gap:8px;margin-bottom:22px;}
+.filter-chip{padding:8px 16px;border-radius:999px;border:1px solid var(--studio-line);font-size:0.82rem;font-weight:600;color:var(--studio-text-soft);background:var(--studio-surface);}
+.filter-chip.active{background:var(--studio-pine);color:#0A1017;border-color:var(--studio-pine);}
+
+/* ---------- mobile app chrome ----------
+   On phones the app gets native-app chrome instead of shrunk desktop UI:
+   a fixed bottom tab bar (matching the eventual iOS app), an icon-only
+   top bar, and tighter marketing rhythm. */
+.tabbar{display:none;}
+@media(max-width:640px){
+  .studio-nav{display:none;}
+  .studio-topbar-row{height:58px;}
+  .studio-topbar .mark > span{display:none;}
+  .studio{padding-bottom:78px;}
+  .tabbar{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
+    background:rgba(12,17,24,.96);backdrop-filter:blur(12px);
+    border-top:1px solid var(--studio-line);
+    padding:6px 6px calc(8px + env(safe-area-inset-bottom));
+    justify-content:space-around;
+  }
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:0.6rem;font-weight:600;color:var(--studio-text-faint);padding:4px 10px;border-radius:10px;}
+  .tabbar a.active{color:var(--studio-pine);}
+  .tabbar svg{width:20px;height:20px;}
+  .page-head{padding:12px 0 22px;}
+  .page-head h1{font-size:1.5rem;}
+  .crumbs{padding-top:14px;}
+  /* marketing rhythm on small screens */
+  .site-nav-cta .btn-quiet{display:none;}
+  .site-nav-row{height:64px;}
+  .hero{padding:44px 0 20px;}
+  .hero-proof{gap:18px;}
+  .section{padding:60px 0;}
+  .capability{padding:38px 0;}
+  .compliance-band{padding:40px 22px;}
+  .marquee{padding:18px 0;} .marquee-track{gap:28px;}
+}
+
+/* ---------- preview treatments for an uploaded photo ----------
+   An upload has no AI result yet, so its "after" is an honest CSS
+   approximation of the transformation — never a claim about what the
+   model will actually return. Seeded photos never use these; they show
+   real pipeline output. */
+.photo-frame.fx-after .photo-img{filter:brightness(1.04) contrast(1.03);}
+.photo-frame.fx-golden .photo-img{filter:brightness(.82) saturate(1.2) contrast(1.05);}
+.photo-frame.fx-dusk .photo-img{filter:brightness(.68) saturate(1.15) contrast(1.07);}
+.photo-frame.fx-blue .photo-img{filter:brightness(.55) saturate(1.25) contrast(1.1);}
+.photo-frame.fx-golden::after,.photo-frame.fx-dusk::after,.photo-frame.fx-blue::after{
+  content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;
+}
+.photo-frame.fx-golden::after{background:linear-gradient(180deg,#FBB558 0%,#C77955 45%,#6E4A66 100%);opacity:.6;}
+.photo-frame.fx-dusk::after{background:linear-gradient(180deg,#8D6E90 0%,#4C5B85 50%,#1F2645 100%);opacity:.68;}
+.photo-frame.fx-blue::after{background:linear-gradient(180deg,#42527D 0%,#212D54 55%,#0C1330 100%);opacity:.74;}
+.source-tag{display:inline-flex;align-items:center;gap:6px;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--studio-text-faint);border:1px solid var(--studio-line);padding:4px 10px;border-radius:999px;}
+.upload-tile{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  aspect-ratio:4/3;border-radius:var(--r-md);border:1.5px dashed var(--studio-line);
+  color:var(--studio-text-faint);font-size:0.85rem;font-weight:600;cursor:pointer;
+  transition:border-color .15s ease,color .15s ease;background:var(--studio-surface);
+}
+.upload-tile:hover{border-color:var(--studio-pine);color:var(--studio-text-soft);}
+.upload-tile svg{width:26px;height:26px;}
+.modal-field{margin-bottom:16px;}
+.modal-field label{display:block;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--studio-text-faint);font-weight:700;margin-bottom:8px;}
+.modal-field input{
+  width:100%;background:var(--studio-surface-2);border:1px solid var(--studio-line);border-radius:var(--r-md);
+  padding:12px 16px;color:var(--studio-text);font-family:var(--ui);font-size:0.95rem;outline:none;
+}
+.modal-field input:focus{border-color:var(--studio-pine);}
+
+/* service-paused banner (driven by the owner kill switch in production) */
+.svc-banner{background:rgba(224,99,47,.13);border-bottom:1px solid rgba(224,99,47,.32);color:#E8926F;font-size:0.85rem;font-weight:600;text-align:center;padding:10px 18px;}
+
+.toast-stack{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.toast{background:#F7FAFD;color:#141B24;padding:13px 22px;border-radius:999px;font-size:0.87rem;font-weight:600;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);display:flex;align-items:center;gap:9px;animation:toastIn .3s ease;}
+.toast svg{width:15px;height:15px;color:var(--studio-pine);}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.empty-state{text-align:center;padding:70px 20px;color:var(--studio-text-soft);}
+.reveal{animation:fadeUp .5s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+</style>
+
+<div id="toast-root" class="toast-stack"></div>
+<div id="app" data-ssr="1"><!--ssr:start-->
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+  <div class="site">
+    
+  <!-- TEMPORARY (30 Aug 2026, beta): its own strip at the very top, above the
+       header, covering nothing. Invited agents arrive holding a promo code,
+       and without this they'd see only pricing and assume they were sent here
+       to buy. Links straight to the redeem field in the studio. Remove when
+       the beta-code wave is over. -->
+  <div style="background:var(--paper-2);border-bottom:1px solid var(--line);text-align:center;padding:9px 14px">
+    <a href="/app#promo" style="color:var(--pine);font-weight:600;font-size:14.5px;text-decoration:none">
+      Have a code? Redeem it here — no purchase needed &rarr;
+    </a>
+  </div>
+  <header class="site-nav">
+    <div class="wrap site-nav-row">
+      <a href="#/" class="mark"><img src="/logo-full.png" alt="" width="27" height="27" style="display:block" loading="eager" decoding="async"><span>Listing&nbsp;<span class="lab">Lab</span></span></a>
+      <nav class="site-nav-links">
+        <a href="#how">Capabilities</a>
+        <a href="#compliance">Compliance</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="site-nav-cta" id="siteNavCta">
+        <a href="/app" class="btn btn-quiet">Sign In</a>
+        <a href="/app" class="btn btn-primary btn-sm">Create an account</a>
+      </div>
+    </div>
+  </header>
+    
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="reveal">
+        <a class="eyebrow hero-eyebrow" href="/founder" style="text-decoration:none;color:inherit">Photographer-built &rarr;</a>
+        <h1>AI enhancement built for <span class="grad">real estate.</span></h1>
+        <p class="hero-sub">Declutter, empty, stage and twilight your listing photos &mdash; every result checked before it reaches you.</p>
+        <div class="hero-cta">
+          <a href="/app" class="btn btn-primary">Create an account</a>
+          <a href="#pricing" class="btn btn-ghost">See Pricing</a>
+        </div>
+        <p class="hero-sub" style="font-size:0.9rem;opacity:.8;margin-top:10px">Pay-as-you-go credits from $19.99 &mdash; no subscription, and a result that fails our checks costs you nothing.</p>
+        <div class="hero-proof">
+          <div class="hero-proof-item"><b data-count="4">4</b>Transformations</div>
+          <div class="hero-proof-item"><b>Every</b>Image checked before delivery</div>
+          <div class="hero-proof-item"><b>Minutes</b>Photo in, result out</div>
+        </div>
+      </div>
+      <div class="reveal" style="animation-delay:.1s">
+        <!-- On phones the hero turns its own pages — a slow crossfade through
+             all four transformations, pausing whenever a thumb is on it, so
+             the comparison slider stays usable. Desktop keeps the single
+             staging example: the eye should rest on the proof (Kyle, 28 Aug
+             2026: "maybe just for mobile"). -->
+        <div class="hero-rotator" id="heroRotator">
+          <div class="hero-slide on">
+  <div class="ba" id="ba17">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/kliv.empty.jpg" alt="Empty living room with vaulted ceiling, fireplace and light oak floors, as photographed" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/kliv.staged.jpg" alt="The same living room virtually staged with a grey sofa, two armchairs and a round side table" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Original</div>
+    <div class="ba-tag tag-after">Virtually Staged</div>
+    <div class="ba-handle" data-ba="ba17"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+          <div class="hero-slide">
+  <div class="ba" id="ba18">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/ext.day.jpg" alt="Grey shingled Cape-style house with attached garage, photographed in daylight" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/ext.dusk.jpg" alt="The same house as a virtual twilight — dusk sky and warm window light, house and landscaping unchanged" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Daylight</div>
+    <div class="ba-tag tag-after">Dusk</div>
+    <div class="ba-handle" data-ba="ba18"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+          <div class="hero-slide">
+  <div class="ba" id="ba19">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/bed1.occ.jpg" alt="Cluttered bedroom before decluttering — laundry, bags and boxes piled on the bed and floor" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/bed1.declut.jpg" alt="The same bedroom virtually decluttered — bed made, floor and dresser cleared, TV and curtains untouched" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Original</div>
+    <div class="ba-tag tag-after">Decluttered</div>
+    <div class="ba-handle" data-ba="ba19"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+          <div class="hero-slide">
+  <div class="ba" id="ba20">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/bed2.occ.jpg" alt="Furnished dining room before emptying — table, china cabinet, rug and wall art" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/bed2.empty.jpg" alt="The same dining room virtually emptied — chandelier, windows and hardwood floor unchanged" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Occupied</div>
+    <div class="ba-tag tag-after">Virtually Emptied</div>
+    <div class="ba-handle" data-ba="ba20"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+        </div>
+        <div class="hero-dots" id="heroDots" aria-label="Hero examples">
+          <button type="button" class="on" aria-label="Example 1"></button><button type="button" class="" aria-label="Example 2"></button><button type="button" class="" aria-label="Example 3"></button><button type="button" class="" aria-label="Example 4"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+    <div class="marquee"><div class="marquee-track"><span>Declutter</span><span style="color:var(--brass)">&middot;</span><span>Empty Room</span><span style="color:var(--brass)">&middot;</span><span>Virtual Staging</span><span style="color:var(--brass)">&middot;</span><span>Twilight</span><span style="color:var(--brass)">&middot;</span><span>Declutter</span><span style="color:var(--brass)">&middot;</span><span>Empty Room</span><span style="color:var(--brass)">&middot;</span><span>Virtual Staging</span><span style="color:var(--brass)">&middot;</span><span>Twilight</span><span style="color:var(--brass)">&middot;</span><span>Declutter</span><span style="color:var(--brass)">&middot;</span><span>Empty Room</span><span style="color:var(--brass)">&middot;</span><span>Virtual Staging</span><span style="color:var(--brass)">&middot;</span><span>Twilight</span><span style="color:var(--brass)">&middot;</span><span>Declutter</span><span style="color:var(--brass)">&middot;</span><span>Empty Room</span><span style="color:var(--brass)">&middot;</span><span>Virtual Staging</span><span style="color:var(--brass)">&middot;</span><span>Twilight</span><span style="color:var(--brass)">&middot;</span></div></div>
+    
+  <section class="wrap" id="how">
+    <div class="section-head" style="margin-bottom:0;">
+      <div class="eyebrow">Capabilities</div>
+      <h2>Four transformations. Zero guesswork.</h2>
+      <p>No prompt box. No free-form editing. Just what agents actually need, checked before it reaches you.</p>
+      <div class="proof-line"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Every example below is a real listing frame we shot, run through the product as-is &mdash; no mockups.</div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">01 — Declutter</div>
+        <h3>Clean the room. Keep the property.</h3>
+        <p>Removes movable clutter &mdash; boxes, laundry, loose furniture. Architecture, fixtures, floors and perspective stay put.</p>
+        <div class="cap-points">
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Walls, windows, floors and built-ins stay</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Only movable objects come out</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Your original is never overwritten</div>
+        </div>
+        <div class="cap-credit"><b>2 credits</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">
+  <div class="ba" id="ba21">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/bed1.occ.jpg" alt="Cluttered bedroom before decluttering — laundry, bags and boxes piled on the bed and floor" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/bed1.declut.jpg" alt="The same bedroom virtually decluttered — bed made, floor and dresser cleared, TV and curtains untouched" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Original</div>
+    <div class="ba-tag tag-after">Decluttered</div>
+    <div class="ba-handle" data-ba="ba21"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">02 — Empty Room</div>
+        <h3>Show the space, not the stuff.</h3>
+        <p>Clears every movable object so a lived-in room shows as vacant. Blinds, built-ins and heating stay &mdash; they're the property.</p>
+        <div class="cap-points">
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Handles rooms clutter removal can't</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Stage the emptied room afterward</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Never repaints or hides a flaw</div>
+        </div>
+        <div class="cap-credit"><b>2 credits</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">
+  <div class="ba" id="ba22">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/bed2.occ.jpg" alt="Furnished dining room before emptying — table, china cabinet, rug and wall art" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/bed2.empty.jpg" alt="The same dining room virtually emptied — chandelier, windows and hardwood floor unchanged" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Occupied</div>
+    <div class="ba-tag tag-after">Virtually Emptied</div>
+    <div class="ba-handle" data-ba="ba22"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">03 — Virtual Staging</div>
+        <h3>Stage empty rooms in minutes.</h3>
+        <p>Photorealistic furniture in five styles, furnished from scratch every time. Up to three versions with every staging &mdash; each one checked, keep the one you love.</p>
+        <div class="cap-points">
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Standard, Modern, Contemporary, Coastal, Luxury</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Add a note &mdash; a sectional, warm woods</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Two finished versions to choose from</div>
+        </div>
+        <div class="cap-credit"><b>2 credits</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">
+  <div class="ba" id="ba23">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/liv.day.jpg" alt="Empty open-plan living room and kitchen with white walls and oak floors, as photographed" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/liv.coastal.jpg" alt="The same living room virtually staged in a coastal style with a white sofa, blue armchairs and a brass coffee table" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Empty</div>
+    <div class="ba-tag tag-after">Staged · Coastal</div>
+    <div class="ba-handle" data-ba="ba23"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">04 — Twilight</div>
+        <h3>Turn daylight into dusk.</h3>
+        <p>A daylight exterior becomes a believable dusk photograph. Lighting and sky only &mdash; the property is untouched.</p>
+        <div class="cap-points">
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>A crisp, true-to-life twilight — never dark or moody</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Architecture and landscaping preserved</div>
+          <div class="cap-point"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Disclosed like every Listing Lab image — "Virtual twilight"</div>
+        </div>
+        <div class="cap-credit"><b>1 credit</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">
+  <div class="ba" id="ba24">
+    <div class="ba-layer ba-before"><div class="photo-frame "><img class="photo-img" src="/img/site/ext.day.jpg" alt="Grey shingled Cape-style house with attached garage, photographed in daylight" decoding="async"></div></div>
+    <div class="ba-layer ba-after"><div class="photo-frame "><img class="photo-img" src="/img/site/ext.dusk.jpg" alt="The same house as a virtual twilight — dusk sky and warm window light, house and landscaping unchanged" decoding="async"></div></div>
+    <div class="ba-tag tag-before">Daylight</div>
+    <div class="ba-tag tag-after">Dusk</div>
+    <div class="ba-handle" data-ba="ba24"><div class="ba-knob"><svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+  </div></div>
+    </div>
+  </section>
+    
+  <section class="section" id="compliance">
+    <div class="wrap">
+      <div class="compliance-band">
+        <div class="section-head">
+          <div class="eyebrow" style="color:var(--brass)">Product Philosophy</div>
+          <h2>Every image has to get past us first.</h2>
+          <p>Most AI staging ships whatever the image model returns. Ours clears seven gates first &mdash; two of them AI reviewers whose only job is to say no.</p>
+        </div>
+        <div class="flow">
+          
+            <div class="flow-step reveal" style="animation-delay:0s"><div class="flow-num">1</div><h4>Bounded Request</h4><p>Transformation, style and room type from a closed menu. Furnishing notes are translated, never handed to the model.</p></div>
+          
+            <div class="flow-step reveal" style="animation-delay:0.05s"><div class="flow-num">2</div><h4>Room Plan</h4><p>We measure the room first: doors, windows, switches, vents and every fixed feature that must survive the edit.</p></div>
+          
+            <div class="flow-step reveal" style="animation-delay:0.1s"><div class="flow-num">3</div><h4>Generation</h4><p>Several candidates are rendered in parallel, each inside the same structural guardrails for that room.</p></div>
+          
+            <div class="flow-step reveal" style="animation-delay:0.15000000000000002s"><div class="flow-num">4</div><h4>AI Compliance Review</h4><p>An AI vision model inspects the result against a written rulebook — three independent passes, majority decides.</p></div>
+          
+            <div class="flow-step reveal" style="animation-delay:0.2s"><div class="flow-num">5</div><h4>AI Realism Review</h4><p>A second vision model zooms into artwork, mirrors and rugs, hunting the flaws that give AI staging away.</p></div>
+          
+            <div class="flow-step reveal" style="animation-delay:0.25s"><div class="flow-num">6</div><h4>Disclosure</h4><p>A required disclosure watermark is applied to the finished image automatically — it cannot be turned off.</p></div>
+          
+            <div class="flow-step reveal" style="animation-delay:0.30000000000000004s"><div class="flow-num">7</div><h4>Delivery</h4><p>Only an image that clears all seven gates is released. Anything else is rejected and the credit returned.</p></div>
+          
+        </div>
+        <div class="guard-grid">
+          <div class="guard"><h4>What the compliance model checks</h4><p>Architecture, framing and camera unchanged. Nothing invented &mdash; no new windows, fixtures or light sources. Furniture scaled to the room. Doors that still open.</p></div>
+          <div class="guard"><h4>What the realism model checks</h4><p>The tells buyers spot up close: smeared artwork, melted furniture, mirrors reflecting a room that isn't there, floating rugs, trim eaten away behind a sofa.</p></div>
+          <div class="guard"><h4>Who sets the standard</h4><p>Reviews are automatic. The standard is human &mdash; <b>hundreds of real listing results</b>, each passed or failed by <a href="/founder">the photographer who built this</a>. When one slips through, the rule changes.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+    
+  <div class="wrap founder-line">
+    <img src="/img/site/kyle-face.jpg" alt="" width="30" height="30" loading="lazy" decoding="async">
+    <span>Built by a working real-estate photographer and former licensed agent. <a href="/founder">Who built this &rarr;</a></span>
+  </div>
+
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Pricing</div>
+        <h2>Simple, credit-based pricing.</h2>
+        <p>Pay for finished, checked results &mdash; never for a generation you can't use.</p>
+      </div>
+      <div class="pricing-grid">
+        
+          <div class="card price-card ">
+            
+            <h4>10 Credits</h4>
+            <div class="price-num">$19.99</div>
+            <div class="price-credits">$2.00 per credit</div>
+            <ul class="price-list">
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>5 Declutter, Empty Room or Virtual Staging edits (2 credits each)</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>10 Twilight edits (1 credit each) &mdash; mix and match</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Rejected results rerun automatically — up to 3 attempts, credits back if nothing passes</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Credits never expire</span></li>
+            </ul>
+            <a href="/app" class="btn btn-ghost btn-block">Create an account</a>
+          </div>
+        
+          <div class="card price-card featured">
+            <div class="featured-tag">Most Popular</div>
+            <h4>30 Credits</h4>
+            <div class="price-num">$56.99</div>
+            <div class="price-credits">$1.90 per credit</div>
+            <ul class="price-list">
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>15 Declutter, Empty Room or Virtual Staging edits (2 credits each)</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>30 Twilight edits (1 credit each) &mdash; mix and match</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Rejected results rerun automatically — up to 3 attempts, credits back if nothing passes</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Credits never expire</span></li>
+            </ul>
+            <a href="/app" class="btn btn-ghost btn-block">Create an account</a>
+          </div>
+        
+          <div class="card price-card ">
+            
+            <h4>75 Credits</h4>
+            <div class="price-num">$137.99</div>
+            <div class="price-credits">$1.84 per credit</div>
+            <ul class="price-list">
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>37 Declutter, Empty Room or Virtual Staging edits (2 credits each)</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>75 Twilight edits (1 credit each) &mdash; mix and match</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Rejected results rerun automatically — up to 3 attempts, credits back if nothing passes</span></li>
+              <li><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Credits never expire</span></li>
+            </ul>
+            <a href="/app" class="btn btn-ghost btn-block">Create an account</a>
+          </div>
+        
+      </div>
+      <div class="pay-trust">
+        <span><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>Payments by Stripe</b></span>
+        <span><svg viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M1.5 6.5h13" stroke="currentColor" stroke-width="1.6"/></svg>Card details never touch our servers</span>
+        <span><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Credits back on any job that doesn't pass</span>
+        <span><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>No subscription &mdash; buy credits when you need them</span>
+      </div>
+    </div>
+  </section>
+    
+  <section class="section" style="padding-top:0;">
+    <div class="wrap final-band">
+      <h2 style="font-size:clamp(1.9rem,3.5vw,2.6rem);">Ready to see your listings finished?</h2>
+      <p style="margin-top:16px;color:var(--ink-soft);max-width:48ch;margin-left:auto;margin-right:auto;">Open the studio, pick a transformation, and let the checks do the rest.</p>
+      <div class="hero-cta" style="justify-content:center;margin-top:30px;">
+        <a href="/app" class="btn btn-primary">Create an account</a>
+      </div>
+    </div>
+  </section>
+    
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <div class="mark" style="color:#fff;"><img src="/logo-full.png" alt="" width="27" height="27" style="display:block" loading="eager" decoding="async"><span>Listing&nbsp;<span class="lab">Lab</span></span></div>
+          <p style="margin-top:14px;font-size:0.87rem;max-width:32ch;color:#96A2B0;">A Horizon Home Media product. AI enhancement built for real estate — every image checked before delivery.</p>
+        </div>
+        <div><h5>Product</h5><ul><li><a href="#how">Capabilities</a></li><li><a href="#compliance">Compliance</a></li><li><a href="#pricing">Pricing</a></li></ul></div>
+        <div><h5>Studio</h5><ul><li><a href="/app">AI Studio</a></li><li><a href="/app">Listings</a></li><li><a href="/app">Credits</a></li></ul></div>
+        <div><h5>Company</h5><ul><li>Horizon Home Media</li><li><a href="/founder">Who built this</a></li><li><a href="/faq">FAQ</a></li><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="mailto:support@thelistinglab.app">support@thelistinglab.app</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Horizon Home Media. All rights reserved. · <a href="/terms" style="color:inherit">Terms</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/owner" style="color:inherit;opacity:.55">Owner</a></span>
+      </div>
+    </div>
+  </footer>
+  </div><!--ssr:end--></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   CONFIG — the closed set of everything the AI is allowed to do.
+   ============================================================ */
+const TRANSFORMS = {
+  declutter: {
+    key:'declutter', label:'Declutter', cost:1,
+    tagline:'Remove movable clutter while preserving the property.',
+    watermark:'Virtually Decluttered',
+  },
+  empty: {
+    key:'empty', label:'Empty Room', cost:1,
+    tagline:'Clear every movable object so the room shows as vacant — the property itself untouched.',
+    watermark:'Virtually Emptied',
+  },
+  staging: {
+    key:'staging', label:'Virtual Staging', cost:2,
+    tagline:'Add tasteful, photorealistic furniture to an empty room.',
+    watermark:'Virtually Staged',
+    styles:['Standard','Modern','Contemporary','Coastal','Luxury'],
+    rooms:['Living Room','Dining Room','Primary Bedroom','Guest Bedroom','Nursery / Kids Room','Basement / Rec Room','Home Office','Other'],
+  },
+  twilight: {
+    key:'twilight', label:'Twilight', cost:1,
+    tagline:'Convert a daylight exterior into a realistic dusk scene.',
+    watermark:'Virtual Twilight',
+    styles:['Dusk'],
+  },
+};
+const TIME_CLASS = {'Dusk':'dusk'};
+
+/* $2-anchored pricing with a shallow volume discount — sized against the
+   worst case (a credit's full 3 attempts burned ≈ $0.74 cost), not the average. */
+const PACKS = [
+  {credits:10, price:19.99},
+  {credits:30, price:56.99, best:true},
+  {credits:75, price:137.99},
+];
+
+/* ============================================================
+   MOCK DATA
+   ============================================================ */
+function seedListings(){
+  // Every frame below is a real Horizon Home Media photograph, and every
+  // "after" is real Listing Lab output that cleared the compliance and
+  // realism gates. img maps a display state (or a transformation) to a
+  // key in PHOTOS.
+  return [
+    { id:'l1', addr:'123 Main Street', city:'West Hartford, CT', videos:2,
+      photos:[
+        {id:'p1', room:'Exterior', type:'exterior', beforeState:'day',
+          img:{before:'ext.day', day:'ext.day', twilight:'ext.dusk', after:'ext.dusk'}},
+        {id:'p2', room:'Living Room', type:'living', beforeState:'empty',
+          img:{before:'liv.day', empty:'liv.day', declutter:'liv.day', after:'liv.coastal', staging:'liv.coastal'}},
+        {id:'p3', room:'Primary Bedroom', type:'bedroom', beforeState:'before',
+          img:{before:'bed1.occ', declutter:'bed1.declut', empty:'bed1.empty', after:'bed1.declut', staging:'bed1.staged'}},
+        {id:'p4', room:'Guest Bedroom', type:'bedroom', beforeState:'before',
+          img:{before:'bed2.occ', declutter:'bed2.declut', empty:'bed2.empty', after:'bed2.empty', staging:'bed2.staged'}},
+      ]},
+    { id:'l2', addr:'42 Oak Street', city:'Bristol, CT', videos:1,
+      photos:[
+        {id:'p5', room:'Living Room', type:'living', beforeState:'empty',
+          img:{before:'kliv.empty', empty:'kliv.empty', declutter:'kliv.empty', after:'kliv.staged', staging:'kliv.staged'}},
+        {id:'p6', room:'Primary Bedroom', type:'bedroom', beforeState:'empty',
+          img:{before:'kbed.empty', empty:'kbed.empty', declutter:'kbed.empty', after:'kbed.lux', staging:'kbed.lux'}},
+        {id:'p7', room:'Home Office', type:'office', beforeState:'empty',
+          img:{before:'koff.empty', empty:'koff.empty', declutter:'koff.empty', after:'koff.staged', staging:'koff.staged'}},
+        {id:'p8', room:'Exterior', type:'exterior', beforeState:'day',
+          img:{before:'col.day', day:'col.day', twilight:'col.dusk', after:'col.dusk'}},
+      ]},
+    { id:'l3', addr:'18 Harbor View Road', city:'Mystic, CT', videos:3,
+      photos:[
+        {id:'p9', room:'Dining Room', type:'dining', beforeState:'empty',
+          img:{before:'liv.day', empty:'liv.day', declutter:'liv.day', after:'liv.dining', staging:'liv.dining'}},
+        {id:'p10', room:'Living Room', type:'living', beforeState:'empty',
+          img:{before:'kliv.empty', empty:'kliv.empty', declutter:'kliv.empty', after:'kliv.staged', staging:'kliv.staged'}},
+        {id:'p11', room:'Guest Bedroom', type:'bedroom', beforeState:'empty',
+          img:{before:'kbed.empty', empty:'kbed.empty', declutter:'kbed.empty', after:'kbed.std', staging:'kbed.std'}},
+      ]},
+  ];
+}
+function seedHistory(){
+  return [
+    {id:'h1', listingId:'l2', listingAddr:'42 Oak Street', photoId:'p6', type:'staging', options:{style:'Luxury', room:'Primary Bedroom'}, date:'Aug 18, 2026', status:'approved', cost:2},
+    {id:'h2', listingId:'l1', listingAddr:'123 Main Street', photoId:'p4', type:'empty', options:{}, date:'Aug 17, 2026', status:'approved', cost:1},
+    {id:'h3', listingId:'l1', listingAddr:'123 Main Street', photoId:'p1', type:'twilight', options:{style:'Dusk'}, date:'Aug 15, 2026', status:'approved', cost:1},
+    {id:'h4', listingId:'l3', listingAddr:'18 Harbor View Road', photoId:'p9', type:'staging', options:{style:'Coastal', room:'Dining Room'}, date:'Aug 12, 2026', status:'rejected', cost:0},
+  ];
+}
+function seedResults(){
+  return {
+    r1: {id:'r1', listingId:'l2', photoId:'p6', type:'staging', options:{style:'Luxury', room:'Primary Bedroom'}, status:'approved', createdAt:1},
+    r2: {id:'r2', listingId:'l1', photoId:'p4', type:'empty', options:{}, status:'approved', createdAt:2},
+    r3: {id:'r3', listingId:'l1', photoId:'p1', type:'twilight', options:{style:'Dusk'}, status:'approved', createdAt:3},
+  };
+}
+
+/* ============================================================
+   STATE + PERSISTENCE
+   ============================================================ */
+const DEFAULT_STATE = { credits:12, listings:seedListings(), history:seedHistory(), results:seedResults(), jobs:{}, promos:[], userListings:[], service:{ salesPaused:false, genPaused:false },
+  auth:{ signedIn:false, name:'', email:'', company:'', via:'' } };
+let S = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('listinglab_state_v1');
+    if(raw){
+      const parsed = JSON.parse(raw);
+      const st = Object.assign({}, DEFAULT_STATE, parsed);
+      st.auth = Object.assign({}, DEFAULT_STATE.auth, parsed.auth||{});
+      // seeded "delivered shoot" listings always come fresh; user-created ones append
+      st.userListings = parsed.userListings || [];
+      st.listings = DEFAULT_STATE.listings.concat(st.userListings);
+      return st;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+function saveState(){
+  try{ localStorage.setItem('listinglab_state_v1', JSON.stringify({credits:S.credits, history:S.history, results:S.results, jobs:S.jobs, promos:S.promos, service:S.service, userListings:S.userListings, auth:S.auth})); }
+  catch(e){ /* quota exceeded (large uploads) — keep working in-memory */ }
+}
+
+/* Credit metering: one credit buys up to 3 generation attempts on the
+   same photo + enhancement. Attempts are tracked per job; a compliance
+   failure never consumes an attempt (and a charged failure refunds). */
+function jobKeyFor(photoId, type){ return photoId + '|' + type; }
+function jobFor(photoId, type){ return S.jobs[jobKeyFor(photoId, type)]; }
+function hasFreeAttempt(photoId, type){ const j = jobFor(photoId, type); return !!(j && j.attempts < 3); }
+
+function getListing(id){ return S.listings.find(l=>l.id===id); }
+function getPhoto(listingId, photoId){ const l=getListing(listingId); return l && l.photos.find(p=>p.id===photoId); }
+
+let nextId = 100;
+function uid(prefix){ nextId++; return prefix+'_'+Date.now().toString(36)+nextId; }
+
+/* ============================================================
+   ICONS (inline, original — simple geometric line icons)
+   ============================================================ */
+const ICON = {
+  google:`<svg viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>`,
+  /* The real Listing Lab logo (Kyle's, 28 Aug 2026) — replaces the old drawn
+     aperture-and-house placeholder mark everywhere the lockup appears. */
+  logoMark: `<img src="/logo-full.png" alt="" width="27" height="27" style="display:block" loading="eager" decoding="async">`,
+  check: `<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  checkCircle: `<svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5L8 14.5L16 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  arrow: `<svg viewBox="0 0 24 12" fill="none"><path d="M0 6H22M22 6L16 1M22 6L16 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  home: `<svg viewBox="0 0 20 20" fill="none"><path d="M3 9L10 3l7 6M5 8v8h10V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  listings: `<svg viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="4" rx="1" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="12" width="14" height="4" rx="1" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  studio: `<svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="4" width="15" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  credits: `<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 6.5v7M12.3 8.2c0-1-1-1.7-2.3-1.7-1.4 0-2.3.7-2.3 1.6 0 2.3 4.6 1.1 4.6 3.4 0 1-1 1.7-2.3 1.7-1.3 0-2.3-.7-2.3-1.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+  history: `<svg viewBox="0 0 20 20" fill="none"><path d="M3.5 10a6.5 6.5 0 1 1 2 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 6.5V10H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 6.5V10l2.6 1.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  account: `<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.2" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 16.2c1.2-3 3.6-4.5 6.5-4.5s5.3 1.5 6.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  photo: `<svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="3.5" width="15" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><circle cx="7" cy="8" r="1.6" stroke="currentColor" stroke-width="1.4"/><path d="M4 15l4.5-4.5 3 3 2-2 3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+  video: `<svg viewBox="0 0 20 20" fill="none"><rect x="2.5" y="5" width="10.5" height="10" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M13.5 9l4-2.5v7l-4-2.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+  download: `<svg viewBox="0 0 18 18" fill="none"><path d="M9 2.5v9M5.3 8.3L9 12l3.7-3.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14.5h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  save: `<svg viewBox="0 0 18 18" fill="none"><rect x="3" y="3" width="12" height="12" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M6 3v4h6V3" stroke="currentColor" stroke-width="1.6"/></svg>`,
+  share: `<svg viewBox="0 0 18 18" fill="none"><circle cx="14" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="4" cy="9" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.8 8L12.2 5M5.8 10L12.2 13" stroke="currentColor" stroke-width="1.5"/></svg>`,
+  again: `<svg viewBox="0 0 18 18" fill="none"><path d="M3.5 9a5.5 5.5 0 1 1 1.7 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 5.5V9h3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  x: `<svg viewBox="0 0 16 16" fill="none"><path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  warn: `<svg viewBox="0 0 20 20" fill="none"><path d="M10 3.5L18 16.5H2L10 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 8.5v3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="14.3" r=".9" fill="currentColor"/></svg>`,
+};
+
+/* ============================================================
+   PHOTOGRAPHY
+   Real Horizon Home Media frames, and real Listing Lab output.
+   Every "after" below came out of the pipeline and cleared the
+   compliance and realism gates — nothing here is a mock-up or a
+   stock photo. Encoded at 1200px so the whole studio ships as one
+   self-contained file.
+   ============================================================ */
+const PHOTO_ALT = {
+ "/img/site/liv.day.jpg": "Empty open-plan living room and kitchen with white walls and oak floors, as photographed",
+ "/img/site/liv.coastal.jpg": "The same living room virtually staged in a coastal style with a white sofa, blue armchairs and a brass coffee table",
+ "/img/site/liv.dining.jpg": "The same room virtually staged as a dining room with a wood table and six dark chairs",
+ "/img/site/liv.office.jpg": "The same room virtually staged as a home office with a wood desk and shelving",
+ "/img/site/bed1.occ.jpg": "Cluttered bedroom before decluttering — laundry, bags and boxes piled on the bed and floor",
+ "/img/site/bed1.declut.jpg": "The same bedroom virtually decluttered — bed made, floor and dresser cleared, TV and curtains untouched",
+ "/img/site/bed1.empty.jpg": "The same bedroom virtually emptied to bare walls and carpet",
+ "/img/site/bed1.staged.jpg": "The same bedroom virtually staged with a green upholstered bed, nightstands and art",
+ "/img/site/bed2.occ.jpg": "Furnished dining room before emptying — table, china cabinet, rug and wall art",
+ "/img/site/bed2.declut.jpg": "Attic bedroom virtually decluttered — box fan and loose items removed, bed and lamp kept",
+ "/img/site/bed2.empty.jpg": "The same dining room virtually emptied — chandelier, windows and hardwood floor unchanged",
+ "/img/site/bed2.staged.jpg": "The same attic bedroom virtually staged with a navy bed, striped rug and nightstands",
+ "/img/site/ext.day.jpg": "Grey shingled Cape-style house with attached garage, photographed in daylight",
+ "/img/site/ext.dusk.jpg": "The same house as a virtual twilight — dusk sky and warm window light, house and landscaping unchanged",
+ "/img/site/col.day.jpg": "White colonial house with a two-car garage and front lawn, photographed in daylight",
+ "/img/site/col.dusk.jpg": "The same colonial as a virtual twilight — sunset sky, lit windows, everything else as shot",
+ "/img/site/kliv.empty.jpg": "Empty living room with vaulted ceiling, fireplace and light oak floors, as photographed",
+ "/img/site/kliv.staged.jpg": "The same living room virtually staged with a grey sofa, two armchairs and a round side table",
+ "/img/site/kbed.empty.jpg": "Empty carpeted bedroom with ceiling fan and three windows, as photographed",
+ "/img/site/kbed.std.jpg": "The same bedroom virtually staged in a standard style with a grey bed, bench and patterned rug",
+ "/img/site/kbed.lux.jpg": "The same bedroom virtually staged in a luxury style with a white upholstered bed and cream bench",
+ "/img/site/koff.empty.jpg": "Empty room with blue walls, black chandelier and oak floor, as photographed",
+ "/img/site/koff.staged.jpg": "The same blue room virtually staged as a home office with a light wood desk and bookcase"
+};
+const PHOTOS = {
+  "liv.day":"/img/site/liv.day.jpg",
+  "liv.coastal":"/img/site/liv.coastal.jpg",
+  "liv.dining":"/img/site/liv.dining.jpg",
+  "liv.office":"/img/site/liv.office.jpg",
+  "bed1.occ":"/img/site/bed1.occ.jpg",
+  "bed1.declut":"/img/site/bed1.declut.jpg",
+  "bed1.empty":"/img/site/bed1.empty.jpg",
+  "bed1.staged":"/img/site/bed1.staged.jpg",
+  "bed2.occ":"/img/site/bed2.occ.jpg",
+  "bed2.declut":"/img/site/bed2.declut.jpg",
+  "bed2.empty":"/img/site/bed2.empty.jpg",
+  "bed2.staged":"/img/site/bed2.staged.jpg",
+  "ext.day":"/img/site/ext.day.jpg",
+  "ext.dusk":"/img/site/ext.dusk.jpg",
+  "col.day":"/img/site/col.day.jpg",
+  "col.dusk":"/img/site/col.dusk.jpg",
+  "kliv.empty":"/img/site/kliv.empty.jpg",
+  "kliv.staged":"/img/site/kliv.staged.jpg",
+  "kbed.empty":"/img/site/kbed.empty.jpg",
+  "kbed.std":"/img/site/kbed.std.jpg",
+  "kbed.lux":"/img/site/kbed.lux.jpg",
+  "koff.empty":"/img/site/koff.empty.jpg",
+  "koff.staged":"/img/site/koff.staged.jpg",
+};
+
+/* Frames that already carry the burned-in disclosure watermark, so the
+   UI never stacks a second badge on top of one. Twilight carries no
+   watermark — a relit sky is not a material misrepresentation. */
+const WATERMARKED = new Set(["liv.dining","liv.office","bed1.empty","bed1.staged","bed2.declut","bed2.staged","kbed.std","kbed.lux","koff.staged"]);
+
+/* Fallback set for a photo with no img map of its own (an uploaded photo
+   before it has been generated, or an unknown room type). */
+const TYPE_SETS = {
+  living:  {before:'liv.day',    empty:'liv.day',    declutter:'liv.day',    after:'liv.coastal', staging:'liv.coastal'},
+  bedroom: {before:'bed2.occ',   empty:'bed2.empty', declutter:'bed2.declut',after:'bed2.staged', staging:'bed2.staged'},
+  dining:  {before:'liv.day',    empty:'liv.day',    declutter:'liv.day',    after:'liv.dining',  staging:'liv.dining'},
+  office:  {before:'koff.empty', empty:'koff.empty', declutter:'koff.empty', after:'koff.staged', staging:'koff.staged'},
+  exterior:{before:'ext.day',    empty:'ext.day',    day:'ext.day',          after:'ext.dusk',    twilight:'ext.dusk'},
+};
+
+/**
+ * Which frame to show. state is before|empty|after|day|twilight; opts.tf,
+ * when present, is the transformation that produced the result, so an
+ * "after" resolves to the decluttered / emptied / staged frame rather
+ * than a generic one.
+ */
+/**
+ * The transformations a seeded photo can genuinely demonstrate: those whose
+ * result frame differs from the frame we show as the original.
+ */
+function offeredTransforms(photo){
+  if(!photo) return ['staging'];
+  if(photo.type === 'exterior') return ['twilight'];
+  if(photo.type === 'upload') return ['declutter','empty','staging','twilight'];
+  const m = photo.img || TYPE_SETS[photo.type] || TYPE_SETS.living;
+  const base = m[photo.beforeState === 'before' ? 'before' : 'empty'] || m.before;
+  return ['declutter','empty','staging'].filter(t => m[t] && m[t] !== base);
+}
+function assetKey(photo, state, opts){
+  const m = (photo && photo.img) || TYPE_SETS[(photo && photo.type)] || TYPE_SETS.living;
+  const tf = opts && opts.tf;
+  if((state === 'after' || state === 'twilight') && tf && m[tf]) return m[tf];
+  return m[state] || m.after || m.twilight || m.before || m.empty || m.day;
+}
+function photoSrc(photo, state, opts){
+  if(photo && photo.type === 'upload') return photo.src;
+  return PHOTOS[assetKey(photo, state, opts)] || '';
+}
+function isWatermarked(photo, state, opts){
+  if(photo && photo.type === 'upload') return false;
+  return WATERMARKED.has(assetKey(photo, state, opts));
+}
+/** A stand-in photo object for the marketing before/afters. */
+function pair(map){ return { type:'asset', img:map }; }
+
+
+let baCounter=0;
+
+/* Uploaded photos have no AI result until one is generated, so their
+   "after" preview is an honest CSS-filter approximation, clearly a
+   preview — never a claim about what the model will return. */
+function uploadFxClass(state, opts){
+  if(state==='twilight'){ const t = TIME_CLASS[(opts&&(opts.time||opts.style))||'Dusk']||'dusk'; return 'fx-'+t; }
+  if(state==='after') return 'fx-after';
+  return '';
+}
+/**
+ * The single photo renderer. Seeded listings resolve to a real frame in
+ * PHOTOS; uploads render the file the user picked.
+ * state: before|empty|after|day|twilight   opts: {style, time, tf}
+ */
+function photoVisual(photo, state, opts){
+  const isUpload = photo && photo.type === 'upload';
+  const fx = isUpload ? uploadFxClass(state, opts) : '';
+  const src = photoSrc(photo, state, opts);
+  const alt = PHOTO_ALT[src] || (photo && photo.room) || 'Listing photograph';
+  return `<div class="photo-frame ${fx}"><img class="photo-img" src="${src}" alt="${alt}" decoding="async"></div>`;
+}
+/** Back-compat shim for call sites that only know a room type. */
+function room(type, state, opts){ return photoVisual({ type: type }, state, opts); }
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+function toast(msg){
+  const root = document.getElementById('toast-root');
+  const el = document.createElement('div');
+  el.className='toast';
+  el.innerHTML = ICON.checkCircle + `<span>${msg}</span>`;
+  root.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s ease'; setTimeout(()=>el.remove(),320); }, 2600);
+}
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+function go(hash){ location.hash = hash; }
+window.addEventListener('hashchange', render);
+// The build step calls this to bake the marketing markup into the HTML.
+window.__llRenderMarketing = renderMarketing;
+window.addEventListener('DOMContentLoaded', render);
+
+function parseRoute(){
+  const raw = location.hash.replace(/^#\/?/,'');
+  const seg = raw.split('/').filter(Boolean);
+  return seg;
+}
+
+const IN_PAGE_ANCHORS = ['how','compliance','pricing'];
+function render(){
+  const rawHash = location.hash.replace(/^#\/?/,'');
+  // Same-page anchor — let native scroll happen, don't rebuild the DOM. But
+  // ONLY once the page has been drawn: on a cold load of /#pricing (a reload,
+  // a bookmark, a shared link) nothing has been drawn yet, and returning here
+  // left the customer a blank page (pre-launch audit, 3 Sep 2026).
+  if(IN_PAGE_ANCHORS.includes(rawHash) && document.getElementById('app').firstChild){
+    // a cold load of /#pricing onto the pre-rendered markup still needs its behaviour wired once
+    const a = document.getElementById('app');
+    if(a.dataset.ssr === '1'){ delete a.dataset.ssr; afterMarketingRender(); }
+    return;
+  }
+  const seg = parseRoute();
+  // PRODUCTION FRONT DOOR: this page is the marketing site only. The app, and
+  // everything that signs a person in, is the real product at /app — the mock
+  // screens this prototype carried are never rendered here. Every old route
+  // that meant "use the product" now means exactly that.
+  // replace, not assign: an old #/signup link must not leave a history entry that re-redirects on Back (audit, 3 Sep 2026)
+  if(['app','signin','signup','forgot'].includes(seg[0])){ location.replace('/app'); return; }
+  const app = document.getElementById('app');
+  window.scrollTo(0,0);
+  if(seg[0] !== 'app'){
+    // PRE-RENDERED FRONT DOOR (4 Sep 2026). The marketing markup is baked into
+    // this file at build time (scripts/prerender-landing.mjs) so the page has
+    // its words before any script runs — for search engines, link previews,
+    // and anyone with scripts off. On the first paint we keep that markup and
+    // only wire the behaviour; every later route change rebuilds as before.
+    if(app.dataset.ssr === '1'){ delete app.dataset.ssr; afterMarketingRender(); return; }
+    app.innerHTML = renderMarketing();
+    afterMarketingRender();
+    return;
+  }
+  // the studio is behind the account wall
+  if(!isSignedIn()){ app.innerHTML = renderSignIn(); return; }
+  // app shell
+  let body = '';
+  let crumbs = [];
+  if(seg.length===1){ body = renderDashboard(); crumbs=[{label:'Dashboard'}]; }
+  else if(seg[1]==='listings'){ body = renderListingsGallery(); crumbs=[{label:'Listings'}]; }
+  else if(seg[1]==='credits'){ body = renderCredits(); crumbs=[{label:'Credits'}]; }
+  else if(seg[1]==='history'){ body = renderHistory(); crumbs=[{label:'History'}]; }
+  else if(seg[1]==='account'){ body = renderAccount(); crumbs=[{label:'Account'}]; }
+  else if(seg[1]==='listing'){
+    const listingId = seg[2];
+    const listing = getListing(listingId);
+    if(!listing){ body = renderNotFound(); }
+    else if(seg.length===3){ body = renderListingDetail(listing); crumbs=[{label:'Listings',href:'#/app/listings'},{label:listing.addr}]; }
+    else if(seg[3]==='photo'){
+      const photoId = seg[4];
+      const photo = getPhoto(listingId, photoId);
+      if(!photo){ body = renderNotFound(); }
+      else if(seg.length===5){ body = renderPhotoViewer(listing, photo); crumbs=[{label:'Listings',href:'#/app/listings'},{label:listing.addr,href:'#/app/listing/'+listing.id},{label:photo.room}]; }
+      else if(seg[5]==='studio'){ body = renderStudio(listing, photo); crumbs=[{label:'Listings',href:'#/app/listings'},{label:listing.addr,href:'#/app/listing/'+listing.id},{label:photo.room,href:'#/app/listing/'+listing.id+'/photo/'+photo.id},{label:'AI Studio'}]; }
+      else if(seg[5]==='result'){
+        const resultId = seg[6];
+        const result = S.results[resultId];
+        if(!result){ body = renderNotFound(); }
+        else{ body = renderResult(listing, photo, result); crumbs=[{label:'Listings',href:'#/app/listings'},{label:listing.addr,href:'#/app/listing/'+listing.id},{label:photo.room,href:'#/app/listing/'+listing.id+'/photo/'+photo.id},{label:'Result'}]; }
+      }
+    }
+  }
+  if(!body) body = renderNotFound();
+  app.innerHTML = renderAppShell(body, crumbs, seg);
+  afterAppRender(seg);
+}
+
+/* ============================================================
+   AUTH — prototype only. No credentials leave the browser and
+   nothing is verified; the Google button simulates the OAuth
+   handoff rather than ever asking for a Google password.
+   ============================================================ */
+function isSignedIn(){ return !!(S.auth && S.auth.signedIn); }
+function nameFromEmail(e){
+  const local=String(e||'').split('@')[0].replace(/[._-]+/g,' ').trim();
+  return local ? local.replace(/\b\w/g,c=>c.toUpperCase()) : 'There';
+}
+function initials(n){ return String(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+function authAside(){
+  const pts=[
+    'Every result cleared by two AI reviewers before it reaches you',
+    'Disclosure watermarks applied automatically',
+    'Your originals are never overwritten',
+  ];
+  return `
+  <aside class="auth-aside">
+    <a href="#/" class="mark">${ICON.logoMark}<span>Listing&nbsp;<span class="lab">Lab</span></span></a>
+    <div>
+      <h2>The AI photo studio that has to prove itself first.</h2>
+      <p>Declutter, empty, stage and twilight your listing photography — with a compliance stack standing between the model and your MLS.</p>
+      <div class="auth-points">
+        ${pts.map(p=>`<div class="auth-point">${ICON.check}<span>${p}</span></div>`).join('')}
+      </div>
+    </div>
+    <div style="font-size:0.78rem;color:#8FA8C2;">Horizon Home Media · Massachusetts</div>
+  </aside>`;
+}
+
+function renderSignIn(){
+  return `
+  <div class="auth-wrap">
+    ${authAside()}
+    <div class="auth-main"><div class="auth-card">
+      <a href="#/" class="auth-back">← Back to site</a>
+      <h1>Welcome back</h1>
+      <p class="auth-lede">Sign in to open the studio and pick up where you left off.</p>
+      <button class="oauth-btn" id="g-btn" onclick="LL.google('signin')">${ICON.google}<span>Continue with Google</span></button>
+      <div class="auth-or">or</div>
+      <form onsubmit="LL.signIn(event)" autocomplete="off">
+        <div class="field">
+          <label for="si-email">Work email</label>
+          <input id="si-email" type="email" required placeholder="you@yourbrokerage.com">
+        </div>
+        <div class="field">
+          <div class="field-row"><label for="si-pass">Password</label><a href="#/forgot">Forgot?</a></div>
+          <input id="si-pass" type="password" required placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Sign In</button>
+      </form>
+      <div class="auth-alt">New to Listing Lab? <a href="#/signup">Create an account</a></div>
+      <div class="proto-note"><b>Prototype.</b> This is a working demo of the sign-in flow — nothing is sent anywhere and no account is created. Any email and password will let you in, and "Continue with Google" simulates the redirect without touching a real Google account.</div>
+    </div></div>
+  </div>`;
+}
+
+function renderSignUp(){
+  return `
+  <div class="auth-wrap">
+    ${authAside()}
+    <div class="auth-main"><div class="auth-card">
+      <a href="#/" class="auth-back">← Back to site</a>
+      <h1>Create your account</h1>
+      <p class="auth-lede">Start with credits on us. No shoot required — upload any listing photo.</p>
+      <button class="oauth-btn" id="g-btn" onclick="LL.google('signup')">${ICON.google}<span>Sign up with Google</span></button>
+      <div class="auth-or">or</div>
+      <form onsubmit="LL.signUp(event)" autocomplete="off">
+        <div class="field"><label for="su-name">Your name</label><input id="su-name" required placeholder="Kyle Sremedia"></div>
+        <div class="field"><label for="su-co">Brokerage or business</label><input id="su-co" placeholder="Optional"></div>
+        <div class="field"><label for="su-email">Work email</label><input id="su-email" type="email" required placeholder="you@yourbrokerage.com"></div>
+        <div class="field"><label for="su-pass">Password</label><input id="su-pass" type="password" required placeholder="At least 8 characters" minlength="8"></div>
+        <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+      <div class="auth-alt">Already have an account? <a href="#/signin">Sign in</a></div>
+      <div class="proto-note"><b>Prototype.</b> Nothing is stored on a server and no email is sent — this is here so you can walk the flow.</div>
+    </div></div>
+  </div>`;
+}
+
+function renderForgot(sent){
+  return `
+  <div class="auth-wrap">
+    ${authAside()}
+    <div class="auth-main"><div class="auth-card">
+      <a href="#/signin" class="auth-back">← Back to sign in</a>
+      <h1>${sent?'Check your email':'Reset your password'}</h1>
+      <p class="auth-lede">${sent
+        ? 'If an account exists for that address, a reset link is on its way. The link expires in 30 minutes.'
+        : 'Enter the email you signed up with and we\'ll send a reset link.'}</p>
+      ${sent ? `<a href="#/signin" class="btn btn-primary btn-block">Back to Sign In</a>` : `
+      <form onsubmit="LL.forgot(event)" autocomplete="off">
+        <div class="field"><label for="fp-email">Work email</label><input id="fp-email" type="email" required placeholder="you@yourbrokerage.com"></div>
+        <button class="btn btn-primary btn-block" type="submit">Send Reset Link</button>
+      </form>`}
+      <div class="proto-note"><b>Prototype.</b> No email is actually sent.</div>
+    </div></div>
+  </div>`;
+}
+
+/* ============================================================
+   MARKETING PAGE
+   ============================================================ */
+function renderMarketing(){
+  // PREMIUM TREATMENT (31 Aug 2026, the approved refined design): aurora glow
+  // behind everything, capabilities before philosophy (the order Kyle approved
+  // on the demo), the rest of the layer lives in the premium <style>/<script>
+  // at the end of this file.
+  return `
+  <div class="aurora" aria-hidden="true"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+  <div class="site">
+    ${siteNav()}
+    ${hero()}
+    ${marquee()}
+    ${capabilitySections()}
+    ${complianceSection()}
+    ${pricingSection()}
+    ${finalCta()}
+    ${siteFooter()}
+  </div>`;
+}
+
+function siteNav(){
+  return `
+  <!-- TEMPORARY (30 Aug 2026, beta): its own strip at the very top, above the
+       header, covering nothing. Invited agents arrive holding a promo code,
+       and without this they'd see only pricing and assume they were sent here
+       to buy. Links straight to the redeem field in the studio. Remove when
+       the beta-code wave is over. -->
+  <div style="background:var(--paper-2);border-bottom:1px solid var(--line);text-align:center;padding:9px 14px">
+    <a href="/app#promo" style="color:var(--pine);font-weight:600;font-size:14.5px;text-decoration:none">
+      Have a code? Redeem it here — no purchase needed &rarr;
+    </a>
+  </div>
+  <header class="site-nav">
+    <div class="wrap site-nav-row">
+      <a href="#/" class="mark">${ICON.logoMark}<span>Listing&nbsp;<span class="lab">Lab</span></span></a>
+      <nav class="site-nav-links">
+        <a href="#how">Capabilities</a>
+        <a href="#compliance">Compliance</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <div class="site-nav-cta" id="siteNavCta">
+        <a href="/app" class="btn btn-quiet">Sign In</a>
+        <a href="/app" class="btn btn-primary btn-sm">Create an account</a>
+      </div>
+    </div>
+  </header>`;
+}
+
+function hero(){
+  return `
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="reveal">
+        <a class="eyebrow hero-eyebrow" href="/founder" style="text-decoration:none;color:inherit">Photographer-built &rarr;</a>
+        <h1>AI enhancement built for <span class="grad">real estate.</span></h1>
+        <p class="hero-sub">Declutter, empty, stage and twilight your listing photos &mdash; every result checked before it reaches you.</p>
+        <div class="hero-cta">
+          <a href="/app" class="btn btn-primary">Create an account</a>
+          <a href="#pricing" class="btn btn-ghost">See Pricing</a>
+        </div>
+        <p class="hero-sub" style="font-size:0.9rem;opacity:.8;margin-top:10px">Pay-as-you-go credits from $19.99 &mdash; no subscription, and a result that fails our checks costs you nothing.</p>
+        <div class="hero-proof">
+          <div class="hero-proof-item"><b data-count="4">4</b>Transformations</div>
+          <div class="hero-proof-item"><b>Every</b>Image checked before delivery</div>
+          <div class="hero-proof-item"><b>Minutes</b>Photo in, result out</div>
+        </div>
+      </div>
+      <div class="reveal" style="animation-delay:.1s">
+        <!-- On phones the hero turns its own pages — a slow crossfade through
+             all four transformations, pausing whenever a thumb is on it, so
+             the comparison slider stays usable. Desktop keeps the single
+             staging example: the eye should rest on the proof (Kyle, 28 Aug
+             2026: "maybe just for mobile"). -->
+        <div class="hero-rotator" id="heroRotator">
+          <div class="hero-slide on">${beforeAfter(null,'empty','after', {}, 'Original', 'Virtually Staged', pair({empty:'kliv.empty', after:'kliv.staged'}))}</div>
+          <div class="hero-slide">${beforeAfter(null,'day','twilight',{},'Daylight','Dusk', pair({day:'ext.day', twilight:'ext.dusk'}))}</div>
+          <div class="hero-slide">${beforeAfter(null,'before','after',{},'Original','Decluttered', pair({before:'bed1.occ', after:'bed1.declut'}))}</div>
+          <div class="hero-slide">${beforeAfter(null,'before','empty',{},'Occupied','Virtually Emptied', pair({before:'bed2.occ', empty:'bed2.empty'}))}</div>
+        </div>
+        <div class="hero-dots" id="heroDots" aria-label="Hero examples">
+          ${[0,1,2,3].map(i=>`<button type="button" class="${i===0?'on':''}" aria-label="Example ${i+1}"></button>`).join('')}
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function beforeAfter(type, beforeState, afterState, opts, beforeTag, afterTag, photoObj, afterExtra){
+  const bid = 'ba'+(++baCounter);
+  const subject = photoObj || { type: type };
+  const layer = (state)=> photoVisual(subject, state, opts);
+  return `
+  <div class="ba" id="${bid}">
+    <div class="ba-layer ba-before">${layer(beforeState)}</div>
+    <div class="ba-layer ba-after">${layer(afterState)}${afterExtra||''}</div>
+    <div class="ba-tag tag-before">${beforeTag||'Before'}</div>
+    <div class="ba-tag tag-after">${afterTag||'After'}</div>
+    <div class="ba-handle" data-ba="${bid}"><div class="ba-knob">${ICON.arrow}</div></div>
+  </div>`;
+}
+
+function marquee(){
+  // Just the four transformations, larger — the ticker is a product menu, not
+  // a feature dump (Kyle, 28 Aug 2026: the trust copy "felt copy-pasted" here;
+  // it lives elsewhere on the page). Repeated so the loop stays seamless.
+  const items=['Declutter','Empty Room','Virtual Staging','Twilight'];
+  const once = items.map(i=>`<span>${i}</span>`).join('<span style="color:var(--brass)">&middot;</span>')
+    + '<span style="color:var(--brass)">&middot;</span>';
+  const half = once + once;   // two menu passes per half so the track is wide enough
+  return `<div class="marquee"><div class="marquee-track">${half}${half}</div></div>`;
+}
+
+function complianceSection(){
+  const steps=[
+    {n:1,t:'Bounded Request',d:'Transformation, style and room type from a closed menu. Furnishing notes are translated, never handed to the model.'},
+    {n:2,t:'Room Plan',d:'We measure the room first: doors, windows, switches, vents and every fixed feature that must survive the edit.'},
+    {n:3,t:'Generation',d:'Several candidates are rendered in parallel, each inside the same structural guardrails for that room.'},
+    {n:4,t:'AI Compliance Review',d:'An AI vision model inspects the result against a written rulebook — three independent passes, majority decides.'},
+    {n:5,t:'AI Realism Review',d:'A second vision model zooms into artwork, mirrors and rugs, hunting the flaws that give AI staging away.'},
+    {n:6,t:'Disclosure',d:'A required disclosure watermark is applied to the finished image automatically — it cannot be turned off.'},
+    {n:7,t:'Delivery',d:'Only an image that clears all seven gates is released. Anything else is rejected and the credit returned.'},
+  ];
+  return `
+  <section class="section" id="compliance">
+    <div class="wrap">
+      <div class="compliance-band">
+        <div class="section-head">
+          <div class="eyebrow" style="color:var(--brass)">Product Philosophy</div>
+          <h2>Every image has to get past us first.</h2>
+          <p>Most AI staging ships whatever the image model returns. Ours clears seven gates first &mdash; two of them AI reviewers whose only job is to say no.</p>
+        </div>
+        <div class="flow">
+          ${steps.map((s,i)=>`
+            <div class="flow-step reveal" style="animation-delay:${i*0.05}s"><div class="flow-num">${s.n}</div><h4>${s.t}</h4><p>${s.d}</p></div>
+          `).join('')}
+        </div>
+        <div class="guard-grid">
+          <div class="guard"><h4>What the compliance model checks</h4><p>Architecture, framing and camera unchanged. Nothing invented &mdash; no new windows, fixtures or light sources. Furniture scaled to the room. Doors that still open.</p></div>
+          <div class="guard"><h4>What the realism model checks</h4><p>The tells buyers spot up close: smeared artwork, melted furniture, mirrors reflecting a room that isn't there, floating rugs, trim eaten away behind a sofa.</p></div>
+          <div class="guard"><h4>Who sets the standard</h4><p>Reviews are automatic. The standard is human &mdash; <b>hundreds of real listing results</b>, each passed or failed by <a href="/founder">the photographer who built this</a>. When one slips through, the rule changes.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function capabilitySections(){
+  return `
+  <section class="wrap" id="how">
+    <div class="section-head" style="margin-bottom:0;">
+      <div class="eyebrow">Capabilities</div>
+      <h2>Four transformations. Zero guesswork.</h2>
+      <p>No prompt box. No free-form editing. Just what agents actually need, checked before it reaches you.</p>
+      <div class="proof-line"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Every example below is a real listing frame we shot, run through the product as-is &mdash; no mockups.</div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">01 — Declutter</div>
+        <h3>Clean the room. Keep the property.</h3>
+        <p>Removes movable clutter &mdash; boxes, laundry, loose furniture. Architecture, fixtures, floors and perspective stay put.</p>
+        <div class="cap-points">
+          <div class="cap-point">${ICON.check}Walls, windows, floors and built-ins stay</div>
+          <div class="cap-point">${ICON.check}Only movable objects come out</div>
+          <div class="cap-point">${ICON.check}Your original is never overwritten</div>
+        </div>
+        <div class="cap-credit"><b>2 credits</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">${beforeAfter(null,'before','after',{},'Original','Decluttered', pair({before:'bed1.occ', after:'bed1.declut'}))}</div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">02 — Empty Room</div>
+        <h3>Show the space, not the stuff.</h3>
+        <p>Clears every movable object so a lived-in room shows as vacant. Blinds, built-ins and heating stay &mdash; they're the property.</p>
+        <div class="cap-points">
+          <div class="cap-point">${ICON.check}Handles rooms clutter removal can't</div>
+          <div class="cap-point">${ICON.check}Stage the emptied room afterward</div>
+          <div class="cap-point">${ICON.check}Never repaints or hides a flaw</div>
+        </div>
+        <div class="cap-credit"><b>2 credits</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">${beforeAfter(null,'before','empty',{},'Occupied','Virtually Emptied', pair({before:'bed2.occ', empty:'bed2.empty'}))}</div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">03 — Virtual Staging</div>
+        <h3>Stage empty rooms in minutes.</h3>
+        <p>Photorealistic furniture in five styles, furnished from scratch every time. Up to three versions with every staging &mdash; each one checked, keep the one you love.</p>
+        <div class="cap-points">
+          <div class="cap-point">${ICON.check}Standard, Modern, Contemporary, Coastal, Luxury</div>
+          <div class="cap-point">${ICON.check}Add a note &mdash; a sectional, warm woods</div>
+          <div class="cap-point">${ICON.check}Two finished versions to choose from</div>
+        </div>
+        <div class="cap-credit"><b>2 credits</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">${beforeAfter(null,'empty','after',{},'Empty','Staged · Coastal', pair({empty:'liv.day', after:'liv.coastal'}))}</div>
+    </div>
+    <div class="capability">
+      <div class="capability-copy reveal">
+        <div class="cap-index">04 — Twilight</div>
+        <h3>Turn daylight into dusk.</h3>
+        <p>A daylight exterior becomes a believable dusk photograph. Lighting and sky only &mdash; the property is untouched.</p>
+        <div class="cap-points">
+          <div class="cap-point">${ICON.check}A crisp, true-to-life twilight — never dark or moody</div>
+          <div class="cap-point">${ICON.check}Architecture and landscaping preserved</div>
+          <div class="cap-point">${ICON.check}Disclosed like every Listing Lab image — "Virtual twilight"</div>
+        </div>
+        <div class="cap-credit"><b>1 credit</b>&nbsp;per photo</div>
+      </div>
+      <div class="reveal">${beforeAfter(null,'day','twilight',{},'Daylight','Dusk', pair({day:'ext.day', twilight:'ext.dusk'}))}</div>
+    </div>
+  </section>`;
+}
+
+function pricingSection(){
+  return `
+  <div class="wrap founder-line">
+    <img src="/img/site/kyle-face.jpg" alt="" width="30" height="30" loading="lazy" decoding="async">
+    <span>Built by a working real-estate photographer and former licensed agent. <a href="/founder">Who built this &rarr;</a></span>
+  </div>
+
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">Pricing</div>
+        <h2>Simple, credit-based pricing.</h2>
+        <p>Pay for finished, checked results &mdash; never for a generation you can't use.</p>
+      </div>
+      <div class="pricing-grid">
+        ${PACKS.map(p=>`
+          <div class="card price-card ${p.best?'featured':''}">
+            ${p.best?'<div class="featured-tag">Most Popular</div>':''}
+            <h4>${p.credits} Credits</h4>
+            <div class="price-num">$${p.price.toFixed(2)}</div>
+            <div class="price-credits">$${(p.price/p.credits).toFixed(2)} per credit</div>
+            <ul class="price-list">
+              <li>${ICON.check}<span>${Math.floor(p.credits/2)} Declutter, Empty Room or Virtual Staging edits (2 credits each)</span></li>
+              <li>${ICON.check}<span>${Math.floor(p.credits/1)} Twilight edits (1 credit each) &mdash; mix and match</span></li>
+              <li>${ICON.check}<span>Rejected results rerun automatically — up to 3 attempts, credits back if nothing passes</span></li>
+              <li>${ICON.check}<span>Credits never expire</span></li>
+            </ul>
+            <a href="/app" class="btn btn-ghost btn-block">Create an account</a>
+          </div>
+        `).join('')}
+      </div>
+      <div class="pay-trust">
+        <span><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>Payments by Stripe</b></span>
+        <span><svg viewBox="0 0 16 16" fill="none"><rect x="1.5" y="3.5" width="13" height="9" rx="1.6" stroke="currentColor" stroke-width="1.6"/><path d="M1.5 6.5h13" stroke="currentColor" stroke-width="1.6"/></svg>Card details never touch our servers</span>
+        <span><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Credits back on any job that doesn't pass</span>
+        <span><svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.7L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>No subscription &mdash; buy credits when you need them</span>
+      </div>
+    </div>
+  </section>`;
+}
+
+function finalCta(){
+  return `
+  <section class="section" style="padding-top:0;">
+    <div class="wrap final-band">
+      <h2 style="font-size:clamp(1.9rem,3.5vw,2.6rem);">Ready to see your listings finished?</h2>
+      <p style="margin-top:16px;color:var(--ink-soft);max-width:48ch;margin-left:auto;margin-right:auto;">Open the studio, pick a transformation, and let the checks do the rest.</p>
+      <div class="hero-cta" style="justify-content:center;margin-top:30px;">
+        <a href="/app" class="btn btn-primary">Create an account</a>
+      </div>
+    </div>
+  </section>`;
+}
+
+function siteFooter(){
+  return `
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <div class="mark" style="color:#fff;">${ICON.logoMark}<span>Listing&nbsp;<span class="lab">Lab</span></span></div>
+          <p style="margin-top:14px;font-size:0.87rem;max-width:32ch;color:#96A2B0;">A Horizon Home Media product. AI enhancement built for real estate — every image checked before delivery.</p>
+        </div>
+        <div><h5>Product</h5><ul><li><a href="#how">Capabilities</a></li><li><a href="#compliance">Compliance</a></li><li><a href="#pricing">Pricing</a></li></ul></div>
+        <div><h5>Studio</h5><ul><li><a href="/app">AI Studio</a></li><li><a href="/app">Listings</a></li><li><a href="/app">Credits</a></li></ul></div>
+        <div><h5>Company</h5><ul><li>Horizon Home Media</li><li><a href="/founder">Who built this</a></li><li><a href="/faq">FAQ</a></li><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="mailto:support@thelistinglab.app">support@thelistinglab.app</a></li></ul></div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Horizon Home Media. All rights reserved. · <a href="/terms" style="color:inherit">Terms</a> · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/owner" style="color:inherit;opacity:.55">Owner</a></span>
+      </div>
+    </div>
+  </footer>`;
+}
+
+function afterMarketingRender(){
+  bindBeforeAfterSliders();
+  initHeroRotator();
+  if (typeof enhanceMarketing === 'function') enhanceMarketing();
+  showWhoIsSignedIn();
+}
+
+/* A signed-in agent who lands back here (the Listing Lab logo in the studio
+   brings them here) was being greeted with "Sign In / Create an account" as
+   if they were a stranger (Kyle, 3 Sep 2026). One quiet call: if there is a
+   session, the header shows their name and a door back into the studio. */
+function showWhoIsSignedIn(){
+  const cta = document.getElementById('siteNavCta');
+  if(!cta) return;
+  fetch('/api/me', { credentials:'same-origin' }).then(r => r.ok ? r.json() : null).then(out => {
+    const a = out && out.account;
+    if(!a) return;
+    const who = (a.name || a.email || '').trim();
+    const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    cta.innerHTML = `<a href="/app" class="btn btn-quiet" title="${esc(a.email || '')}">${esc(who)}</a>
+      <a href="/app" class="btn btn-primary btn-sm">Open the studio</a>`;
+  }).catch(() => {});
+}
+
+/* Mobile-only: the hero turns its own pages. Holds 5.5s per example, pauses
+   while a thumb is on it (so the slider can be dragged in peace), stands
+   still entirely for reduced-motion users, and the dots always work. */
+function initHeroRotator(){
+  const rot = document.getElementById('heroRotator');
+  if(!rot) return;
+  const slides = [...rot.querySelectorAll('.hero-slide')];
+  const dots = [...document.querySelectorAll('#heroDots button')];
+  if(slides.length < 2) return;
+  let i = 0, timer = null, holdUntil = 0;
+  const go = (n)=>{
+    i = (n + slides.length) % slides.length;
+    slides.forEach((s,k)=>s.classList.toggle('on', k===i));
+    dots.forEach((d,k)=>d.classList.toggle('on', k===i));
+  };
+  dots.forEach((d,k)=>d.addEventListener('click', ()=>{ holdUntil = Date.now()+9000; go(k); }));
+  rot.addEventListener('pointerdown', ()=>{ holdUntil = Date.now()+9000; });
+  const mobile = window.matchMedia('(max-width:980px)');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const tick = ()=>{ if(mobile.matches && !still.matches && Date.now() > holdUntil) go(i+1); };
+  timer = setInterval(tick, 5500);
+  // The prototype re-renders on navigation; a stale timer just no-ops because
+  // the old nodes are gone, so nothing leaks that matters.
+}
+
+function bindBeforeAfterSliders(){
+  document.querySelectorAll('.ba').forEach(baEl=>{
+    let dragging=false;
+    const setPos = (clientX)=>{
+      const rect = baEl.getBoundingClientRect();
+      let pct = ((clientX-rect.left)/rect.width)*100;
+      pct = Math.max(4,Math.min(96,pct));
+      baEl.style.setProperty('--ba-pos', pct+'%');
+    };
+    // preventDefault at pointerdown is the load-bearing line (1 Sep 2026,
+    // regression): without it the browser starts a native text-selection at
+    // the press, and as the drag sweeps, everything BELOW the slider lights
+    // up blue — user-select:none on .ba only protects the slider itself.
+    // The body class is the second belt: no selection anywhere while dragging.
+    const stop = ()=>{ dragging=false; document.body.classList.remove('ba-dragging'); };
+    baEl.addEventListener('pointerdown', e=>{ e.preventDefault(); dragging=true; document.body.classList.add('ba-dragging'); setPos(e.clientX); baEl.setPointerCapture(e.pointerId); });
+    baEl.addEventListener('pointermove', e=>{ if(dragging){ e.preventDefault(); setPos(e.clientX); } });
+    baEl.addEventListener('pointerup', stop);
+    baEl.addEventListener('pointercancel', stop);
+    baEl.addEventListener('pointerleave', stop);
+  });
+}
+
+function renderNotFound(){
+  return `<div class="empty-state"><h3 style="color:inherit;">Not found</h3><p style="margin-top:10px;">That page doesn't exist in the prototype.</p><a href="#/app" class="btn btn-primary" style="margin-top:20px;">Back to Dashboard</a></div>`;
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+function renderAppShell(body, crumbs, seg){
+  const nav = [
+    {href:'#/app', label:'Dashboard', icon:ICON.home, match:s=>s.length===1},
+    {href:'#/app/listings', label:'Listings', icon:ICON.listings, match:s=>s[1]==='listings'||s[1]==='listing'},
+    {href:'#/app/credits', label:'Credits', icon:ICON.credits, match:s=>s[1]==='credits'},
+    {href:'#/app/history', label:'History', icon:ICON.history, match:s=>s[1]==='history'},
+    {href:'#/app/account', label:'Account', icon:ICON.account, match:s=>s[1]==='account'},
+  ];
+  return `
+  <div class="studio">
+    <div class="studio-topbar">
+      <div class="wrap studio-topbar-row">
+        <a href="#/" class="mark">${ICON.logoMark}<span>Listing&nbsp;<span class="lab">Lab</span></span></a>
+        <nav class="studio-nav">
+          ${nav.map(n=>`<a href="${n.href}" class="${n.match(seg)?'active':''}">${n.icon}<span class="nav-label">${n.label}</span></a>`).join('')}
+        </nav>
+        <div class="topbar-right">
+          <a href="#/app/credits" class="credit-chip">${ICON.credits}<span>${S.credits} Credits</span></a>
+          <a href="#/app/account" class="avatar-chip" title="${S.auth.email||'Account'}">${initials(S.auth.name)}</a>
+        </div>
+      </div>
+    </div>
+    ${S.service.genPaused ? `<div class="svc-banner">AI generation is temporarily paused. Your credits are safe and never expire.</div>`
+      : S.service.salesPaused ? `<div class="svc-banner">Credit sales are temporarily paused. Existing credits work normally.</div>` : ''}
+    <div class="wrap">
+      ${crumbs && crumbs.length ? `<div class="crumbs">${crumbs.map((c,i)=>`${i>0?'<span class=\"sep\">/</span>':''}${c.href?`<a href="${c.href}">${c.label}</a>`:`<span class="current">${c.label}</span>`}`).join('')}</div>`:''}
+      <div class="reveal" style="padding-bottom:80px;">${body}</div>
+    </div>
+    <nav class="tabbar">
+      ${nav.map(n=>`<a href="${n.href}" class="${n.match(seg)?'active':''}">${n.icon}<span>${n.label}</span></a>`).join('')}
+    </nav>
+  </div>`;
+}
+
+function afterAppRender(seg){
+  bindBeforeAfterSliders();
+  bindStudioInteractions(seg);
+}
+
+/* ---------- Dashboard ---------- */
+function renderDashboard(){
+  const recentTransforms = S.history.slice(0,4);
+  return `
+  <div class="page-head">
+    <div><h1>Welcome back</h1><p>Here's what's happening across your listings.</p></div>
+    <a href="#/app/listing/${S.listings[0].id}/photo/${S.listings[0].photos[0].id}/studio" class="btn btn-primary">Open AI Studio</a>
+  </div>
+  <div class="stat-row">
+    <div class="card stat-card"><div class="stat-label">Credits Remaining</div><div class="stat-value">${S.credits}</div><div class="stat-sub"><a href="#/app/credits" style="color:var(--studio-pine);font-weight:600;">Buy more credits →</a></div></div>
+    <div class="card stat-card"><div class="stat-label">Active Listings</div><div class="stat-value">${S.listings.length}</div><div class="stat-sub">${S.listings.reduce((a,l)=>a+l.photos.length,0)} photos total</div></div>
+    <div class="card stat-card"><div class="stat-label">Transformations Approved</div><div class="stat-value">${S.history.filter(h=>h.status==='approved').length}</div><div class="stat-sub">${S.history.filter(h=>h.status==='rejected').length} rejected &amp; refunded</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:22px;" class="dash-grid">
+  <style>@media(max-width:900px){.dash-grid{grid-template-columns:1fr !important;}}</style>
+    <div class="card" style="padding:26px 28px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><h3 style="font-size:1.15rem;color:var(--studio-text);">Recent Listings</h3><a href="#/app/listings" style="font-size:0.85rem;color:var(--studio-pine);font-weight:600;">View all</a></div>
+      <div>
+        ${S.listings.map(l=>`
+          <div class="recent-row" style="cursor:pointer;" onclick="LL.go('#/app/listing/${l.id}')">
+            <div class="recent-thumb">${l.photos[0] ? photoVisual(l.photos[0], l.photos[0].type==='exterior'?'twilight':'after', {style:'Luxury', time:'Dusk'}) : room('living','after',{style:'Luxury'})}</div>
+            <div class="recent-body"><div class="r-title">${l.addr}</div><div class="r-sub">${l.city} · ${l.photos.length} photos</div></div>
+            ${ICON.arrow}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="card" style="padding:26px 28px;">
+      <h3 style="font-size:1.15rem;color:var(--studio-text);margin-bottom:10px;">Recent Transformations</h3>
+      <div>
+        ${recentTransforms.map(h=>`
+          <div class="recent-row">
+            <div class="recent-thumb">${photoVisual(getPhoto(h.listingId,h.photoId), h.status!=='approved' ? 'before' : (h.type==='twilight'?'twilight':'after'), {style:h.options.style||'Modern', time:h.options.style, tf:h.type})}</div>
+            <div class="recent-body"><div class="r-title">${TRANSFORMS[h.type].label}</div><div class="r-sub">${h.listingAddr}</div></div>
+            <span class="pill pill-${h.status}">${h.status}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- Listings gallery ---------- */
+function renderListingsGallery(){
+  return `
+  <div class="page-head">
+    <div><h1>Listings</h1><p>Select a listing, or create one and upload your own photos.</p></div>
+    <button class="btn btn-primary" onclick="LL.openNewListing()">＋ New Listing</button>
+  </div>
+  <div class="grid-3">
+    ${S.listings.map(l=>`
+      <div class="card listing-card" onclick="LL.go('#/app/listing/${l.id}')">
+        <div class="listing-thumb">${l.photos[0] ? photoVisual(l.photos[0], l.photos[0].type==='exterior'?'twilight':'after', {style:'Standard', time:'Dusk'}) : `<div class="upload-tile" style="border:none;border-radius:0;">No photos yet</div>`}</div>
+        <div class="listing-info">
+          <div class="addr">${l.addr}</div>
+          <div class="city">${l.city||''}</div>
+          <div class="listing-meta">
+            <span>${ICON.photo}${l.photos.length} Photos</span>
+            ${l.userCreated ? `<span class="source-tag" style="border:none;padding:0;">Uploaded</span>` : `<span>${ICON.video}${l.videos} Videos</span>`}
+          </div>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+}
+
+/* ---------- Listing detail (photo library) ---------- */
+function renderListingDetail(listing){
+  return `
+  <div class="page-head">
+    <div>
+      <h1>${listing.addr}</h1>
+      <p>${[listing.city, listing.photos.length+' photos', listing.userCreated?null:listing.videos+' videos'].filter(Boolean).join(' · ')}</p>
+    </div>
+    <span class="source-tag">${listing.userCreated ? 'Uploaded by you' : 'Delivered shoot'}</span>
+  </div>
+  <div class="photo-grid">
+    ${listing.photos.map(p=>{
+      const has = hasApprovedResult(listing.id,p.id);
+      const displayState = p.type==='exterior' ? 'day' : (p.beforeState==='before'?'before':'empty');
+      return `
+      <div class="photo-tile" onclick="LL.go('#/app/listing/${listing.id}/photo/${p.id}')">
+        ${photoVisual(p, displayState, {style:'Modern'})}
+        ${has?`<div class="tile-badge">AI Version</div>`:''}
+        <div class="tile-room">${p.room}</div>
+      </div>`;
+    }).join('')}
+    ${listing.userCreated ? `
+      <div class="upload-tile" onclick="document.getElementById('fileInput').click()">
+        ${ICON.photo}
+        <span>Upload photos</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="LL.handleFiles('${listing.id}', this.files)">
+    `:''}
+  </div>
+  ${listing.userCreated && listing.photos.length===0 ? `<p style="color:var(--studio-text-faint);font-size:0.85rem;margin-top:18px;">Add your listing photography — JPG or PNG. Each photo can then be decluttered, staged, or converted to twilight in the AI Studio.</p>`:''}`;
+}
+
+function hasApprovedResult(listingId, photoId){
+  return Object.values(S.results).some(r=>r.listingId===listingId && r.photoId===photoId && r.status==='approved')
+    || S.history.some(h=>h.listingId===listingId && h.photoId===photoId && h.status==='approved');
+}
+function latestApprovedResult(listingId, photoId){
+  const arr = Object.values(S.results).filter(r=>r.listingId===listingId && r.photoId===photoId && r.status==='approved');
+  return arr.sort((a,b)=>b.createdAt-a.createdAt)[0];
+}
+
+/* ---------- Photo viewer ---------- */
+function renderPhotoViewer(listing, photo){
+  const result = latestApprovedResult(listing.id, photo.id);
+  const originalState = photo.type==='exterior' ? 'day' : (photo.beforeState==='before'?'before':'empty');
+  const afterState = ((result && result.type==='twilight') || photo.type==='exterior') ? 'twilight' : 'after';
+  const opts = result ? Object.assign({tf:result.type}, result.options) : {style:'Modern'};
+  const optsAttr = JSON.stringify(opts).replace(/'/g,'&#39;');
+  return `
+  <div class="page-head">
+    <div><h1>${photo.room}</h1><p>${listing.addr} · ${listing.city}</p></div>
+    <a href="#/app/listing/${listing.id}/photo/${photo.id}/studio" class="btn btn-primary">${ICON.studio} Open AI Studio</a>
+  </div>
+  <div class="viewer-shell">
+    <div class="viewer-stage" id="viewerStage" data-type="${photo.type}" data-lid="${listing.id}" data-pid="${photo.id}" data-opts='${optsAttr}' data-before="${originalState}" data-after="${afterState}" data-watermark="${(result&&TRANSFORMS[result.type].watermark)||''}">
+      ${photoVisual(photo, result ? afterState : originalState, opts)}
+      ${result && TRANSFORMS[result.type].watermark && !isWatermarked(photo, afterState, opts) ? `<div class="wm-badge">${TRANSFORMS[result.type].watermark}</div>` : ''}
+    </div>
+    <div class="viewer-side">
+      <div>
+        <div class="eyebrow" style="color:var(--studio-brass);">${photo.room}</div>
+        <h3 style="color:var(--studio-text);font-size:1.2rem;margin-top:8px;">${listing.addr}</h3>
+        <p style="color:var(--studio-text-soft);font-size:0.87rem;margin-top:6px;">${result? 'AI version available. The original is preserved and always accessible.' : 'No AI version yet. Open the studio to generate one.'}</p>
+      </div>
+      ${result?`
+      <div class="viewer-toggle" id="viewerToggle">
+        <button class="active" data-v="after">AI Version</button>
+        <button data-v="before">Original</button>
+      </div>`:''}
+      <hr class="rule">
+      <div>
+        <div class="opt-label">All Photos</div>
+        <div class="filmstrip">
+          ${listing.photos.map(p=>`<div class="fs-item ${p.id===photo.id?'active':''}" style="cursor:pointer;" onclick="LL.go('#/app/listing/${listing.id}/photo/${p.id}')">${photoVisual(p, p.type==='exterior'?'day':(p.beforeState==='before'?'before':'empty'),{style:'Modern'})}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- AI Studio ---------- */
+let studioSel = { type:'declutter', style:null, room:null, time:null, notes:'', demoFail:false };
+
+function renderStudio(listing, photo){
+  // Seeded photos know what they are; uploads let the agent choose any transformation.
+  const isUpload = photo.type==='upload';
+  const offered = offeredTransforms(photo);
+  if(!isUpload && offered.indexOf(studioSel.type) === -1){
+    const t = offered[0];
+    studioSel = { type:t, style:null, room:null, time: t==='twilight'?'Dusk':null, notes:'', demoFail:false };
+  }
+  const tf = TRANSFORMS[studioSel.type];
+  const baseState = photo.type==='exterior' ? 'day' : (photo.beforeState==='before'?'before':'empty');
+  // No pre-generation "preview" — we can't know what the AI will produce,
+  // so the stage shows the honest original. The before/after slider lives
+  // on the result screen, where both sides are real.
+  return `
+  <div class="page-head"><div><h1>AI Studio</h1><p>${listing.addr} · ${photo.room}</p></div></div>
+  <div class="studio-shell">
+    <div class="studio-stage" style="position:relative;">
+      ${photoVisual(photo, baseState, {})}
+      <div class="ba-tag tag-before">Original</div>
+    </div>
+    <div class="studio-panel">
+      <div class="tf-tabs">
+        ${offered.length === 1
+          ? `<div class="tf-tab active" style="cursor:default;">${TRANSFORMS[offered[0]].label}</div>`
+          : offered.map(t=>`<div class="tf-tab ${studioSel.type===t?'active':''}" onclick="LL.setTF('${t}')">${TRANSFORMS[t].label}</div>`).join('')}
+      </div>
+      <div class="tf-body">
+        <p class="tf-desc">${tf.tagline}</p>
+        ${studioSel.type==='staging' ? `
+          <div>
+            <div class="opt-label">Select Style</div>
+            <div class="opt-grid">
+              ${tf.styles.map(s=>`<button class="opt-chip ${studioSel.style===s?'selected':''}" onclick="LL.setOpt('style','${s}')"><span class="swatch" style="background:${styleSwatch(s)}"></span>${s}</button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="opt-label">Room Type</div>
+            <div class="opt-grid">
+              ${tf.rooms.map(r=>`<button class="opt-chip ${studioSel.room===r?'selected':''}" onclick="LL.setOpt('room','${r}')">${r}</button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="opt-label">Anything else? <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--studio-text-faint)">Optional</span></div>
+            <textarea class="notes-box" maxlength="400" placeholder="e.g. cozy, warm wood, a big sectional, no glass tables"
+              oninput="LL.setNotes(this.value)">${studioSel.notes||''}</textarea>
+            <p class="notes-hint">We map your notes onto furniture, palette and materials. Requests that would change the property itself are ignored, and we tell you which.</p>
+          </div>
+        `:''}
+        ${studioSel.type==='empty' ? `
+          <div class="chain-note">
+            ${ICON.check}<div><b>Emptying is often step one.</b> Once a room is vacant you can stage it in any style — useful when the room is still lived in. Curtains, blinds, wall-mounted TVs, built-ins and heating stay put.</div>
+          </div>
+        `:''}
+        ${studioSel.type==='twilight' ? `
+          <div class="card" style="padding:16px 18px;background:var(--studio-surface-2);border-style:dashed;">
+            <div style="font-size:0.82rem;color:var(--studio-text-soft);line-height:1.55;">One polished, true-to-life twilight — a crisp dusk sky with the home's lights on, never dark or moody. There's nothing to configure.</div>
+          </div>
+        `:''}
+        ${studioSel.type==='declutter' ? `
+          <div class="card" style="padding:16px 18px;background:var(--studio-surface-2);border-style:dashed;">
+            <div style="font-size:0.82rem;color:var(--studio-text-soft);line-height:1.55;">Listing Lab removes movable clutter only. Architecture, fixtures and perspective are always preserved — there's nothing to configure.</div>
+          </div>
+        `:''}
+      </div>
+      <div class="tf-footer">
+        <label class="demo-toggle"><input type="checkbox" ${studioSel.demoFail?'checked':''} onchange="LL.toggleDemoFail(this.checked)"> Prototype only: simulate a compliance rejection</label>
+        ${(()=>{
+          const free = hasFreeAttempt(photo.id, tf.key);
+          const job = jobFor(photo.id, tf.key);
+          return free
+            ? `<div class="cost-row"><span>Cost</span><b>Included</b></div>
+               <div style="font-size:0.76rem;color:var(--studio-text-faint);margin-top:-8px;">Attempt ${job.attempts+1} of 3 on this photo — your credit covers it.</div>`
+            : `<div class="cost-row"><span>Cost</span><b>${tf.cost} AI Credit${tf.cost>1?'s':''}</b></div>
+               <div style="font-size:0.76rem;color:var(--studio-text-faint);margin-top:-8px;">Includes up to 3 attempts on this photo &amp; enhancement.</div>`;
+        })()}
+        <button class="btn btn-primary btn-block" ${(!canGenerate(photo) || S.service.genPaused)?'disabled':''} onclick="LL.generate('${listing.id}','${photo.id}')">Generate</button>
+        ${S.service.genPaused ? `<div style="font-size:0.78rem;color:var(--studio-terracotta);text-align:center;">Generation is paused right now — your credits are safe and never expire.</div>`:''}
+        ${!S.service.genPaused && !canGenerate(photo) && needsOption() ? `<div style="font-size:0.78rem;color:var(--studio-terracotta);text-align:center;">Select the required options above to continue.</div>`:''}
+        ${!hasFreeAttempt(photo.id, tf.key) && S.credits < tf.cost ? `<div style="font-size:0.78rem;color:var(--studio-terracotta);text-align:center;">Not enough credits. <a href="#/app/credits" style="color:inherit;text-decoration:underline;">Buy more</a></div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+function styleSwatch(s){ return {Standard:'#5B4636',Modern:'#33383F',Contemporary:'#AD463C',Coastal:'#3E6E78',Luxury:'#B98A46'}[s]||'#999'; }
+function timeSwatch(s){ return {'Dusk':'#4C5B85'}[s]||'#4C5B85'; }
+function needsOption(){
+  if(studioSel.type==='staging') return !(studioSel.style && studioSel.room);
+  if(studioSel.type==='twilight') return !studioSel.time;
+  return false;
+}
+function canGenerate(photo){
+  const tf = TRANSFORMS[studioSel.type];
+  if(needsOption()) return false;
+  if(photo && hasFreeAttempt(photo.id, tf.key)) return true; // covered by the existing credit
+  if(S.credits < tf.cost) return false;
+  return true;
+}
+
+function bindStudioInteractions(seg){ /* studio uses inline handlers via LL.* — nothing else to bind */ }
+
+/* ---------- Generation experience ---------- */
+const GEN_STEPS = ['Preparing photograph…','Applying transformation…','Checking image…','Verifying compliance…','Applying disclosure…','Finalizing image…'];
+
+function runGeneration(listingId, photoId){
+  const listing = getListing(listingId), photo = getPhoto(listingId, photoId);
+  const tf = TRANSFORMS[studioSel.type];
+  if(S.service.genPaused){ toast('Generation is paused right now.'); return; }
+  const freeAttempt = hasFreeAttempt(photoId, tf.key);
+  if(!freeAttempt && S.credits < tf.cost){ toast('Not enough credits.'); return; }
+  const willFail = studioSel.demoFail;
+  const opts = studioSel.type==='staging' ? {style:studioSel.style, room:studioSel.room} : studioSel.type==='twilight' ? {style:studioSel.time} : {};
+
+  if(!freeAttempt){ S.credits -= tf.cost; } saveState();
+  const genSteps = tf.watermark ? GEN_STEPS : GEN_STEPS.filter(st=>!st.startsWith('Applying disclosure'));
+  const overlay = document.createElement('div');
+  overlay.className='overlay';
+  overlay.innerHTML = `
+    <div class="overlay-card">
+      <div class="eyebrow" style="color:var(--studio-brass);">${tf.label}</div>
+      <h3 style="color:var(--studio-text);margin-top:10px;font-size:1.3rem;">Generating your image</h3>
+      <p style="color:var(--studio-text-soft);font-size:0.87rem;margin-top:8px;">Your original photograph is never modified — this creates a new AI derivative.</p>
+      <div class="gen-steps" id="genSteps">
+        ${genSteps.map((s,i)=>`<div class="gen-step" data-i="${i}"><div class="gs-icon"></div><span>${s}</span></div>`).join('')}
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  const stepEls = overlay.querySelectorAll('.gen-step');
+  const failAtStep = genSteps.findIndex(st=>st.startsWith('Verifying compliance'));
+  let i=0;
+  function tick(){
+    if(i>0){ stepEls[i-1].classList.remove('active'); stepEls[i-1].classList.add('done'); stepEls[i-1].querySelector('.gs-icon').innerHTML = ICON.check; }
+    if(willFail && i===failAtStep){
+      stepEls[i].classList.add('failed');
+      stepEls[i].querySelector('.gs-icon').innerHTML = ICON.x;
+      stepEls[i].querySelector('.gs-icon').style.color='#0A1017';
+      setTimeout(()=>finishGeneration(overlay, listing, photo, tf, opts, false, freeAttempt), 650);
+      return;
+    }
+    if(i>=stepEls.length){ setTimeout(()=>finishGeneration(overlay, listing, photo, tf, opts, true, freeAttempt), 350); return; }
+    stepEls[i].classList.add('active');
+    stepEls[i].querySelector('.gs-icon').innerHTML = '<div class="spin"></div>';
+    i++;
+    setTimeout(tick, 620);
+  }
+  tick();
+}
+
+function finishGeneration(overlay, listing, photo, tf, opts, passed, freeAttempt){
+  const id = uid('res');
+  const histId = uid('h');
+  const date = 'Just now';
+  const jk = jobKeyFor(photo.id, tf.key);
+  if(passed){
+    S.results[id] = { id, listingId:listing.id, photoId:photo.id, type:tf.key, options:opts, status:'approved', createdAt:Date.now()+ (nextId) };
+    if(freeAttempt){ S.jobs[jk].attempts++; S.jobs[jk].resultId = id; }
+    else{ S.jobs[jk] = { attempts:1, resultId:id }; }
+    S.history.unshift({ id:histId, listingId:listing.id, listingAddr:listing.addr, photoId:photo.id, type:tf.key, options:opts, date, status:'approved', cost: freeAttempt?0:tf.cost });
+    saveState();
+    overlay.remove();
+    go('#/app/listing/'+listing.id+'/photo/'+photo.id+'/result/'+id);
+  }else{
+    if(!freeAttempt){ S.credits += tf.cost; } // restore the charge; a failed run never consumes an attempt
+    S.history.unshift({ id:histId, listingId:listing.id, listingAddr:listing.addr, photoId:photo.id, type:tf.key, options:opts, date, status:'rejected', cost:0 });
+    saveState();
+    overlay.querySelector('.overlay-card').innerHTML = `
+      <div class="result-fail">
+        <div class="fail-icon">${ICON.warn}</div>
+        <h3 style="color:var(--studio-text);font-size:1.25rem;">Transformation could not be approved.</h3>
+        <p style="color:var(--studio-text-soft);font-size:0.9rem;margin-top:14px;line-height:1.6;">Your original photograph has not been changed.<br>Your AI credit has been restored.</p>
+        <button class="btn btn-primary btn-block" style="margin-top:26px;" onclick="this.closest('.overlay').remove()">Try Again</button>
+      </div>`;
+    render();
+  }
+}
+
+/* ---------- Result screen ---------- */
+function renderResult(listing, photo, result){
+  const tf = TRANSFORMS[result.type];
+  const afterState = (result.type==='twilight' || photo.type==='exterior') ? 'twilight' : 'after';
+  const originalState = photo.type==='exterior' ? 'day' : (photo.beforeState==='before'?'before':'empty');
+  const resOpts = Object.assign({tf:result.type}, result.options);
+  return `
+  <div class="page-head"><div><h1>Result</h1><p>${listing.addr} · ${photo.room} · ${tf.label}</p></div><span class="pill pill-approved">${ICON.checkCircle} Approved</span></div>
+  <div class="result-shell">
+    <div>
+      <div class="result-stage">
+        ${beforeAfter(photo.type, originalState, afterState, resOpts, 'Original', 'AI Version', photo, tf.watermark && !isWatermarked(photo, afterState, resOpts) ? `<div class="wm-badge">${tf.watermark}</div>` : '')}
+      </div>
+      <p style="font-size:0.78rem;color:var(--studio-text-faint);margin-top:12px;">Drag the slider to compare your original with the AI version.</p>
+    </div>
+    <div>
+      <div class="card" style="padding:24px;">
+        <h3 style="color:var(--studio-text);font-size:1.1rem;">Compliance passed</h3>
+        <p style="color:var(--studio-text-soft);font-size:0.86rem;margin-top:8px;line-height:1.55;">This result stayed within the approved ${tf.label.toLowerCase()} transformation${tf.watermark? ' and was watermarked automatically before delivery.' : '.'}</p>
+        <hr class="rule" style="margin:20px 0;">
+        <div class="result-actions">
+          <button class="btn btn-primary btn-block" onclick="LL.toast('Download started.')">${ICON.download} Download</button>
+          <button class="btn btn-ghost btn-block" onclick="LL.saveToListing('${listing.id}')">${ICON.save} Save to Listing</button>
+          <button class="btn btn-ghost btn-block" onclick="LL.toast('Share link copied.')">${ICON.share} Share</button>
+          ${(()=>{
+            const job = jobFor(photo.id, result.type);
+            const used = job ? job.attempts : 1;
+            return used < 3
+              ? `<button class="btn btn-ghost btn-block" onclick="LL.regenerateFrom('${result.id}','${listing.id}','${photo.id}')">${ICON.again} Regenerate — no charge</button>
+                 <div style="font-size:0.75rem;color:var(--studio-text-faint);text-align:center;">Attempt ${used} of 3 used on this photo &amp; enhancement.</div>`
+              : `<div style="font-size:0.75rem;color:var(--studio-text-faint);text-align:center;">All 3 attempts used — a new generation uses a new credit.</div>`;
+          })()}
+          <a class="btn btn-quiet btn-block" href="#/app/listing/${listing.id}/photo/${photo.id}/studio">${ICON.again} Create Another</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- Credits ---------- */
+function renderCredits(){
+  return `
+  <div class="page-head"><div><h1>Credits</h1><p>Buy credits and see exactly what each transformation costs.</p></div></div>
+  <div class="stat-row" style="grid-template-columns:1fr;margin-bottom:34px;">
+    <div class="card stat-card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+      <div><div class="stat-label">Current Balance</div><div class="stat-value">${S.credits} Credits</div>
+        <div style="font-size:0.8rem;color:var(--studio-text-faint);margin-top:6px;">Each credit includes up to 3 attempts on the same photo &amp; enhancement. Credits never expire.</div>
+      </div>
+      <div style="display:flex;gap:22px;font-size:0.85rem;color:var(--studio-text-soft);">
+        <span>Virtual Stage &nbsp;<b style="color:var(--studio-text)">2 credits</b></span>
+        <span>Declutter &nbsp;<b style="color:var(--studio-text)">2 credits</b></span>
+        <span>Twilight &nbsp;<b style="color:var(--studio-text)">1 credit</b></span>
+      </div>
+    </div>
+  </div>
+  <div class="grid-3">
+    ${PACKS.map((p,i)=>`
+      <div class="card pack-card ${p.best?'best':''}">
+        ${p.best?'<div class="best-tag">Best Value</div>':''}
+        <h4 style="color:var(--studio-text-soft);font-size:1rem;">${p.credits} Credits</h4>
+        <div style="font-family:var(--display);font-size:2.2rem;color:var(--studio-text);margin:12px 0 4px;">$${p.price.toFixed(2)}</div>
+        <div style="font-size:0.8rem;color:var(--studio-text-faint);margin-bottom:22px;">$${(p.price/p.credits).toFixed(2)} per credit</div>
+        <button class="btn btn-primary btn-block" ${S.service.salesPaused?'disabled':''} onclick="LL.buyCredits(${p.credits})">${S.service.salesPaused?'Sales Paused':'Buy Credits'}</button>
+      </div>
+    `).join('')}
+  </div>
+  <div class="card" style="margin-top:24px;padding:26px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+    <div style="max-width:44ch;">
+      <h3 style="font-size:1.05rem;color:var(--studio-text);font-family:var(--ui);font-weight:650;">Have a promo code?</h3>
+      <p style="font-size:0.84rem;color:var(--studio-text-soft);margin-top:6px;line-height:1.55;">Codes from Horizon Home Media add credits straight to your balance.</p>
+      <div id="promoMsg" style="font-size:0.8rem;margin-top:8px;"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <input id="promoInput" placeholder="Enter code" autocomplete="off" spellcheck="false"
+        style="background:var(--studio-surface-2);border:1px solid var(--studio-line);border-radius:999px;padding:12px 20px;color:var(--studio-text);font-family:var(--ui);font-size:0.9rem;letter-spacing:0.06em;text-transform:uppercase;width:180px;outline:none;"
+        onkeydown="if(event.key==='Enter')LL.redeemPromo()">
+      <button class="btn btn-primary" onclick="LL.redeemPromo()">Redeem</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- History ---------- */
+let historyFilter='all';
+function renderHistory(){
+  const rows = S.history.filter(h=> historyFilter==='all' || h.status===historyFilter);
+  return `
+  <div class="page-head"><div><h1>Transformation History</h1><p>Every generation, its options, and its compliance result.</p></div></div>
+  <div class="filter-row">
+    ${['all','approved','rejected'].map(f=>`<button class="filter-chip ${historyFilter===f?'active':''}" onclick="LL.setHistFilter('${f}')">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}
+  </div>
+  <div class="card" style="padding:8px 20px;overflow-x:auto;">
+    <table class="hist-table">
+      <thead><tr><th>Photo</th><th>Type</th><th>Options</th><th>Listing</th><th>Date</th><th>Status</th><th>Cost</th></tr></thead>
+      <tbody>
+        ${rows.length===0? `<tr><td colspan="7"><div class="empty-state">No transformations yet.</div></td></tr>` : rows.map(h=>{
+          const photo = getPhoto(h.listingId,h.photoId);
+          const optStr = Object.values(h.options||{}).filter(Boolean).join(' · ') || '—';
+          return `
+          <tr>
+            <td><div class="hist-thumb">${photoVisual(photo, h.status==='approved'?(h.type==='twilight'?'twilight':'after'):'before', Object.assign({tf:h.type}, h.options))}</div></td>
+            <td class="h-type">${TRANSFORMS[h.type].label}</td>
+            <td>${optStr}</td>
+            <td>${h.listingAddr}</td>
+            <td>${h.date}</td>
+            <td><span class="pill pill-${h.status}">${h.status}</span></td>
+            <td>${h.cost} cr</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+/* ---------- Account ---------- */
+function renderAccount(){
+  const a=S.auth;
+  const via = a.via==='google'
+    ? `<span class="via-chip">${ICON.google}Signed in with Google</span>`
+    : `<span class="via-chip">${ICON.account}Signed in with email</span>`;
+  return `
+  <div class="page-head"><div><h1>Account</h1><p>Your Listing Lab account. Credits and history follow it.</p></div>
+    <button class="btn btn-quiet" onclick="LL.signOut()">Sign Out</button></div>
+  <div class="card" style="padding:30px;max-width:520px;">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="avatar-lg">${initials(a.name)}</div>
+      <div>
+        <div style="color:var(--studio-text);font-weight:600;font-size:1.05rem;">${a.name||'Listing Lab user'}</div>
+        <div style="color:var(--studio-text-soft);font-size:0.85rem;">${a.email||''}${a.company?' · '+a.company:''}</div>
+        <div style="margin-top:8px;">${via}</div>
+      </div>
+    </div>
+    <hr class="rule" style="margin:22px 0;">
+    <div class="acct-rows">
+      <div class="acct-row"><span>Credits</span><b>${S.credits}</b></div>
+      <div class="acct-row"><span>Transformations delivered</span><b>${S.history.filter(h=>h.status==='approved').length}</b></div>
+      <div class="acct-row"><span>Password</span><a href="#/forgot" style="color:var(--studio-pine);font-weight:600;">Change</a></div>
+    </div>
+    <div style="margin-top:20px;font-size:0.82rem;color:var(--studio-text-faint);line-height:1.65;">
+      Listing Lab accounts stand alone — you don't need a shoot booked with us to use the studio. Connecting Aryeo to pull listings automatically is on the roadmap, not a requirement.
+    </div>
+  </div>
+  <div class="card" style="padding:22px 24px;max-width:520px;margin-top:20px;border-style:dashed;">
+    <div class="opt-label">Prototype controls</div>
+    <p style="font-size:0.8rem;color:var(--studio-text-faint);line-height:1.55;margin-bottom:14px;">In production these are backend flags flipped from the owner's Listing Lab dashboard — simulated here so you can preview exactly what customers see.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <label class="demo-toggle"><input type="checkbox" ${S.service.salesPaused?'checked':''} onchange="LL.setService('salesPaused',this.checked)"> Simulate: credit sales paused</label>
+      <label class="demo-toggle"><input type="checkbox" ${S.service.genPaused?'checked':''} onchange="LL.setService('genPaused',this.checked)"> Simulate: AI generation paused</label>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   GLOBAL ACTIONS (bound to window for inline handlers)
+   ============================================================ */
+window.LL = {
+  go,
+  signIn(e){
+    e.preventDefault();
+    const email=(document.getElementById('si-email')||{}).value||'';
+    S.auth={signedIn:true, name:nameFromEmail(email), email, company:'', via:'email'};
+    saveState(); go('/app'); toast('Signed in');
+  },
+  signUp(e){
+    e.preventDefault();
+    const g=id=>((document.getElementById(id)||{}).value||'').trim();
+    S.auth={signedIn:true, name:g('su-name')||nameFromEmail(g('su-email')), email:g('su-email'), company:g('su-co'), via:'email'};
+    saveState(); go('/app'); toast('Account created — 12 credits added');
+  },
+  google(mode){
+    const btn=document.getElementById('g-btn');
+    if(btn){ btn.setAttribute('disabled','true'); btn.querySelector('span').textContent='Opening Google…'; }
+    setTimeout(()=>{
+      S.auth={signedIn:true, name:'Demo Agent', email:'demo@example.com', company:'Horizon Home Media', via:'google'};
+      saveState(); go('/app');
+      toast(mode==='signup'?'Account created with Google':'Signed in with Google');
+    }, 850);
+  },
+  forgot(e){ e.preventDefault(); go('/forgot/sent'); },
+  signOut(){ S.auth={signedIn:false,name:'',email:'',company:'',via:''}; saveState(); go('/'); toast('Signed out'); },
+  toast,
+  setTF(t){ studioSel = {type:t, style:null, room:null, time:null, notes:'', demoFail:studioSel.demoFail}; render(); },
+  setNotes(v){ studioSel.notes = v.slice(0,400); },
+  setOpt(k,v){ studioSel[k]=v; render(); },
+  toggleDemoFail(v){ studioSel.demoFail=v; },
+  generate(listingId, photoId){ runGeneration(listingId, photoId); },
+  buyCredits(n){ if(S.service.salesPaused){ toast('Credit sales are paused right now.'); return; } S.credits += n; saveState(); render(); toast('Added '+n+' credits.'); },
+  setService(k,v){ S.service[k]=v; saveState(); render(); },
+  openNewListing(){
+    const overlay = document.createElement('div');
+    overlay.className='overlay';
+    overlay.innerHTML = `
+      <div class="overlay-card studio">
+        <div class="eyebrow" style="color:var(--studio-brass);">New Listing</div>
+        <h3 style="color:var(--studio-text);margin-top:10px;font-size:1.3rem;">Create a listing</h3>
+        <p style="color:var(--studio-text-soft);font-size:0.86rem;margin:10px 0 22px;">A listing is just a folder for one property's photos. The address is optional — it helps you stay organized and appears in your history.</p>
+        <div class="modal-field"><label>Property address (optional)</label><input id="nlAddr" placeholder="e.g. 55 Maple Lane" autocomplete="off"></div>
+        <div class="modal-field"><label>City / town (optional)</label><input id="nlCity" placeholder="e.g. Glastonbury, CT" autocomplete="off"></div>
+        <div style="display:flex;gap:10px;margin-top:24px;">
+          <button class="btn btn-primary btn-block" onclick="LL.createListing()">Create Listing</button>
+          <button class="btn btn-ghost" onclick="this.closest('.overlay').remove()">Cancel</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#nlAddr').focus();
+  },
+  createListing(){
+    const addr = (document.getElementById('nlAddr')?.value || '').trim();
+    const city = (document.getElementById('nlCity')?.value || '').trim();
+    const l = { id: uid('l'), addr: addr || 'Untitled Listing', city, videos:0, photos:[], userCreated:true, source:'upload' };
+    S.userListings.push(l); S.listings.push(l); saveState();
+    document.querySelector('.overlay')?.remove();
+    go('#/app/listing/'+l.id);
+    toast('Listing created — add your photos.');
+  },
+  handleFiles(listingId, files){
+    const listing = getListing(listingId);
+    if(!listing || !files || !files.length) return;
+    const list = Array.from(files).filter(f=>f.type.startsWith('image/'));
+    let remaining = list.length;
+    if(!remaining) return;
+    list.forEach((file, idx)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const img = new Image();
+        img.onload = ()=>{
+          // downscale so a handful of photos fits browser storage; originals stay on the user's machine
+          const MAX = 1400;
+          const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width*scale); canvas.height = Math.round(img.height*scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          const name = file.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' ').trim().slice(0,22) || ('Photo '+(listing.photos.length+1));
+          listing.photos.push({ id: uid('p'), room: name, type:'upload', beforeState:'before', src: canvas.toDataURL('image/jpeg', 0.82) });
+          if(--remaining === 0){ saveState(); render(); toast(list.length + (list.length>1?' photos added.':' photo added.')); }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  },
+  setHistFilter(f){ historyFilter=f; render(); },
+  saveToListing(listingId){ const l=getListing(listingId); toast(l?('Saved to '+l.addr+'.'):'Saved to listing.'); },
+  regenerateFrom(resultId, listingId, photoId){
+    const r = S.results[resultId]; if(!r) return;
+    if(r.type==='staging') studioSel = {type:'staging', style:r.options.style, room:r.options.room, time:null, notes:'', demoFail:false};
+    else if(r.type==='twilight') studioSel = {type:'twilight', style:r.options.style, room:null, time:r.options.style, demoFail:false};
+    else studioSel = {type:'declutter', style:null, room:null, time:null, demoFail:false};
+    runGeneration(listingId, photoId);
+  },
+  redeemPromo(){
+    const input = document.getElementById('promoInput');
+    const msg = document.getElementById('promoMsg');
+    if(!input || !msg) return;
+    const code = input.value.trim().toUpperCase();
+    const PROMOS = { 'HORIZON5':5, 'WELCOME10':10 };
+    if(!code){ msg.textContent='Enter a code to redeem.'; msg.style.color='var(--studio-text-faint)'; return; }
+    if(S.promos.includes(code)){ msg.textContent='That code has already been redeemed.'; msg.style.color='var(--studio-terracotta)'; return; }
+    if(!(code in PROMOS)){ msg.textContent="That code isn't valid."; msg.style.color='var(--studio-terracotta)'; return; }
+    S.promos.push(code); S.credits += PROMOS[code]; saveState();
+    render(); toast('Promo applied — '+PROMOS[code]+' credits added.');
+  },
+};
+
+/* toggle bindings for before/original views (delegated) — regenerates the
+   illustration from its data attributes rather than toggling CSS classes,
+   since exterior twilight lighting is baked in at render time. */
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('#viewerToggle button, #resultToggle button');
+  if(!btn) return;
+  const wrap = btn.closest('.viewer-toggle');
+  wrap.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const stage = wrap.id==='resultToggle' ? document.getElementById('resultStage') : document.getElementById('viewerStage');
+  if(!stage) return;
+  const showAfter = btn.dataset.v==='after';
+  let opts = {};
+  try{ opts = JSON.parse(stage.dataset.opts||'{}'); }catch(err){}
+  const state = showAfter ? stage.dataset.after : stage.dataset.before;
+  const wm = stage.dataset.watermark;
+  const ph = getPhoto(stage.dataset.lid, stage.dataset.pid) || { type: stage.dataset.type };
+  stage.innerHTML = photoVisual(ph, state, opts) + (showAfter && wm && !isWatermarked(ph, state, opts) ? `<div class="wm-badge">${wm}</div>` : '');
+});
+
+render();
+})();
+</script>
+
+<!-- ============================================================
+     PREMIUM TREATMENT (31 Aug 2026) — the refined landing Kyle approved on
+     the live demo, layered onto the existing marketing markup. Copy, spacing
+     and section content are untouched; this file's earlier styles still fully
+     render the page if this layer never loads. Progressive enhancement
+     throughout: the hidden-then-animate reveal only engages once JS confirms
+     it is running (html.anim), so the page can never open blank.
+     ============================================================ -->
+<style id="premium-treatment">
+html{scroll-behavior:smooth}
+/* Aurora — the living background. Sits behind .site; sections keep their own
+   surfaces. Blurred radial blobs drifting very slowly. */
+.aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;filter:blur(90px) saturate(1.15)}
+.aurora .blob{position:absolute;border-radius:50%;opacity:.5;animation:ll-drift 26s ease-in-out infinite alternate}
+.aurora .b1{width:44vw;height:44vw;left:-10vw;top:-12vh;background:radial-gradient(circle,#1c4a75,transparent 65%)}
+.aurora .b2{width:38vw;height:38vw;right:-8vw;top:8vh;background:radial-gradient(circle,#153a5e,transparent 65%);animation-delay:-9s}
+.aurora .b3{width:46vw;height:46vw;left:22vw;bottom:-18vh;background:radial-gradient(circle,#10293f,transparent 68%);animation-delay:-17s}
+@keyframes ll-drift{to{transform:translate(4vw,3vh) scale(1.08)}}
+.site{position:relative;z-index:1}
+
+/* Glass nav that tightens as you scroll. */
+.site-nav{transition:background .3s ease,box-shadow .3s ease}
+.site-nav-row{transition:height .3s ease}
+.site-nav.shrunk{background:rgba(11,16,23,.93);box-shadow:0 8px 30px -18px rgba(0,0,0,.8)}
+.site-nav.shrunk .site-nav-row{height:60px}
+
+/* Wordmark: LISTING and LAB sat too far apart — the space between them wore
+   the same wide letter-spacing as the letters, twice over (Kyle flagged the
+   identical disease on the demo). Pull LAB back in — and LAB wears the same
+   gradient as the headline keyword, on every wordmark (Kyle, 31 Aug). */
+.mark .lab, .wordmark-lab{
+  margin-left:-0.18em;
+  background:linear-gradient(105deg,#5CC7F0 0%,#7FA8EC 45%,#8A7FE8 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.wordmark-lab{margin-left:0}
+
+/* CAPABILITIES sat too high, crowding the ticker (Kyle, 31 Aug). Air between. */
+#how{padding-top:96px}
+@media(max-width:720px){#how{padding-top:60px}}
+
+/* The flare, used sparingly (Kyle: "I don't wanna overdo it"): the credit
+   pills wear the gradient as a hairline border with the count in gradient
+   text, and the seven gate numbers trade flat brass for the same gradient. */
+.cap-credit{
+  background:linear-gradient(var(--paper),var(--paper)) padding-box,
+             linear-gradient(105deg,#5CC7F0 0%,#7FA8EC 45%,#8A7FE8 100%) border-box;
+  border:1px solid transparent;
+}
+.cap-credit b{
+  background:linear-gradient(105deg,#5CC7F0 0%,#7FA8EC 45%,#8A7FE8 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.compliance-band .flow-step .flow-num{
+  background:linear-gradient(135deg,#5CC7F0,#4a63d8);color:#06121e;
+}
+
+/* MOST POPULAR sat in a weird spot — tucked at the top-left corner, fighting
+   the gradient border's curve (Kyle, 31 Aug). Centered on the top edge now,
+   straddling the border evenly: half above, half in, cushion on both sides. */
+.price-card .featured-tag{left:50%;top:-12px;transform:translateX(-50%);white-space:nowrap}
+
+/* The canyon between the compliance band and PRICING (Kyle's screenshot,
+   31 Aug): two full section paddings stacked. Shrunk to a cushion, not a gulf. */
+#compliance.section{padding-bottom:56px}
+#pricing.section{padding-top:64px}
+@media(max-width:720px){
+  #compliance.section{padding-bottom:28px}
+  #pricing.section{padding-top:36px}
+}
+
+/* The gradient keyword (Kyle: "keep the gradient"). */
+.grad{background:linear-gradient(105deg,#5CC7F0 0%,#7FA8EC 45%,#8A7FE8 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* Scroll reveal, progressive: without JS the original fadeUp still runs; with
+   JS (html.anim) elements hide and rise in as they enter the viewport. */
+html.anim .reveal{animation:none;opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+html.anim .reveal.in{opacity:1;transform:none}
+
+/* Ticker fades at its edges instead of clipping. */
+.marquee{-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+
+/* Hero proof numbers get the display face. */
+.hero-proof-item b{font-family:var(--display);font-size:1.55rem}
+
+/* Pricing: cards lift, the featured card wears the gradient border. */
+.price-card{transition:transform .3s ease,border-color .3s ease}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.featured{background:linear-gradient(var(--paper-2),var(--paper-2)) padding-box,linear-gradient(135deg,#5CC7F0,#4a63d8,#8A7FE8) border-box;border:1.5px solid transparent;box-shadow:0 24px 60px -24px rgba(92,199,240,.45)}
+.featured-tag{background:linear-gradient(135deg,#5CC7F0,#4a63d8);color:#06121e}
+
+/* Seven gates: steps answer the cursor. */
+.flow-step{transition:transform .3s ease}
+.flow-step:hover{transform:translateY(-3px)}
+
+/* Final call: the radial band from the demo. */
+.final-band{text-align:center;background:radial-gradient(120% 140% at 50% 0%,#163049,#0d1620);border:1px solid var(--line);border-radius:var(--r-xl);padding:72px 40px;position:relative;overflow:hidden}
+
+@media(prefers-reduced-motion:reduce){
+  .aurora .blob{animation:none}
+  html.anim .reveal{opacity:1;transform:none;transition:none}
+}
+</style>
+<script id="premium-script">
+(function(){
+  var RM = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  // Only now that JS is provably running does the hide-then-animate engage.
+  document.documentElement.classList.add('anim');
+  var io = ('IntersectionObserver' in window)
+    ? new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold:.08, rootMargin:'0px 0px -8% 0px' })
+    : null;
+  addEventListener('scroll', function(){
+    var n = document.querySelector('.site-nav');
+    if (n) n.classList.toggle('shrunk', scrollY > 40);
+  }, { passive:true });
+
+  window.enhanceMarketing = function(){
+    document.querySelectorAll('.reveal:not(.in)').forEach(function(el){
+      if (RM || !io) { el.classList.add('in'); return; }
+      io.observe(el);
+    });
+    // Anything already on screen reveals immediately — the hero never waits on
+    // the observer's first async tick (some in-app browsers are slow here).
+    requestAnimationFrame(function(){
+      var vh = innerHeight || 800;
+      document.querySelectorAll('.reveal:not(.in)').forEach(function(e){
+        if (e.getBoundingClientRect().top < vh * 0.92) e.classList.add('in');
+      });
+    });
+    // Safety net: whatever happens, nothing stays hidden past 2s.
+    setTimeout(function(){ document.querySelectorAll('.reveal:not(.in)').forEach(function(e){ e.classList.add('in'); }); }, 2000);
+
+    // The "4 Transformations" counter ticks up once.
+    var c = document.querySelector('[data-count]');
+    if (c && !c.dataset.counted) {
+      c.dataset.counted = '1';
+      if (!RM) {
+        var t = +c.dataset.count, i = 0;
+        c.textContent = '0';
+        var step = function(){ i++; c.textContent = i; if (i < t) setTimeout(step, 120); };
+        setTimeout(step, 300);
+      }
+    }
+
+    // The hero slider wipes once to show it moves, then rests at centre.
+    var ba = document.querySelector('.hero .ba');
+    if (ba && !ba.dataset.wiped && !RM) {
+      ba.dataset.wiped = '1';
+      var p = 50, dir = -1, steps = 0;
+      var anim = function(){
+        p += dir * 1.1;
+        if (p <= 18) dir = 1;
+        if (p >= 82) { dir = -1; steps++; }
+        ba.style.setProperty('--ba-pos', p + '%');
+        if (steps < 1 || p > 50) requestAnimationFrame(anim);
+        else ba.style.setProperty('--ba-pos', '50%');
+      };
+      setTimeout(function(){ requestAnimationFrame(anim); }, 700);
+    }
+  };
+  // The router calls enhanceMarketing() after each marketing render; this
+  // covers the very first paint if the render beat this script.
+  enhanceMarketing();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,325 @@
+{
+ "startedAt": "2026-09-02T03:01:25.724Z",
+ "jobs": [
+  {
+   "t": "declutter",
+   "name": "living-room (light)",
+   "photoId": "pho_919c6b0d0199cec6a30ba14e",
+   "jobId": "job_fb93afbf0d422dcd637cb147",
+   "submittedAt": "2026-09-02T03:01:25.724Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:24.982Z",
+    "finishedAt": "2026-09-02T03:03:09.713Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "declutter",
+   "name": "kitchen (counters+fridge)",
+   "photoId": "pho_573cd8a28978514b5bd40bed",
+   "jobId": "job_229d85c0b310bd3edd48bc9c",
+   "submittedAt": "2026-09-02T03:01:30.699Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:30.413Z",
+    "finishedAt": "2026-09-02T03:06:40.538Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "declutter",
+   "name": "nursery (reference standard)",
+   "photoId": "pho_81750dbd60e0e1d7e269e499",
+   "jobId": "job_cedca5ff32e344a12063d17a",
+   "submittedAt": "2026-09-02T03:01:34.848Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:34.626Z",
+    "finishedAt": "2026-09-02T03:07:54.665Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "declutter",
+   "name": "messy bedroom 1",
+   "photoId": "pho_50484fba8863508c64cb9b1c",
+   "jobId": "job_d51144939faebb27f775c723",
+   "submittedAt": "2026-09-02T03:01:38.983Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:38.760Z",
+    "finishedAt": "2026-09-02T03:07:08.242Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "declutter",
+   "name": "messy bedroom 2 (hardest)",
+   "photoId": "pho_47ad6debb26bece9745e6e23",
+   "jobId": "job_5d2ea3cfe5b018895a71d56a",
+   "submittedAt": "2026-09-02T03:01:43.044Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:42.830Z",
+    "finishedAt": "2026-09-02T03:09:11.801Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "empty",
+   "name": "living-room",
+   "photoId": "pho_d172ce79484da4e5416e0bed",
+   "jobId": "job_3904d7a2429f64b1c42e12a5",
+   "submittedAt": "2026-09-02T03:01:47.903Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:47.687Z",
+    "finishedAt": "2026-09-02T03:04:55.622Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "empty",
+   "name": "kitchen",
+   "photoId": "pho_10a59beb6570bb12912e1c1d",
+   "jobId": "job_96822a4250cc3fd9f5ba5fb5",
+   "submittedAt": "2026-09-02T03:01:52.370Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:52.141Z",
+    "finishedAt": "2026-09-02T03:03:03.773Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "empty",
+   "name": "nursery",
+   "photoId": "pho_0e97df6c34ea2da03c9590da",
+   "jobId": "job_7d5bbeb7ba40e4a02afb4ddf",
+   "submittedAt": "2026-09-02T03:01:56.629Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:01:56.406Z",
+    "finishedAt": "2026-09-02T03:02:49.962Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "empty",
+   "name": "messy bedroom 1",
+   "photoId": "pho_b96c4b5332e5591793819348",
+   "jobId": "job_55be289357996139b8c81c71",
+   "submittedAt": "2026-09-02T03:02:00.889Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:00.673Z",
+    "finishedAt": "2026-09-02T03:02:49.443Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "empty",
+   "name": "messy bedroom 2",
+   "photoId": "pho_bb5d4ab7fec0ff104a6376c5",
+   "jobId": "job_80ac86a7e7f08f9575a19f7d",
+   "submittedAt": "2026-09-02T03:02:05.259Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:05.008Z",
+    "finishedAt": "2026-09-02T03:02:55.900Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "staging",
+   "name": "k-living",
+   "photoId": "pho_0b654bb919bc7ae809253b30",
+   "jobId": "job_6278da6cbe0f191c039f1fc2",
+   "submittedAt": "2026-09-02T03:02:15.609Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:15.345Z",
+    "finishedAt": "2026-09-02T03:04:26.095Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "staging",
+   "name": "k-bedroom",
+   "photoId": "pho_710f9c66b3880d0641e16ccb",
+   "jobId": "job_fe6d91034771553c3cc5343c",
+   "submittedAt": "2026-09-02T03:02:25.839Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:25.574Z",
+    "finishedAt": "2026-09-02T03:05:19.600Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "staging",
+   "name": "k-office",
+   "photoId": "pho_8723400fe725546376fac554",
+   "jobId": "job_f04bfac18b3e9bb7a46c93a6",
+   "submittedAt": "2026-09-02T03:02:36.001Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:35.785Z",
+    "finishedAt": "2026-09-02T03:04:49.726Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "staging",
+   "name": "living",
+   "photoId": "pho_39ea8e8433291a74bbf7fae3",
+   "jobId": "job_8666ee561396a0696ee9fd23",
+   "submittedAt": "2026-09-02T03:02:46.274Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:45.986Z",
+    "finishedAt": "2026-09-02T03:04:37.070Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "staging",
+   "name": "c101-reference",
+   "photoId": "pho_ea896f6f54e4b5e12b91f9d3",
+   "jobId": "job_0c5fcef77a3d4de1f18d9a13",
+   "submittedAt": "2026-09-02T03:02:56.574Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:02:56.318Z",
+    "finishedAt": "2026-09-02T03:07:41.292Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "twilight",
+   "name": "colonial",
+   "photoId": "pho_3c20c799f1a053edcf204d44",
+   "jobId": "job_8557b6a216a92ea0698db08e",
+   "submittedAt": "2026-09-02T03:03:00.716Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:03:00.493Z",
+    "finishedAt": "2026-09-02T03:03:49.846Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "twilight",
+   "name": "exterior",
+   "photoId": "pho_711d88df7bb0ac9ba6c43e81",
+   "jobId": "job_d8f5abd6f612d25ba091d040",
+   "submittedAt": "2026-09-02T03:03:04.914Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:03:04.698Z",
+    "finishedAt": "2026-09-02T03:03:55.340Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "twilight",
+   "name": "street-house (12.5MB)",
+   "photoId": "pho_dbc3d9457ce27f85b26e3d4f",
+   "jobId": "job_982534a609714caf239a3804",
+   "submittedAt": "2026-09-02T03:03:09.797Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:03:09.531Z",
+    "finishedAt": "2026-09-02T03:04:56.982Z",
+    "note": null,
+    "waits": false
+   }
+  },
+  {
+   "t": "twilight",
+   "name": "grey-victorian",
+   "photoId": "pho_f6a1fd84d05a3cc3db8450a9",
+   "jobId": "job_d824cbec19529e15037fa038",
+   "submittedAt": "2026-09-02T03:03:13.910Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "rejected",
+    "startedAt": "2026-09-02T03:03:13.672Z",
+    "finishedAt": "2026-09-02T03:04:56.395Z",
+    "note": "No result passed our compliance checks, so nothing was delivered and your credits have been returned.",
+    "waits": false
+   }
+  },
+  {
+   "t": "twilight",
+   "name": "shingle-house",
+   "photoId": "pho_92a89a1ac9314651d4de7b7f",
+   "jobId": "job_12a3c5a3b86c9a8417b94b0c",
+   "submittedAt": "2026-09-02T03:03:18.331Z",
+   "status": 202,
+   "error": null,
+   "live": {
+    "status": "delivered",
+    "startedAt": "2026-09-02T03:03:18.054Z",
+    "finishedAt": "2026-09-02T03:05:02.124Z",
+    "note": null,
+    "waits": false
+   }
+  }
+ ]
+}

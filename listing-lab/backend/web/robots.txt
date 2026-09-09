@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /internal/
+Disallow: /api/
+
+Sitemap: https://thelistinglab.app/sitemap.xml

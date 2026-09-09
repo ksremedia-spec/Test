@@ -1,0 +1,21 @@
+/* Listing Lab — legal pages. One small sheet, shared by /terms and /privacy. */
+:root{ --ink:#1A2230; --soft:#5A6675; --line:#E3E7EC; --bg:#FFFFFF; --accent:#0A62C9; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{ background:var(--bg); color:var(--ink); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+.wrap{ max-width:760px; margin:0 auto; padding:0 20px; }
+header{ border-bottom:1px solid var(--line); padding:18px 0; }
+header .wrap{ display:flex; justify-content:space-between; align-items:center; }
+header a{ color:var(--ink); text-decoration:none; font-weight:700; letter-spacing:.02em; }
+header a span{ color:var(--accent); }
+header nav a{ font-weight:500; color:var(--soft); font-size:.92rem; margin-left:18px; }
+main{ padding:48px 0 80px; }
+h1{ font-size:1.9rem; line-height:1.25; margin-bottom:6px; }
+.updated{ color:var(--soft); font-size:.9rem; margin-bottom:34px; }
+h2{ font-size:1.15rem; margin:34px 0 10px; }
+p, li{ color:#333C49; }
+p{ margin:0 0 14px; }
+ul{ margin:0 0 14px 22px; }
+li{ margin-bottom:6px; }
+a{ color:var(--accent); }
+footer{ border-top:1px solid var(--line); padding:22px 0 40px; color:var(--soft); font-size:.85rem; }
+footer .wrap{ display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; }

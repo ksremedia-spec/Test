@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAQ — Listing Lab</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3">
+<meta name="description" content="Answers to the questions agents ask about Listing Lab: what each transformation does, how the checks work, credits, timing, and your photos.">
+<meta property="og:title" content="Listing Lab — FAQ">
+<meta property="og:description" content="Short answers to what agents ask most.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#0F141B; --paper-2:#151C25; --ink:#E9EDF3; --ink-soft:#A6B1BF; --ink-faint:#75818F;
+    --pine:#4E8FD0; --pine-bright:#66A2DE; --line:#2A3545;
+    --display:"Fraunces","Iowan Old Style",Georgia,serif; --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --grad:linear-gradient(105deg,#5CC7F0 0%,#7FA8EC 45%,#8A7FE8 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:dark;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  .site-nav{position:sticky;top:0;z-index:40;background:rgba(15,20,27,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .site-nav-row{display:flex;align-items:center;justify-content:space-between;gap:16px;height:76px}
+  .mark{display:inline-flex;align-items:center;gap:11px;font-weight:800;font-size:1.24rem;letter-spacing:.11em;text-transform:uppercase}
+  .mark img{width:46px;height:46px;flex:none}
+  .mark .lab{margin-left:-.18em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .nav-links{display:flex;align-items:center;gap:34px;font-size:.9rem;font-weight:500;color:var(--ink-soft)}
+  .nav-links a:hover,.nav-links a.here{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:999px;border:1px solid transparent;font-size:.92rem;font-weight:600;letter-spacing:.01em;white-space:nowrap;transition:background .18s,border-color .18s,transform .18s}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:var(--pine);color:#0A1017;box-shadow:0 8px 22px -10px rgba(78,143,208,.45)}
+  .btn-primary:hover{background:var(--pine-bright)}
+  .btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--ink-faint);background:var(--paper-2)}
+  .btn-sm{padding:9px 16px;font-size:.82rem}
+  @media(max-width:860px){.nav-links{display:none}}
+  @media(max-width:420px){.mark{font-size:1.02rem;gap:8px}.mark img{width:38px;height:38px}}
+
+  .hero{position:relative;padding:72px 0 44px;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:-40% -20% auto;height:120%;background:radial-gradient(60% 50% at 30% 30%,rgba(78,143,208,.16),transparent 70%);pointer-events:none}
+  .hero .wrap{position:relative}
+  .eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--pine);margin-bottom:22px}
+  h1{font-family:var(--display);font-weight:500;font-size:clamp(2.3rem,4.6vw,3.5rem);line-height:1.06;letter-spacing:-.01em;text-wrap:balance;max-width:20ch}
+  h1 .kw{font-style:italic;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{margin-top:22px;font-size:1.13rem;line-height:1.6;color:var(--ink-soft);max-width:48ch}
+  .jump{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+  .jump a{font-size:.84rem;font-weight:500;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:8px 14px;transition:border-color .18s,color .18s}
+  .jump a:hover{border-color:var(--ink-faint);color:var(--ink)}
+
+  .group{scroll-margin-top:80px;border-top:1px solid var(--line);padding:48px 0 8px}
+  .grp{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:48px;align-items:start}
+  .grp>*{min-width:0}
+  .grp h2{font-family:var(--display);font-weight:500;font-size:1.7rem;line-height:1.15;position:sticky;top:100px}
+  .qs details{border-bottom:1px solid var(--line)}
+  .qs details:first-child{border-top:1px solid var(--line)}
+  .qs summary{cursor:pointer;list-style:none;padding:18px 40px 18px 0;font-weight:600;font-size:1.02rem;color:var(--ink);position:relative;line-height:1.4}
+  .qs summary::-webkit-details-marker{display:none}
+  .qs summary::before,.qs summary::after{content:"";position:absolute;right:8px;top:50%;width:14px;height:2px;background:var(--pine);border-radius:2px;transform:translateY(-50%);transition:transform .2s}
+  .qs summary::after{transform:translateY(-50%) rotate(90deg)}
+  .qs details[open] summary::after{transform:translateY(-50%) rotate(0)}
+  .qs summary:hover{color:var(--pine-bright)}
+  .qs summary:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:4px}
+  .qs details>div{padding:0 0 22px}
+  .qs p{color:var(--ink-soft);font-size:1rem;max-width:62ch}
+  .qs p+p{margin-top:10px}
+  .qs p a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+
+  .standard{padding:64px 0 72px}
+  .standard-box{border:1px solid var(--line);border-radius:18px;padding:36px 40px;background:var(--paper-2);display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
+  .standard h2{font-family:var(--display);font-weight:500;font-size:clamp(1.6rem,2.6vw,2.1rem);line-height:1.15}
+  .standard p{color:var(--ink-soft);margin-top:12px}
+  .standard .cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-self:end}
+  .standard .quiet{font-size:.9rem;color:var(--ink-faint);flex-basis:100%;text-align:right}
+  .standard .quiet a{color:var(--ink-soft)}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 44px;color:var(--ink-faint);font-size:.85rem}
+  footer .wrap{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  footer a:hover{color:var(--ink)}
+
+  @media(max-width:860px){
+    .hero{padding:44px 0 32px}
+    .group{padding:36px 0 4px}
+    .grp{grid-template-columns:1fr;gap:18px}
+    .grp h2{position:static;font-size:1.45rem}
+    .standard-box{grid-template-columns:1fr;padding:28px 24px}
+    .standard .cta{justify-self:start}
+    .standard .quiet{text-align:left}
+  }
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.qs summary::before,.qs summary::after,.btn{transition:none}}
+</style>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Listing Lab?", "acceptedAnswer": {"@type": "Answer", "text": "AI enhancement built for real-estate photography. Upload a listing photo, choose what you want done — Declutter, Empty Room, Virtual Staging or Twilight — and get a finished, disclosed image back in minutes. It was built by a working listing photographer in Massachusetts, and every result is checked against your original before it reaches you."}}, {"@type": "Question", "name": "What kind of photos can I upload?", "acceptedAnswer": {"@type": "Answer", "text": "Virtually every popular photo type — JPEG, PNG, HEIC and HEIF — straight from your phone or your photographer. Up to 25 MB each, and you can pick several at once. Photos from a professional shoot or straight from your phone both work; wide, level, well-lit interiors and exteriors give the best results, the same as they would for any listing. Camera RAW files should be exported to JPEG first."}}, {"@type": "Question", "name": "Do I need to install anything?", "acceptedAnswer": {"@type": "Answer", "text": "No. Listing Lab runs in your browser on a phone, tablet or computer. Sign in with Google or an email and password."}}, {"@type": "Question", "name": "How long does it take?", "acceptedAnswer": {"@type": "Answer", "text": "Declutter, Empty Room and Twilight usually come back in one to three minutes. Virtual Staging takes a few minutes longer because we render several versions and deliver every one that passes our checks, up to three. You don't need to keep the page open — the app shows you when a job is done. If a job can't be finished within fifteen minutes, it stops and the credits come straight back."}}, {"@type": "Question", "name": "What resolution do I get back?", "acceptedAnswer": {"@type": "Answer", "text": "The finished image comes back at the resolution you uploaded, up to 4K. We never upscale a small file into a soft large one."}}, {"@type": "Question", "name": "Declutter — what goes and what stays?", "acceptedAnswer": {"@type": "Answer", "text": "Personal clutter goes: toiletries, laundry and loose clothing, papers, cords and chargers, toys, pet gear, boxes and bags, trash cans, magnets and notes on the fridge, and furniture that is clearly being stored rather than used (a mattress leaning on a wall, stacked chairs). The room stays: furniture in use, rugs, art, mirrors, lamps, curtains, plants, styled décor, computers and TVs that are set up, and anything fitted to the house. It is a tidy-up, not a redesign."}}, {"@type": "Question", "name": "Empty Room — what does it remove?", "acceptedAnswer": {"@type": "Answer", "text": "Everything movable: furniture, rugs, lamps, art, curtains, freestanding appliances and décor. What conveys with the house stays — walls, floors, windows, doors, built-ins, light fixtures, fitted appliances, ceiling fans, radiators and vents. Good for vacant-look listings, floor-plan clarity, or as the first step before staging."}}, {"@type": "Question", "name": "Virtual Staging — how does it work?", "acceptedAnswer": {"@type": "Answer", "text": "Pick a room type and a style — Standard, Modern, Contemporary, Coastal or Luxury — and we furnish the room to real-world scale, with light and shadows that match the photograph. Doors, windows and walkways stay clear. We render several candidates, check each one, and deliver every version that passes, up to three, so you choose. A furnished room can also be emptied first and then staged from the clean result."}}, {"@type": "Question", "name": "Twilight — what changes?", "acceptedAnswer": {"@type": "Answer", "text": "A daylight exterior becomes a believable dusk photograph: sky and light only. The house, landscaping and everything in the frame stay exactly as shot — no dramatic or moody look, just a crisp, true-to-life twilight."}}, {"@type": "Question", "name": "What do you mean by \"checked before delivery\"?", "acceptedAnswer": {"@type": "Answer", "text": "After the image is generated, a separate inspection compares it with your original, feature by feature: camera angle and framing, walls, windows and doors, floors and finishes, fixtures and appliances, the furniture that was meant to stay, and the spots where things were removed. It also looks through doorways and windows to make sure the space beyond wasn't redrawn. If the result changed the house, it is never delivered — it is thrown out and re-done, or refused."}}, {"@type": "Question", "name": "Why was my photo refused?", "acceptedAnswer": {"@type": "Answer", "text": "Because nothing we generated passed the check. That happens most often with extremely cluttered rooms, where a Declutter can't clear everything without disturbing the room itself — try Empty Room on those. Occasionally it is just a hard photograph. Either way, the credits are returned automatically and you can run it again or try a different transformation."}}, {"@type": "Question", "name": "What is the stamp on my images?", "acceptedAnswer": {"@type": "Answer", "text": "A small, permanent disclosure — \"Virtually decluttered\", \"Virtually emptied\", \"Virtually staged\" or \"Virtual twilight\" — on every image we deliver. It exists so buyers are never misled, and in a growing number of markets it is required by MLS rules or law. Please don't crop or cover it; it is part of what makes the image safe to publish."}}, {"@type": "Question", "name": "Is this allowed by my MLS?", "acceptedAnswer": {"@type": "Answer", "text": "Rules differ by market and they are changing quickly. Most boards allow virtual staging and enhancement when it is disclosed and doesn't misrepresent the property — which is exactly how Listing Lab works. Check your own board's rules; you are responsible for your listings, and we built the disclosure and the checks to make that easy to stand behind."}}, {"@type": "Question", "name": "Will it ever change the house?", "acceptedAnswer": {"@type": "Answer", "text": "It is built not to. No added or removed windows, doors or walls, no new finishes, no invented features, and no lighting that wasn't there. Generative AI is not perfect, so the inspection step is what catches the rare miss — and it is why you should still look at every image before it goes live, as you would with any edit."}}, {"@type": "Question", "name": "Can I see the before and after?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every result opens with a side-by-side slider against your original, so you can check the work in seconds."}}, {"@type": "Question", "name": "How do credits work?", "acceptedAnswer": {"@type": "Answer", "text": "You buy credits in packs and spend them per image. Declutter, Empty Room and Virtual Staging are 2 credits each; Twilight is 1. The cost is shown in the app before you start a job. Credits never expire."}}, {"@type": "Question", "name": "What do packs cost?", "acceptedAnswer": {"@type": "Answer", "text": "10 credits for $19.99, 30 for $56.99, or 75 for $137.99. Payment is by card through Stripe; we never see your card details. Have a promo code? There is a place for it in the buy-credits sheet."}}, {"@type": "Question", "name": "What if a job fails or is refused?", "acceptedAnswer": {"@type": "Answer", "text": "You are only charged for images we actually deliver. If a job fails or nothing passes the check, its credits go back to your balance automatically — no need to ask."}}, {"@type": "Question", "name": "Can I get a refund?", "acceptedAnswer": {"@type": "Answer", "text": "Purchased credits are non-refundable, except where the law requires otherwise. They never expire, and any credits returned from a failed or refused job stay on your balance for whatever you run next."}}, {"@type": "Question", "name": "Who owns the results?", "acceptedAnswer": {"@type": "Answer", "text": "You do. You keep every right in the photos you upload and in the images we deliver. We use your photos only to do the work and show it back to you."}}, {"@type": "Question", "name": "Are my photos private?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your uploads and results are stored under your account and are visible only to you. The AI providers that generate the images process them in order to do so. The details are in our Privacy Policy, and you can ask us to erase your account and everything in it at any time."}}]}</script>
+</head>
+<body>
+<header class="site-nav">
+  <div class="wrap site-nav-row">
+    <a href="/" class="mark"><img src="/logo-full.png" alt="" width="46" height="46" decoding="async"><span>Listing&nbsp;<span class="lab">Lab</span></span></a>
+    <nav class="nav-links">
+      <a href="/#how">Capabilities</a>
+      <a href="/#compliance">Compliance</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/faq" class="here">FAQ</a>
+    </nav>
+    <div><a href="/app" class="btn btn-primary btn-sm">Create an account</a></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">FAQ</div>
+    <h1>Short answers to what agents <span class="kw">actually ask.</span></h1>
+    <p class="lede">If yours isn&#39;t here, email us &mdash; a real person reads it.</p>
+    <div class="jump">
+      <a href="#getting-started">Getting started</a>
+      <a href="#transformations">The four transformations</a>
+      <a href="#quality">Quality and compliance</a>
+      <a href="#credits">Credits and pricing</a>
+      <a href="#photos">Your photos</a>
+    </div>
+  </div>
+</section>
+
+  <section class="group" id="getting-started"><div class="wrap grp"><h2>Getting started</h2><div class="qs">
+    <details>
+    <summary>What is Listing Lab?</summary>
+    <div><p>AI enhancement built for real-estate photography. Upload a listing photo, choose what you want done — Declutter, Empty Room, Virtual Staging or Twilight — and get a finished, disclosed image back in minutes. It was built by a working listing photographer in Massachusetts, and every result is checked against your original before it reaches you.</p></div>
+    </details>
+    <details>
+    <summary>What kind of photos can I upload?</summary>
+    <div><p>Virtually every popular photo type — JPEG, PNG, HEIC and HEIF — straight from your phone or your photographer. Up to 25 MB each, and you can pick several at once. Photos from a professional shoot or straight from your phone both work; wide, level, well-lit interiors and exteriors give the best results, the same as they would for any listing. Camera RAW files should be exported to JPEG first.</p></div>
+    </details>
+    <details>
+    <summary>Do I need to install anything?</summary>
+    <div><p>No. Listing Lab runs in your browser on a phone, tablet or computer. Sign in with Google or an email and password.</p></div>
+    </details>
+    <details>
+    <summary>How long does it take?</summary>
+    <div><p>Declutter, Empty Room and Twilight usually come back in one to three minutes. Virtual Staging takes a few minutes longer because we render several versions and deliver every one that passes our checks, up to three. You don't need to keep the page open — the app shows you when a job is done. If a job can't be finished within fifteen minutes, it stops and the credits come straight back.</p></div>
+    </details>
+    <details>
+    <summary>What resolution do I get back?</summary>
+    <div><p>The finished image comes back at the resolution you uploaded, up to 4K. We never upscale a small file into a soft large one.</p></div>
+    </details>
+
+  </div></section>
+  <section class="group" id="transformations"><div class="wrap grp"><h2>The four transformations</h2><div class="qs">
+    <details>
+    <summary>Declutter — what goes and what stays?</summary>
+    <div><p>Personal clutter goes: toiletries, laundry and loose clothing, papers, cords and chargers, toys, pet gear, boxes and bags, trash cans, magnets and notes on the fridge, and furniture that is clearly being stored rather than used (a mattress leaning on a wall, stacked chairs). The room stays: furniture in use, rugs, art, mirrors, lamps, curtains, plants, styled décor, computers and TVs that are set up, and anything fitted to the house. It is a tidy-up, not a redesign.</p></div>
+    </details>
+    <details>
+    <summary>Empty Room — what does it remove?</summary>
+    <div><p>Everything movable: furniture, rugs, lamps, art, curtains, freestanding appliances and décor. What conveys with the house stays — walls, floors, windows, doors, built-ins, light fixtures, fitted appliances, ceiling fans, radiators and vents. Good for vacant-look listings, floor-plan clarity, or as the first step before staging.</p></div>
+    </details>
+    <details>
+    <summary>Virtual Staging — how does it work?</summary>
+    <div><p>Pick a room type and a style — Standard, Modern, Contemporary, Coastal or Luxury — and we furnish the room to real-world scale, with light and shadows that match the photograph. Doors, windows and walkways stay clear. We render several candidates, check each one, and deliver every version that passes, up to three, so you choose. A furnished room can also be emptied first and then staged from the clean result.</p></div>
+    </details>
+    <details>
+    <summary>Twilight — what changes?</summary>
+    <div><p>A daylight exterior becomes a believable dusk photograph: sky and light only. The house, landscaping and everything in the frame stay exactly as shot — no dramatic or moody look, just a crisp, true-to-life twilight.</p></div>
+    </details>
+
+  </div></section>
+  <section class="group" id="quality"><div class="wrap grp"><h2>Quality and compliance</h2><div class="qs">
+    <details>
+    <summary>What do you mean by "checked before delivery"?</summary>
+    <div><p>After the image is generated, a separate inspection compares it with your original, feature by feature: camera angle and framing, walls, windows and doors, floors and finishes, fixtures and appliances, the furniture that was meant to stay, and the spots where things were removed. It also looks through doorways and windows to make sure the space beyond wasn't redrawn. If the result changed the house, it is never delivered — it is thrown out and re-done, or refused.</p></div>
+    </details>
+    <details>
+    <summary>Why was my photo refused?</summary>
+    <div><p>Because nothing we generated passed the check. That happens most often with extremely cluttered rooms, where a Declutter can't clear everything without disturbing the room itself — try Empty Room on those. Occasionally it is just a hard photograph. Either way, the credits are returned automatically and you can run it again or try a different transformation.</p></div>
+    </details>
+    <details>
+    <summary>What is the stamp on my images?</summary>
+    <div><p>A small, permanent disclosure — "Virtually decluttered", "Virtually emptied", "Virtually staged" or "Virtual twilight" — on every image we deliver. It exists so buyers are never misled, and in a growing number of markets it is required by MLS rules or law. Please don't crop or cover it; it is part of what makes the image safe to publish.</p></div>
+    </details>
+    <details>
+    <summary>Is this allowed by my MLS?</summary>
+    <div><p>Rules differ by market and they are changing quickly. Most boards allow virtual staging and enhancement when it is disclosed and doesn't misrepresent the property — which is exactly how Listing Lab works. Check your own board's rules; you are responsible for your listings, and we built the disclosure and the checks to make that easy to stand behind.</p></div>
+    </details>
+    <details>
+    <summary>Will it ever change the house?</summary>
+    <div><p>It is built not to. No added or removed windows, doors or walls, no new finishes, no invented features, and no lighting that wasn't there. Generative AI is not perfect, so the inspection step is what catches the rare miss — and it is why you should still look at every image before it goes live, as you would with any edit.</p></div>
+    </details>
+    <details>
+    <summary>Can I see the before and after?</summary>
+    <div><p>Yes. Every result opens with a side-by-side slider against your original, so you can check the work in seconds.</p></div>
+    </details>
+
+  </div></section>
+  <section class="group" id="credits"><div class="wrap grp"><h2>Credits and pricing</h2><div class="qs">
+    <details>
+    <summary>How do credits work?</summary>
+    <div><p>You buy credits in packs and spend them per image. Declutter, Empty Room and Virtual Staging are 2 credits each; Twilight is 1. The cost is shown in the app before you start a job. Credits never expire.</p></div>
+    </details>
+    <details>
+    <summary>What do packs cost?</summary>
+    <div><p>10 credits for $19.99, 30 for $56.99, or 75 for $137.99. Payment is by card through Stripe; we never see your card details. Have a promo code? There is a place for it in the buy-credits sheet.</p></div>
+    </details>
+    <details>
+    <summary>What if a job fails or is refused?</summary>
+    <div><p>You are only charged for images we actually deliver. If a job fails or nothing passes the check, its credits go back to your balance automatically — no need to ask.</p></div>
+    </details>
+    <details>
+    <summary>Can I get a refund?</summary>
+    <div><p>Purchased credits are non-refundable, except where the law requires otherwise. They never expire, and any credits returned from a failed or refused job stay on your balance for whatever you run next.</p></div>
+    </details>
+
+  </div></section>
+  <section class="group" id="photos"><div class="wrap grp"><h2>Your photos</h2><div class="qs">
+    <details>
+    <summary>Who owns the results?</summary>
+    <div><p>You do. You keep every right in the photos you upload and in the images we deliver. We use your photos only to do the work and show it back to you.</p></div>
+    </details>
+    <details>
+    <summary>Are my photos private?</summary>
+    <div><p>Yes. Your uploads and results are stored under your account and are visible only to you. The AI providers that generate the images process them in order to do so. The details are in our <a href="/privacy">Privacy Policy</a>, and you can ask us to erase your account and everything in it at any time.</p></div>
+    </details>
+
+  </div></div></section>
+
+<section class="standard">
+  <div class="wrap">
+    <div class="standard-box">
+      <div>
+        <h2>Still have a question?</h2>
+        <p>Email <a href="mailto:support@thelistinglab.app" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">support@thelistinglab.app</a>. It goes to the photographer who built this, not a ticket queue.</p>
+      </div>
+      <div class="cta">
+        <a href="/app" class="btn btn-primary">Try it on a listing photo</a>
+        <a href="/founder" class="btn btn-ghost">Who built this</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap">
+  <span>© 2026 Horizon Home Media</span>
+  <span><a href="/founder">Who built this</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/">Home</a></span>
+</div></footer>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Secrets never enter the image — the Gemini key arrives at runtime from
+# Cloudflare's secret store. The Dockerfile also asserts this at build time.
+**/.env
+**/.env.*
+**/*.crt
+**/*.pem
+**/*.key
+
+# Build noise — the image runs npm ci itself.
+**/node_modules
+.git
+
+# Local run output and tests have no business in a production image.
+pipeline/out
+test
+web

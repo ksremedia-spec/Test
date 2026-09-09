@@ -1,0 +1,203 @@
+# Listing Lab — Cloudflare configuration.
+#
+# Deploying, from this directory:
+#
+#   npx wrangler login
+#   npx wrangler d1 create listinglab
+#     → copy the database_id it prints into the [[d1_databases]] block below
+#   npx wrangler d1 execute listinglab --remote --file schema.sql
+#   npx wrangler r2 bucket create listinglab-photos
+#   npx wrangler secret put GEMINI_API_KEY
+#   npx wrangler secret put PIPELINE_SECRET      # any long random string
+#   npx wrangler deploy
+#
+# Stripe secrets are only needed once payments are switched on:
+#   npx wrangler secret put STRIPE_SECRET_KEY
+#   npx wrangler secret put STRIPE_WEBHOOK_SECRET
+#
+# Kyle owns thelistinglab.app and already has a paid Cloudflare account. After the
+# first deploy, add the custom domain in the Workers dashboard (Settings →
+# Domains & Routes → Add → Custom Domain → thelistinglab.app). Until then the
+# workers.dev address works fine on a phone.
+#
+# NOTE: Containers require the Workers Paid plan.
+
+name = "listinglab"
+workers_dev = true
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Overwrite with the real address after the first deploy — it is used to build
+# the Stripe return links and the callback URL handed to the container.
+SITE_URL = "https://thelistinglab.app"
+
+# WHICH DOOR THE IMAGE MODEL IS REACHED THROUGH FIRST.
+#
+# gemini-3-pro-image is the same model either way. What differs is everything
+# around it, and on 26 Aug 2026 all three differences pointed the same direction:
+#
+#   capacity   The developer API serves from a global shared pool and spent over
+#              an hour answering 500 "currently experiencing high demand".
+#              Vertex, same minute, same prompt, returned a picture.
+#   geography  The developer API refuses some container instances outright —
+#              "User location is not supported for the API use" — which killed a
+#              staging job five seconds in. Vertex has not.
+#   ceiling    Reaching the developer API from a blocked instance means going
+#              through the Worker, and Cloudflare cuts a Worker's outbound fetch
+#              at 125 seconds. A generation is 40–90s and sometimes more. That
+#              ceiling is what killed Kyle's twilight three times.
+#
+# So Vertex goes first, and the developer API is the fallback rather than the
+# other way round. Both are wired; a jammed door falls through to the other one
+# automatically, so neither being down is a failure the customer sees.
+PROVIDER = "vertex"
+
+# EVERY RENDER AT 2K, WHATEVER THE UPLOAD.
+#
+# The pipeline used to choose per photograph — anything over ~2600px rendered at
+# 4K — which for Kyle's luxury work meant most of them. Measured across 28 real
+# jobs on 26 Aug 2026:
+#
+#   2K jobs   median 2:30
+#   4K jobs   median 4:17     and twice the Google cost per image
+#
+# Kyle's own words about the big files: "once the agent downloads, it's
+# automatically downsized for them anyway. They can't use those big files on the
+# MLS." MLS standard upload is 2048x1536. So the 4K render is nearly two minutes
+# and double the money spent on resolution that is thrown away before anyone
+# looks at the photograph.
+#
+# His target is two and a half to three minutes. This is the single change that
+# gets the slow half of jobs there, and it costs the customer nothing they can
+# see. Delete this line to go back to choosing per photograph.
+IMAGE_SIZE = "2K"
+
+# The web client. Anything that is not /api or /internal is served from here.
+[assets]
+directory = "./web"
+binding = "ASSETS"
+# A single-page app: unknown paths return the app rather than a 404.
+not_found_handling = "single-page-application"
+# THE .jpg.html BUG (Kyle's screenshot, 28 Aug 2026). Clicking a download link
+# is a NAVIGATION request, and with SPA not-found handling Cloudflare serves
+# index.html to unmatched navigations WITHOUT ever running the Worker — so
+# /api/photos/...?download=1 came back as text/html and Safari saved
+# "listing-lab-twilight.jpg.html". So /api and /internal always reached the
+# Worker — and since the hardening of 3 Sep 2026, EVERYTHING does: the
+# http→https and www→apex redirects and the security headers live in the
+# Worker, and a page served straight from the asset cache would skip them.
+# The Worker hands unmatched paths to the asset binding itself, so the SPA
+# behaviour above is unchanged.
+run_worker_first = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "listinglab"
+database_id = "2d6c3b46-7ea7-4a59-8494-19623e4247c3"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "listinglab-photos"
+
+# The pipeline. `standard` is the smallest instance with enough memory to hold a
+# 4K frame and its crops at once; sharp is memory-hungry and an out-of-memory kill
+# looks exactly like a mysteriously failing job.
+[[containers]]
+class_name = "PipelineContainer"
+# Deploys from the sandbox build the image locally (a build-time-only secret
+# mounts the sandbox's TLS CA for npm — see /tmp/Dockerfile.deploy there; it
+# never enters a layer) and push a TAG here. To build via wrangler on a machine
+# with clean egress instead, set image back to "./container/Dockerfile" with
+# image_build_context = ".".
+image = "registry.cloudflare.com/3555e81671c92dbf94b1a7218828d65d/listinglab-pipeline:hearth1"
+instance_type = "standard-1"
+# Deliberately far above what the pool needs.
+#
+# The pool itself is 5 addresses (4 job slots + classify), so 5 would be "enough"
+# on paper. It was not: instances from an earlier design are still alive and
+# holding slots, and a cap that is merely sufficient turns any straggler into a
+# total outage — jobs never start and sit on "queued" with nothing to show the
+# customer. Headroom here costs nothing when idle, because Cloudflare bills for
+# running instances, not for the ceiling.
+max_instances = 50
+
+# Pin the containers to North America.
+#
+# WHY: Google's Gemini API geolocates the caller and refuses whole regions:
+#
+#   400 FAILED_PRECONDITION — "User location is not supported for the API use."
+#
+# Cloudflare places containers anywhere on its network, so an unpinned container
+# is a coin flip — the same job succeeds or dies depending on which datacentre
+# happened to run it. That is exactly what it looked like from the outside: a
+# flaky pipeline. It was not flaky, it was geography.
+#
+# Kyle shoots Connecticut, his agents are here, and his photos live in ENAM
+# already, so this also cuts the round trip to the images.
+[containers.constraints]
+regions = ["ENAM", "WNAM"]
+
+[[durable_objects.bindings]]
+name = "PIPELINE"
+class_name = "PipelineContainer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["PipelineContainer"]
+
+# The minute hand behind the outage retry queue.
+#
+# Google's image model serves from a shared pool and refuses work when that pool
+# is saturated — 500, "currently experiencing high demand", everybody at once.
+# A job that dies on it is parked rather than failed, and this is what picks it
+# back up: every minute, claim whatever is due and hand it to the pipeline again.
+#
+# It has to be a cron and not the browser's polling, because an agent who uploads
+# a photo and shuts their laptop should come back to a finished photograph. Most
+# minutes it claims nothing and costs nothing.
+[triggers]
+crons = ["* * * * *"]
+
+
+# RATE LIMITS (audit, 3 Sep 2026) — Cloudflare's Workers rate limiter, one
+# counter per binding, keyed in worker.js on route + caller IP. Sign-in and
+# sign-up share a limit; redeem and support get their own. A missing binding
+# is treated as "no limit" so an old deploy never breaks a door.
+[[unsafe.bindings]]
+name = "LIMIT_AUTH"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
+[[unsafe.bindings]]
+name = "LIMIT_REDEEM"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 5, period = 60 }
+
+[[unsafe.bindings]]
+name = "LIMIT_SUPPORT"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 3, period = 60 }
+
+[observability]
+enabled = true
+
+# thelistinglab.app — active since 29 Aug 2026; deploy attaches both hostnames.
+[[routes]]
+pattern = "thelistinglab.app"
+custom_domain = true
+
+[[routes]]
+pattern = "www.thelistinglab.app"
+custom_domain = true
+
+# In-app support box → Kyle's inbox, via the zone's Email Routing.
+# Destination must be a verified Email Routing address (ksremedia@gmail.com is —
+# it is the account email, auto-verified when routing was enabled 29 Aug).
+[[send_email]]
+name = "SUPPORT_EMAIL"
+destination_address = "ksremedia@gmail.com"

@@ -1,0 +1,32 @@
+[
+  {
+    "input": "k-living.jpg",
+    "room": "Living Room",
+    "style": "Standard"
+  },
+  {
+    "input": "k-bedroom.jpg",
+    "room": "Primary Bedroom",
+    "style": "Standard"
+  },
+  {
+    "input": "k-office.jpg",
+    "room": "Home Office",
+    "style": "Standard"
+  },
+  {
+    "input": "living.jpg",
+    "room": "Living Room",
+    "style": "Coastal"
+  },
+  {
+    "input": "living.jpg",
+    "room": "Dining Room",
+    "style": "Modern"
+  },
+  {
+    "input": "k-bedroom.jpg",
+    "room": "Primary Bedroom",
+    "style": "Luxury"
+  }
+]

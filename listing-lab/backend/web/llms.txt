@@ -1,0 +1,30 @@
+# Listing Lab
+
+> AI photo enhancement built for real-estate listings: Declutter, Empty Room, Virtual Staging and Twilight. Every image is inspected against the original before delivery — architecture, fixtures and camera never altered — and every delivered image carries a permanent disclosure stamp. Credit-based, no subscription. Built by a working real-estate photographer and former licensed agent in Massachusetts.
+
+## What it does
+
+- Declutter: removes personal clutter (toiletries, laundry, papers, cords, toys, boxes) and leaves the room's furniture, art and fixtures in place. 2 credits.
+- Empty Room: removes everything movable; what conveys with the house stays. 2 credits.
+- Virtual Staging: furnishes a room to real-world scale in Standard, Modern, Contemporary, Coastal or Luxury style; delivers up to three passing versions. 2 credits.
+- Twilight: turns a daylight exterior into a true-to-life dusk photo — sky and light only. 1 credit.
+
+## How results are checked
+
+After generation, a separate AI inspection compares the result with the original feature by feature (framing, walls, windows, doors, floors, fixtures, the furniture meant to stay, and the space seen through openings). Anything that changed the house is rejected and rerun or refused; credits for refused jobs are returned automatically. Delivered images are stamped "Virtually decluttered", "Virtually emptied", "Virtually staged" or "Virtual twilight".
+
+## Pricing
+
+Credit packs: 10 for $19.99, 30 for $56.99, 75 for $137.99. Credits never expire. Payments by Stripe. No subscription. Purchased credits are non-refundable except where the law requires.
+
+## Pages
+
+- Home: https://thelistinglab.app/
+- FAQ: https://thelistinglab.app/faq
+- Who built this: https://thelistinglab.app/founder
+- Terms: https://thelistinglab.app/terms
+- Privacy: https://thelistinglab.app/privacy
+
+## Contact
+
+support@thelistinglab.app

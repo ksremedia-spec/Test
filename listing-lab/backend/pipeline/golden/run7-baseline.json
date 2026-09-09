@@ -1,0 +1,861 @@
+{
+  "at": "2026-08-24T02:03:15.314Z",
+  "model": "gemini-3.6-flash",
+  "votes": 3,
+  "score": {
+    "ok": 47,
+    "total": 60
+  },
+  "results": [
+    {
+      "id": "c001",
+      "type": "declutter",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Black office chair in the bottom-left corner was removed.",
+        "[all_furniture_and_decor_present_and_unmoved] The black office chair in the bottom left corner was removed."
+      ],
+      "note": "Black office chair at the bottom-left corner was removed.; Ceiling light fixture state was changed from off to on.",
+      "candidate": "golden/images/c001_bedroom1.declutter.attempt1.raw.jpg"
+    },
+    {
+      "id": "c002",
+      "type": "declutter",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Chair at frame edge completed — judge fails it now, I proposed pass. Edge-of-frame policy decision. | judge passed",
+      "candidate": "golden/images/c002_bedroom1.declutter.attempt2.raw.jpg"
+    },
+    {
+      "id": "c003",
+      "type": "declutter",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c003_bedroom2.declutter.attempt1.raw.jpg"
+    },
+    {
+      "id": "c004",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c004_colonial.twilight-Dusk.attempt1.raw.jpg"
+    },
+    {
+      "id": "c005",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c005_exterior.twilight-Dusk.attempt1.raw.jpg"
+    },
+    {
+      "id": "c006",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 7,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Override: outlets behind nightstands are normal — a stager would deliver this",
+      "candidate": "golden/images/c006_k-bedroom.staging-Transitional-PrimaryBedroom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c007",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 7,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Rejected for outlets behind nightstands (rule since relaxed) + dresser in entry zone — your call. | Dresser extends into the keep clear zone near right entryway (x 75%-100%, y 75%-100%).; Left nightstand covers wall outlet visible in original image.",
+      "candidate": "golden/images/c007_k-bedroom.staging-Transitional-PrimaryBedroom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c008",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "1/3",
+      "violations": [
+        "Framed artwork is mounted directly over the rear window glass.",
+        "Framed artwork is visually hung directly over the window glass above the bed headboard."
+      ],
+      "note": "Headboard and framed artwork cover the lower section of the rear window.; Area rug extends into the specified keep-clear zone near the right entryway.",
+      "candidate": "golden/images/c008_k-bedroom.staging-Transitional-PrimaryBedroom.attempt3.raw.jpg"
+    },
+    {
+      "id": "c009",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Main sofa seating faces left across the room rather than facing the fireplace and TV focal point on the back wall.; Sofa orientation faces across the room rathe",
+      "candidate": "golden/images/c009_k-living.staging-Transitional-LivingRoom.cand1.raw.jpg"
+    },
+    {
+      "id": "c010",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "1/3",
+      "violations": [
+        "Framed artwork added to the right wall is mounted directly over the existing window and blinds.",
+        "Framed artwork mounted over the window blinds on the right wall covers a fixed window feature."
+      ],
+      "note": "Added wall art on right wall overlaps window frame casing (x≈92%, y≈40%).; Compliance verdict unreadable",
+      "candidate": "golden/images/c010_k-living.staging-Transitional-LivingRoom.cand2.raw.jpg"
+    },
+    {
+      "id": "c011",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "bad furntirue placement — Sectional over a floor vent — judge now passes it; do you care about covered floor vents? | Sectional sofa covers the floor vent on the right side at x≈84%, y≈65%; [no_window_door_switch_vent_covered] The sectional sofa covers the floor vent located at",
+      "candidate": "golden/images/c011_k-living.staging-Transitional-LivingRoom.cand3.raw.jpg"
+    },
+    {
+      "id": "c012",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c012_k-living.staging-Transitional-LivingRoom.cand4.raw.jpg"
+    },
+    {
+      "id": "c013",
+      "type": "staging",
+      "expected": "pass",
+      "got": "fail",
+      "ok": false,
+      "realism": "none",
+      "score": 4,
+      "votes": "3/3",
+      "violations": [
+        "design score 4: The large sectional is heavy along the right window wall, creating an unbalanced arrangement that leaves much of the main floor space empty."
+      ],
+      "note": "Blue armchair sits inside the designated keep-clear box for the left cased opening at x 0%–22%, y 56%–68%.; Armchair encroaches into the cased opening clear zon",
+      "candidate": "golden/images/c013_k-living.staging-Transitional-LivingRoom.cand5.raw.jpg"
+    },
+    {
+      "id": "c014",
+      "type": "staging",
+      "expected": "pass",
+      "got": "fail",
+      "ok": false,
+      "realism": "severe",
+      "score": null,
+      "votes": "2/3",
+      "violations": [
+        "realism: The crop is a completely featureless, blurred brown swatch with no recognizable artwork content or detail."
+      ],
+      "note": "judge passed",
+      "candidate": "golden/images/c014_k-living.staging-Transitional-LivingRoom.cand6.raw.jpg"
+    },
+    {
+      "id": "c015",
+      "type": "staging",
+      "expected": "pass",
+      "got": "fail",
+      "ok": false,
+      "realism": "none",
+      "score": 3,
+      "votes": "3/3",
+      "violations": [
+        "design score 3: The desk and bookcase grouping is crammed into the left side of the space, leaving more than half of the room completely bare and creating a starkly unbalanced composition."
+      ],
+      "note": "Override: rug edge at a wide cased opening is fine",
+      "candidate": "golden/images/c015_k-office.staging-Transitional-HomeOffice.attempt1.raw.jpg"
+    },
+    {
+      "id": "c016",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "[nothing_original_removed] A small black floor appliance positioned against the central wall column in the original image was removed.",
+        "Removal of original black object/appliance against the wall near the cased opening (center frame)."
+      ],
+      "note": "Original dark box/cabinet object located along the back wall in Image 1 was removed in Image 2.; Bookshelf covers the light switch on the wall pillar near the e",
+      "candidate": "golden/images/c016_k-office.staging-Transitional-HomeOffice.attempt2.raw.jpg"
+    },
+    {
+      "id": "c017",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Architectural alteration: Window position was relocated from the left wall to the back wall.",
+        "[architecture_unchanged] The window was moved from the left wall in Image 1 to the rear wall in Image 2."
+      ],
+      "note": "Background foyer wall and staircase architecture behind the opening were removed or altered.; Area rug extends into the threshold keep-clear box of the large ca",
+      "candidate": "golden/images/c017_k-office.staging-Transitional-HomeOffice.attempt3.raw.jpg"
+    },
+    {
+      "id": "c018",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "The window air conditioner unit in the left window was removed from the original property view.",
+        "The dresser placed in the bottom right foreground blocks the entry door swing area."
+      ],
+      "note": "Furniture and rug placement violate defined keep-clear floor areas near the entry door and stairwell opening.; Window AC unit present in the left window of the ",
+      "candidate": "golden/images/c018_living.staging-Coastal-PrimaryBedroom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c019",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 7,
+      "votes": "2/3",
+      "violations": [],
+      "note": "Window AC unit removed from the left window frame in Image 2.; Area rug overlaps into the designated stairwell keep-clear box on the left.",
+      "candidate": "golden/images/c019_living.staging-Coastal-PrimaryBedroom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c020",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Removal of the exterior entry door on the right wall (x: 68-100%, y: 75-100%).",
+        "Removal of the window air conditioning unit from the left window (x: 30-38%, y: 50-60%)."
+      ],
+      "note": "Front entry door on right wall removed.; Window AC unit in left window removed.",
+      "candidate": "golden/images/c020_living.staging-Coastal-PrimaryBedroom.attempt3.raw.jpg"
+    },
+    {
+      "id": "c021",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Rug edge in the door zone (rule since relaxed to minor) — likely PASS. | The added rug extends into the keep clear area in front of the right entry door (x 70%-100%, y 72%-100%).; Area rug extends into the designated door swing clear",
+      "candidate": "golden/images/c021_living.staging-Modern-HomeOffice.attempt1.raw.jpg"
+    },
+    {
+      "id": "c022",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 9,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c022_living.staging-Modern-HomeOffice.attempt2.raw.jpg"
+    },
+    {
+      "id": "c023",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 9,
+      "votes": "2/3",
+      "violations": [],
+      "note": "Leather armchair is placed within the keep-clear zone of the entry door on the right side.; Leather armchair placed within the entry door keep-clear box and swi",
+      "candidate": "golden/images/c023_living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c024",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "2/3",
+      "violations": [],
+      "note": "Standing armchair encroaches into the left stairwell keep-clear zone (x 0%-18%, y 70%-100%).; Armchair placed within the left stairwell entry clearance box (x 0",
+      "candidate": "golden/images/c024_living.staging-Transitional-LivingRoom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c025",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Side table placed within the front door keep-clear clearance zone on the right.; Potted plant placed within the stairwell opening keep-clear box on the left.",
+      "candidate": "golden/images/c025_living.staging-Transitional-LivingRoom.attempt3.raw.jpg"
+    },
+    {
+      "id": "c027",
+      "type": "declutter",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Small wooden chair in left foreground was removed.",
+        "Round side table on the right was repositioned deeper into the room."
+      ],
+      "note": "Gray nightstand added to the right of the bed; Black box fan moved from foreground table to newly added nightstand",
+      "candidate": "golden/images/c027_bedroom2.declutter.attempt2.raw.jpg"
+    },
+    {
+      "id": "c028",
+      "type": "declutter",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Small wooden chair in left foreground was removed from the room.",
+        "Table lamp on right foreground side table was switched on."
+      ],
+      "note": "Wooden chair removed from the lower-left corner",
+      "candidate": "golden/images/c028_bedroom2.declutter.attempt3.raw.jpg"
+    },
+    {
+      "id": "c033",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 9,
+      "votes": "3/3",
+      "violations": [],
+      "note": "STALE RULE: rejected under the old \"windows must be dark\" rule you later dropped — lit windows are now the target. Likely PASS. | Added warm interior glow to house windows; Windows across the house facade are rendered with an added warm interior glow.",
+      "candidate": "golden/images/c033_colonial.twilight-Dusk.attempt2.raw.jpg"
+    },
+    {
+      "id": "c034",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 9,
+      "votes": "3/3",
+      "violations": [],
+      "note": "STALE RULE: same — lit windows + landscape lights. Likely PASS. | Windows across the facade display a bright yellow interior glow instead of remaining dark and reflective.; Artificial landscape uplights were added along the fr",
+      "candidate": "golden/images/c034_colonial.twilight-Dusk.attempt3.raw.jpg"
+    },
+    {
+      "id": "c036",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 9,
+      "votes": "3/3",
+      "violations": [],
+      "note": "STALE RULE: same. Likely PASS. | Interior window lighting added to create a bright yellow glow across house windows.; Warm interior illumination added to windows across main facade.",
+      "candidate": "golden/images/c036_exterior.twilight-Dusk.attempt2.raw.jpg"
+    },
+    {
+      "id": "c040",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "fail",
+      "ok": false,
+      "realism": null,
+      "score": null,
+      "votes": "1/3",
+      "violations": [
+        "Overhanging branch canopy framing the top-left sky area was removed during sky replacement.",
+        "[sky_edge_foliage_unchanged] The overhanging tree canopy framing the top-left corner in Image 1 is absent in Image 2."
+      ],
+      "note": "Overhanging tree foliage at the top-left of the frame was removed during sky replacement.; Overhanging tree branch in the top-left sky area was removed during s",
+      "candidate": "golden/images/c040_exterior.twilight-Dusk.attempt2.raw.jpg"
+    },
+    {
+      "id": "c041",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 9,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c041_exterior.twilight-Dusk.attempt3.raw.jpg"
+    },
+    {
+      "id": "c045",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Area rug encroaches into the defined keep-clear floor zone in front of the staircase.; Added area rug extends into keep-clear walkway zones near the staircase a",
+      "candidate": "golden/images/c045_k-living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c046",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 7,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Sofa along window wall, grouping beside hearth — judge now fails on arrangement; you said \"not a bad placement\". Your call. | judge passed",
+      "candidate": "golden/images/c046_k-living.staging-Transitional-LivingRoom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c047",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": "none",
+      "score": 3,
+      "votes": "3/3",
+      "violations": [
+        "design score 3: The seating grouping sits pulled into the foreground on the left side of the room, leaving a massive empty void in front of the fireplace and creating an unbalanced layout."
+      ],
+      "note": "poor furniture placement for room layout — End table and sofa encroach into the left cased doorway keep-clear zone.; Side table at x 19%-26% and sofa at x 24%-50% intrude into door keep-clear zones.",
+      "candidate": "golden/images/c047_k-living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c048",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "[no_window_door_switch_vent_covered] A houseplant slightly overlaps the right window frame and a console table sits directly over a floor vent location near the",
+      "candidate": "golden/images/c048_k-living.staging-Transitional-LivingRoom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c049",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "1/3",
+      "violations": [
+        "Cased opening on left wall removed and replaced with a solid wall (x 0%-20%, y 20%-70%)",
+        "[architecture_unchanged] The cased opening on the left wall leading to an adjacent blue room was replaced with a solid white wall."
+      ],
+      "note": "The cased opening to the adjacent teal room on the left wall was replaced with a solid wall.; The adjacent room space visible in the original photo was removed ",
+      "candidate": "golden/images/c049_k-living.staging-Transitional-LivingRoom.attempt3.raw.jpg"
+    },
+    {
+      "id": "c053",
+      "type": "staging",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "bad placement — Override: sofa parallel to window wall, back not toward camera; does not face fireplace",
+      "candidate": "golden/images/c053_k-living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c054",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": "none",
+      "score": 3,
+      "votes": "3/3",
+      "violations": [
+        "design score 3: The seating group is set back and oriented sideways across the room, completely ignoring the fireplace focal point and leaving a large empty expanse of floor in front of the hearth."
+      ],
+      "note": "Main sofa is positioned perpendicular to the primary focal point (fireplace/TV wall), facing across the room instead of toward the focal point.; [arrangement_fa",
+      "candidate": "golden/images/c054_k-living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c055",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Main seating arrangement does not face the primary focal point (fireplace/TV wall at x≈66%, y≈48%).; The sofa is positioned directly over an existing floor vent",
+      "candidate": "golden/images/c055_k-living.staging-Transitional-LivingRoom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c056",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": "none",
+      "score": 3,
+      "votes": "3/3",
+      "violations": [
+        "design score 3: The furniture grouping is pulled too far into the left foreground, leaving an awkward, empty gap in front of the fireplace and TV wall."
+      ],
+      "note": "Sofa seating orientation faces across the room instead of facing the fireplace and TV focal point at the rear wall.; Seating arrangement fails stager check as t",
+      "candidate": "golden/images/c056_k-living.staging-Transitional-LivingRoom.attempt3.raw.jpg"
+    },
+    {
+      "id": "c061",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Sofa seating faces across the room perpendicular to the fireplace focal point rather than facing it.; Sofa placement obscures the floor vent near the right wind",
+      "candidate": "golden/images/c061_k-living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c062",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 9,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c062_k-living.staging-Transitional-LivingRoom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c063",
+      "type": "staging",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": "none",
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Sofa seating faces across the room rather than toward the fireplace focal point at x≈65%.; Sofa encroaches into the keep-clear zone at the staircase landing.",
+      "candidate": "golden/images/c063_k-living.staging-Transitional-LivingRoom.attempt1.raw.jpg"
+    },
+    {
+      "id": "c064",
+      "type": "staging",
+      "expected": "pass",
+      "got": "fail",
+      "ok": false,
+      "realism": "none",
+      "score": 3,
+      "votes": "3/3",
+      "violations": [
+        "design score 3: The dark blue sofa is placed directly in the foreground with its back to the camera, creating an uninviting barrier that dominates the view and disconnects the seating group from the rest of the open space."
+      ],
+      "note": "judge passed",
+      "candidate": "golden/images/c064_k-living.staging-Transitional-LivingRoom.attempt2.raw.jpg"
+    },
+    {
+      "id": "c075",
+      "type": "declutter",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Wooden desk on the left wall was altered from a four-legged table into a solid paneled desk.",
+        "[all_furniture_and_decor_present_and_unmoved] The wooden desk on the left was structurally altered from a leg table into a panel cabinet."
+      ],
+      "note": "Wooden desk on left side modified structurally with missing original leg design; Black mesh chair in bottom left corner modified and repositioned",
+      "candidate": "golden/images/c075_bedroom1.declutter.attempt3.raw.jpg"
+    },
+    {
+      "id": "c078",
+      "type": "declutter",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Same chair case, opposite direction. Edge-of-frame policy decision. | Office chair in lower-left corner was altered and partially redrawn",
+      "candidate": "golden/images/c078_bedroom1.declutter.attempt3.raw.jpg"
+    },
+    {
+      "id": "c081",
+      "type": "declutter",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "1/3",
+      "violations": [
+        "Black wooden nightstand behind bed along back wall was removed.",
+        "[all_furniture_and_decor_present_and_unmoved] The black nightstand behind the bed was removed in the candidate."
+      ],
+      "note": "Dark brown nightstand behind the bed along the back wall was removed.",
+      "candidate": "golden/images/c081_bedroom1.declutter.attempt3.raw.jpg"
+    },
+    {
+      "id": "c083",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c083_exterior.twilight-Dusk.attempt2.raw.jpg"
+    },
+    {
+      "id": "c087",
+      "type": "twilight",
+      "expected": "fail",
+      "got": "pass",
+      "ok": false,
+      "realism": null,
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "STALE RULE: same. Likely PASS. | Illuminated interior window glow and exterior porch fixture added where unlit in original image.; Interior lights switched on creating window glow not lit in or",
+      "candidate": "golden/images/c087_exterior.twilight-Dusk.attempt2.raw.jpg"
+    },
+    {
+      "id": "c088",
+      "type": "twilight",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": 8,
+      "votes": "3/3",
+      "violations": [],
+      "note": "judge passed",
+      "candidate": "golden/images/c088_exterior.twilight-Dusk.attempt3.raw.jpg"
+    },
+    {
+      "id": "c090",
+      "type": "twilight",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Camera framing changed significantly; candidate is cropped much closer to the property than the original.",
+        "[camera_angle_and_framing_identical] In the original, the house sits farther back with extensive foreground lawn, while the candidate is cropped much closer."
+      ],
+      "note": "The candidate image has been cropped tighter compared to the original framing, cutting off upper foliage and lower lawn.; Top-left overhanging tree foliage remo",
+      "candidate": "golden/images/c090_exterior.twilight-Dusk.attempt2.raw.jpg"
+    },
+    {
+      "id": "c091",
+      "type": "twilight",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": 5,
+      "votes": "3/3",
+      "violations": [
+        "design score 5: The framing and perspective match the original image, but the lawn and house are slightly dark under a cool purple sky with warm window glow."
+      ],
+      "note": "ugly output — judge passed",
+      "candidate": "golden/images/c091_exterior.twilight-Dusk.attempt3.raw.jpg"
+    },
+    {
+      "id": "c092",
+      "type": "declutter",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "3/3",
+      "violations": [],
+      "note": "CONTROL: identical image must pass",
+      "candidate": "golden/images/c092_bedroom1.jpg"
+    },
+    {
+      "id": "c094",
+      "type": "twilight",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Full daylight exposure and shadows remain across the house and lawn as no twilight edit was applied",
+        "The twilight transformation was not performed, leaving full daylight lighting and shadows across the scene."
+      ],
+      "note": "CONTROL: unchanged daytime photo is not a twilight (daylight residue)",
+      "candidate": "golden/images/c094_exterior.jpg"
+    },
+    {
+      "id": "c095",
+      "type": "staging",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Wrong room type staging: room contains office furniture instead of the requested primary bedroom setup.",
+        "[staged_as_requested_room_type] The room is staged with a desk, office chair, and bookshelf as a home office rather than a primary bedroom with a bed."
+      ],
+      "note": "CONTROL: office delivered against a Primary Bedroom request",
+      "candidate": "golden/images/c095_living.staging-Modern-HomeOffice.approved.jpg"
+    },
+    {
+      "id": "e001",
+      "type": "empty",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Emptied cluttered bedroom — the room declutter could never solve",
+      "candidate": "golden/images/e001_bedroom2.empty.attempt1.raw.jpg"
+    },
+    {
+      "id": "e002",
+      "type": "empty",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "3/3",
+      "violations": [],
+      "note": "Emptied bedroom 1",
+      "candidate": "golden/images/e002_bedroom1.empty.attempt1.raw.jpg"
+    },
+    {
+      "id": "e003",
+      "type": "empty",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Movable objects and clutter were not removed from the room as required for the empty room transformation.",
+        "[room_completely_vacant_of_movables] All movable items, including the bed, fan, lamps, wall art, and clutter, remain present in the candidate image."
+      ],
+      "note": "CONTROL: untouched occupied room submitted as emptied",
+      "candidate": "golden/images/e003_bedroom2.jpg"
+    },
+    {
+      "id": "e004",
+      "type": "empty",
+      "expected": "fail",
+      "got": "fail",
+      "ok": true,
+      "realism": null,
+      "score": null,
+      "votes": "0/3",
+      "violations": [
+        "Image framing is heavily cropped, removing fixed elements like the window, AC unit, and closet door.",
+        "[architecture_unchanged] Image 1 displays a wide angle showing the window and closet wall, whereas Image 2 is heavily cropped into the back corner."
+      ],
+      "note": "CONTROL: a different room delivered as this room emptied",
+      "candidate": "golden/images/e004_bedroom1.empty.attempt1.raw.jpg"
+    }
+  ]
+}

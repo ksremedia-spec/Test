@@ -1,0 +1,39 @@
+{
+  "at": "2026-09-05T20:34:31.829Z",
+  "model": "gemini-3.6-flash",
+  "votes": 2,
+  "score": {
+    "ok": 2,
+    "total": 2
+  },
+  "results": [
+    {
+      "id": "c215",
+      "type": "declutter",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "structure": null,
+      "score": null,
+      "votes": "2/2",
+      "violations": [],
+      "note": "Kyle 2 Sep 2026 PASS on a frame the pipeline REJECTED — counter items removed, sunflower styling kept. False-reject guard.",
+      "candidate": "golden/images/c215_cand.jpg"
+    },
+    {
+      "id": "c223",
+      "type": "declutter",
+      "expected": "pass",
+      "got": "pass",
+      "ok": true,
+      "realism": null,
+      "structure": null,
+      "score": null,
+      "votes": "2/2",
+      "violations": [],
+      "note": "Kyle 4 Sep 2026 PASS (10-frame pro set): the system REFUSED this frame claiming the rug was removed and the plaque lettering mangled — the rug is in both frames and the names read the same. A false reject on invented violations; the claim check was written from this case. | Known wobble: the judge sometimes sees a real small artifact behind the right side of the bed (a glass sliver where the orange drawer stand was) — Kyle passed the frame at normal viewing. Expected pass stands as his grade; a flip here is the wobble, not a regression.",
+      "candidate": "golden/images/c223_cand.jpg"
+    }
+  ]
+}

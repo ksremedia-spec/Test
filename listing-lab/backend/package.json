@@ -1,0 +1,14 @@
+{
+  "name": "listinglab-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.3.7"
+  },
+  "devDependencies": {
+    "wrangler": "^4.126.0"
+  }
+}

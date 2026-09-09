@@ -1,0 +1,2060 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C1118">
+<title>Listing Lab</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=3">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tokens lifted verbatim from the Listing Lab prototype so this looks like the
+   product Kyle has already signed off on, not a developer's test page. */
+:root{
+  --paper:#0F141B; --paper-2:#151C25; --paper-3:#1B2431;
+  --ink:#E9EDF3; --ink-soft:#A6B1BF; --ink-faint:#75818F;
+  --pine:#4E8FD0; --pine-deep:#14304F; --pine-bright:#66A2DE;
+  --brass:#8FBEE8; --brass-soft:#C9DFF2; --terracotta:#E17A5C;
+  --line:#2A3545;
+  --studio-bg:#0C1118; --studio-surface:#131A24; --studio-surface-2:#19222E;
+  --studio-surface-3:#1F2938; --studio-line:#293546;
+  --studio-text:#E9EDF3; --studio-text-soft:#A0ABBA; --studio-text-faint:#6B7787;
+  --ok:#46B98A; --warn:#D9A441; --bad:#E2615A;
+  --r-sm:6px; --r-md:10px; --r-lg:18px; --r-xl:28px;
+  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--studio-bg); color:var(--studio-text);
+  font-family:var(--ui); font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  /* iPhone notch */
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+img{max-width:100%;display:block;}
+button,input,select{font-family:inherit;font-size:16px;} /* 16px stops iOS zooming the page on focus */
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;letter-spacing:-.01em;text-wrap:balance;}
+a{color:var(--pine);}
+:focus-visible{outline:2px solid var(--pine);outline-offset:2px;}
+
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 96px;}
+
+/* ---------------------------------------------------------------- top bar */
+header.bar{
+  position:sticky;top:0;z-index:20;
+  background:rgba(12,17,24,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--studio-line);
+}
+.bar-in{max-width:640px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:12px;}
+/* line-height 1.05: on narrow phones the wordmark wraps to LISTING over LAB,
+   and the page's default 1.55 leaves a gap between them (Kyle, 29 Aug). */
+.brand{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;line-height:1.05;}
+.brand span{color:var(--pine);}
+.spacer{flex:1;}
+.chip{
+  font-size:12.5px;font-weight:600;letter-spacing:.02em;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);
+  border-radius:99px;padding:5px 11px;color:var(--studio-text-soft);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.chip b{color:var(--ink);}
+/* The chip is a <button> (audit, 3 Sep 2026): it is the only way to buy
+   credits, and a <div> was unreachable by keyboard or screen reader. */
+button.chip{font-family:inherit;cursor:pointer;line-height:1.2;min-height:32px;}
+.linkbtn{background:none;border:0;color:var(--studio-text-faint);font-size:13px;cursor:pointer;padding:6px;}
+
+/* ------------------------------------------------------------------ cards */
+.card{
+  background:var(--studio-surface);border:1px solid var(--studio-line);
+  border-radius:var(--r-md);padding:20px;margin-top:16px;
+}
+.card h2{font-size:20px;margin-bottom:4px;}
+.muted{color:var(--studio-text-soft);font-size:14.5px;margin:0;}
+.faint{color:var(--studio-text-faint);font-size:13px;}
+
+label.fld{display:block;margin-top:14px;}
+label.fld > span{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--studio-text-faint);font-weight:600;margin-bottom:6px;}
+input[type=email],input[type=password],input[type=text],select{
+  width:100%;padding:12px 13px;border-radius:var(--r-sm);
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);
+}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--studio-text-faint) 50%),linear-gradient(135deg,var(--studio-text-faint) 50%,transparent 50%);
+  background-position:calc(100% - 18px) calc(1em + 2px),calc(100% - 13px) calc(1em + 2px);
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 18px;margin-top:16px;
+  background:var(--pine);color:#08131F;border:0;border-radius:var(--r-sm);
+  font-weight:700;font-size:15.5px;cursor:pointer;
+  /* a comfortable tap target on a phone */
+  min-height:50px;
+}
+.btn:disabled{opacity:.5;cursor:default;}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--studio-line);}
+.btn.ghost:hover{border-color:var(--pine);}
+
+.err{
+  margin-top:14px;padding:11px 13px;border-radius:var(--r-sm);
+  background:rgba(226,97,90,.1);border:1px solid rgba(226,97,90,.35);
+  color:#F3B4B0;font-size:14px;
+}
+.note{
+  margin-top:14px;padding:11px 13px;border-radius:var(--r-sm);
+  background:rgba(70,185,138,.09);border:1px solid rgba(70,185,138,.32);
+  color:#9FE0C6;font-size:14px;
+}
+
+/* ----------------------------------------------------------------- upload */
+.drop{
+  margin-top:16px;border:1.5px dashed var(--studio-line);border-radius:var(--r-md);
+  padding:34px 18px;text-align:center;background:var(--studio-surface-2);
+  cursor:pointer;transition:border-color .15s,background .15s;
+}
+.drop:hover,.drop.over{border-color:var(--pine);background:var(--studio-surface-3);}
+.drop .big{font-family:var(--display);font-size:18px;font-weight:600;}
+.drop .sub{color:var(--studio-text-faint);font-size:13.5px;margin-top:4px;}
+input[type=file]{display:none;}
+
+.preview{margin-top:16px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--studio-line);}
+
+/* ------------------------------------------------------------ transforms */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+/* One photograph in a batch, or one finished job in the queue. Thumbnail left,
+   everything about it right, so a list of four scans vertically on a phone. */
+.item{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--studio-line);}
+.item:first-child{border-top:0;}
+.item img{width:74px;height:56px;object-fit:cover;border-radius:8px;flex:none;background:var(--studio-line);}
+.item .body{flex:1;min-width:0;}
+.item .fix{width:100%;margin-top:6px;}
+.item .fix + .fix{margin-top:6px;}
+.item .name{font-size:13px;color:var(--studio-text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.item .state{font-size:13.5px;margin-top:3px;}
+.item .state.go{color:var(--brass-soft);}
+.item .state.ok{color:var(--pine);font-weight:600;}
+.item .state.no{color:var(--studio-text-soft);}
+.item .acts{margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;}
+.item .acts a{font-size:13px;color:var(--pine);text-decoration:underline;}
+.opt{
+  text-align:left;padding:14px;border-radius:var(--r-sm);cursor:pointer;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);
+}
+.opt[aria-pressed=true]{border-color:var(--pine);background:var(--pine-deep);}
+.opt .n{font-weight:600;font-size:15px;display:block;}
+.opt .c{font-size:12.5px;color:var(--studio-text-faint);margin-top:2px;display:block;}
+.opt[aria-pressed=true] .c{color:var(--brass-soft);}
+
+/* -------------------------------------------------------------- progress */
+.bar-track{height:6px;background:var(--studio-surface-3);border-radius:99px;overflow:hidden;margin-top:16px;}
+.bar-fill{height:100%;background:var(--pine);border-radius:99px;width:0;transition:width .6s linear;}
+.steps{margin-top:16px;display:flex;flex-direction:column;gap:9px;}
+.step{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--studio-text-faint);}
+.step.on{color:var(--ink);}
+.step .dot{width:8px;height:8px;border-radius:99px;background:var(--studio-line);margin-top:6px;flex:none;}
+.step.on .dot{background:var(--pine);}
+.step.done .dot{background:var(--ok);}
+.elapsed{font-variant-numeric:tabular-nums;color:var(--studio-text-faint);font-size:13px;margin-top:10px;}
+
+/* --------------------------------------------------------- before / after */
+.ba{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--studio-line);margin-top:16px;touch-action:none;
+  /* Dragging the slider to either end must never select the page or ghost-drag
+     the photo — that was the highlight-everything bug (Kyle, 28 Aug 2026). */
+  user-select:none;-webkit-user-select:none;}
+.ba img{-webkit-user-drag:none;user-select:none;-webkit-user-select:none;pointer-events:none;}
+.ba img{width:100%;display:block;}
+/* The RESULT is the base layer. The ORIGINAL is clipped on top of it from the
+   left edge, so the left of the slider is always the original and the right is
+   always the finished photo — the order every agent expects. */
+.ba .orig{position:absolute;inset:0;overflow:hidden;width:50%;}
+.ba .orig img{width:auto;height:100%;max-width:none;}
+.ba .handle{
+  position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;
+  box-shadow:0 0 0 1px rgba(0,0,0,.3);
+}
+.ba .knob{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:38px;height:38px;border-radius:99px;background:#fff;color:#0C1118;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+}
+.tag{
+  position:absolute;top:10px;font-size:10.5px;font-weight:700;letter-spacing:.12em;
+  padding:4px 8px;border-radius:4px;background:rgba(9,13,19,.72);color:#F2F5F9;
+}
+.tag.l{left:10px;} .tag.r{right:10px;}
+
+.row{display:flex;gap:10px;margin-top:16px;}
+.row .btn{margin-top:0;}
+.hidden{display:none !important;}
+.spin{
+  width:15px;height:15px;border-radius:99px;
+  border:2px solid rgba(8,19,31,.35);border-top-color:#08131F;
+  animation:sp .7s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg);}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none;} .bar-fill{transition:none;}}
+
+/* ------------------------------------------------- buy-credits sheet
+   Lives at the end of <body>, NOT inside the header: the header's
+   backdrop-filter turns it into the containing block for fixed children,
+   which is what pinned the old dialog half above the screen. */
+.sheet-overlay{
+  position:fixed;inset:0;z-index:60;
+  background:rgba(8,11,16,.62);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.sheet{
+  width:100%;max-width:440px;
+  background:var(--studio-surface);border:1px solid var(--studio-line);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+  padding:14px 20px calc(20px + env(safe-area-inset-bottom));
+  max-height:82dvh;overflow:auto;
+  animation:sheet-up .24s ease-out;
+}
+@keyframes sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+.sheet-grab{width:36px;height:4px;border-radius:99px;background:var(--studio-line);margin:0 auto 14px;}
+.sheet h3{font-size:20px;margin:0 0 4px;}
+.sheet .sub{color:var(--studio-text-soft);font-size:13.5px;margin:0 0 16px;}
+@media (min-width:560px){
+  .sheet-overlay{align-items:center;padding:24px;}
+  .sheet{border-radius:var(--r-lg);padding-bottom:20px;}
+  .sheet-grab{display:none;}
+}
+#packList{display:grid;gap:10px;}
+.pack{
+  display:flex;align-items:center;gap:12px;width:100%;
+  padding:14px 16px;text-align:left;cursor:pointer;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);
+  border-radius:var(--r-md);color:var(--studio-text);font:inherit;
+  transition:border-color .15s;
+}
+.pack:hover,.pack:focus-visible{border-color:var(--pine);}
+.pack:disabled{opacity:.55;cursor:default;}
+.pack .p-credits{font-weight:600;font-size:16px;}
+.pack .p-each{color:var(--studio-text-faint);font-size:12.5px;margin-top:1px;}
+.pack .p-price{margin-left:auto;font-weight:700;font-size:17px;color:var(--brass-soft);}
+.pack .p-badge{
+  font-size:10.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--pine-bright);background:var(--pine-deep);
+  border-radius:99px;padding:3px 8px;margin-left:8px;vertical-align:2px;
+}
+.sheet .close{
+  margin-top:14px;width:100%;padding:12px;
+  background:transparent;border:1px solid var(--studio-line);
+  border-radius:var(--r-md);color:var(--studio-text-soft);font:inherit;cursor:pointer;
+}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none;}}
+
+/* ------------------------------------------------- My photos gallery
+   A photo product's library should look like photos, not a settings list.
+   Two columns on a phone, three on anything wider; the status rides on the
+   image as a badge instead of a line of grey text. (Kyle, 29 Aug.) */
+#queueRows.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px;}
+@media (min-width:560px){#queueRows.pgrid{grid-template-columns:repeat(3,1fr);}}
+/* On a desktop the library gets the room a library needs (Kyle, 3 Sep: "it's
+   pretty skinny and tall" on a big screen). The page and the top bar widen
+   together while My photos is open, and the grid grows to four and five
+   columns; every other screen keeps its phone-first width. */
+body.wide .wrap,body.wide .bar-in{max-width:1180px;}
+@media (min-width:900px){body.wide #queueRows.pgrid{grid-template-columns:repeat(4,1fr);gap:14px;}}
+@media (min-width:1200px){body.wide #queueRows.pgrid{grid-template-columns:repeat(5,1fr);}}
+/* The gallery's own doors: add more photos, buy more credits — at the top,
+   where they are seen before the scroll, not only below fifty thumbnails. */
+.qhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.qhead .qactions{display:flex;gap:8px;flex-wrap:wrap;}
+.qhead .btn{width:auto;margin:0;min-height:40px;padding:8px 14px;font-size:14px;}
+.pcard{
+  position:relative;display:block;width:100%;padding:0;text-align:left;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);
+  border-radius:var(--r-md);overflow:hidden;color:var(--studio-text);
+  font:inherit;cursor:pointer;transition:border-color .15s,transform .12s;
+}
+.pcard:hover,.pcard:focus-visible{border-color:var(--pine);}
+.pcard:active{transform:scale(.985);}
+.pcard[disabled]{cursor:default;}
+.pcard .thumb{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--studio-surface-3);}
+.pcard.dim .thumb{opacity:.4;}
+.pcard .pmeta{padding:8px 10px 10px;}
+.pcard .pname{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pcard .psub{font-size:11px;color:var(--studio-text-faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pbadge{
+  position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:6px;
+  font-size:10.5px;font-weight:700;letter-spacing:.05em;
+  background:rgba(9,13,21,.82);border-radius:99px;padding:4px 10px;color:#fff;
+}
+.pbadge.ok{color:#5ECD96;}
+.pbadge.no{color:#E08A8A;}
+.pbadge.go{color:#8FBEE8;}
+.pbadge.go::before{
+  content:'';width:6px;height:6px;border-radius:99px;background:#8FBEE8;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* Select mode (9 Sep 2026): pick several finished photos, then save or
+   download them as one set. The tick lives where the badge normally sits. */
+.pcard .pcheck{
+  position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:99px;
+  border:2px solid rgba(255,255,255,.85);background:rgba(9,13,21,.55);
+  display:none;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;
+}
+#queueRows.selecting .pcard:not(.dim) .pcheck{display:flex;}
+#queueRows.selecting .pcard.picked{border-color:var(--pine);box-shadow:0 0 0 2px var(--pine) inset;}
+#queueRows.selecting .pcard.picked .pcheck{background:var(--pine);border-color:var(--pine);color:#0A1017;}
+#queueRows.selecting .pcard.dim{cursor:default;opacity:.45;}
+.selbar{
+  position:sticky;bottom:calc(10px + env(safe-area-inset-bottom));z-index:30;margin-top:14px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--studio-surface-2);border:1px solid var(--studio-line);border-radius:var(--r-md);
+  padding:10px 12px;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);
+}
+.selbar .selcount{font-size:13.5px;font-weight:600;flex:1;min-width:90px;}
+.selbar .btn{width:auto;margin:0;min-height:40px;padding:8px 14px;font-size:14px;}
+.selbar .linkbtn{padding:6px 8px;}
+.selbar .btn.disabled{opacity:.5;pointer-events:none;}
+
+/* the photo viewer sheet: slider + versions + save, same bones as buy-credits */
+#viewerSheet{max-width:560px;}
+#viewerSheet .ba{margin-top:2px;}
+.vactions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.vactions .btn{flex:1;min-width:150px;margin:0;}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <!-- The brand is the way home — especially on a phone with no back button
+         in sight. Plain link, full page load: the splash page is a separate
+         document, not a view of this one. -->
+    <a class="brand" href="/" style="display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:inherit">
+      <img src="/logo-full.png" alt="" width="36" height="36" style="display:block">
+      <span style="color:var(--ink)">LISTING <span style="color:var(--pine)">LAB</span></span>
+    </a>
+    <div class="spacer"></div>
+    <button class="linkbtn hidden" id="queueBtn">My photos</button>
+    <button class="chip hidden" id="creditChip" type="button" aria-label="Buy credits">— credits</button>
+    <button class="linkbtn hidden" id="signOutBtn">Sign out</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ------------------------------------------------------------ sign in -->
+  <section id="authView" class="hidden">
+    <div class="card">
+      <h2 id="authTitle">Sign in</h2>
+      <p class="muted">AI enhancement built for real estate.</p>
+      <form id="authForm" novalidate>
+        <label class="fld"><span>Email</span>
+          <input type="email" id="email" autocomplete="email" inputmode="email" required></label>
+        <label class="fld"><span>Password</span>
+          <input type="password" id="password" autocomplete="current-password" required></label>
+        <div id="authErr" class="err hidden"></div>
+        <button class="btn" id="authBtn" type="submit">Sign in</button>
+      </form>
+      <!-- Shows itself only after /api/auth/config says the OAuth client is set. -->
+      <div id="googleAuth" class="hidden">
+        <div style="display:flex;align-items:center;gap:12px;margin:16px 0 12px;color:var(--studio-text-faint);font-size:12.5px">
+          <span style="flex:1;height:1px;background:var(--studio-line)"></span>or
+          <span style="flex:1;height:1px;background:var(--studio-line)"></span>
+        </div>
+        <button type="button" id="googleBtn"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;background:#fff;color:#1f1f1f;border:none;border-radius:var(--r-md);font:600 15px var(--ui);cursor:pointer">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+      </div>
+      <p class="faint" style="margin-top:14px">
+        <span id="authSwapText">No account yet?</span>
+        <button class="linkbtn" id="authSwap" style="color:var(--pine)">Create one</button>
+      </p>
+      <p class="faint" style="margin-top:10px;font-size:12px">
+        By signing in or creating an account you agree to the
+        <a href="/terms" target="_blank" style="color:inherit">Terms of Service</a> and
+        <a href="/privacy" target="_blank" style="color:inherit">Privacy Policy</a>.
+        Need a hand? <button type="button" class="linkbtn supportOpen" style="color:inherit;padding:0;font-size:inherit;text-decoration:underline">Message support</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------- studio -->
+  <section id="studioView" class="hidden">
+
+    <div class="card" id="uploadCard">
+      <h2>Start with your photos</h2>
+      <p class="muted">Pick one or several. Choose what to do with each, start them together, and put your phone away.</p>
+      <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose photos">
+        <div class="big">Choose photos</div>
+        <div class="sub">JPEG, PNG or iPhone HEIC, up to 25MB each — pick as many as you like</div>
+      </div>
+      <!-- NO `capture` ATTRIBUTE. It reads like a hint to prefer the camera; on iOS it
+     is a lock — the photo library and Files disappear entirely and the camera is
+     the only option. Agents shoot a house and upload later, so the camera roll is
+     the common case, not the exception. Without `capture`, iOS offers Photo
+     Library, Take Photo and Browse, which is what we want.
+
+     HEIC is accepted (31 Aug 2026, beta finding): iPhones shoot HEIC by
+     default, and files arriving outside iOS's own transcoding path — the
+     Files app, AirDropped originals, a desktop with "keep originals" on —
+     were refused outright. They are converted to JPEG in the browser before
+     upload (see toUploadable), so the server and pipeline still only ever
+     see JPEG/PNG. The bare .heic/.heif extensions are listed because
+     Windows often reports no MIME type for them at all. -->
+      <input type="file" id="file" accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif" multiple>
+      <div id="uploadErr" class="err hidden"></div>
+    </div>
+
+    <div class="card hidden" id="pickCard">
+      <h2>What should we do to it?</h2>
+      <p class="muted">Every result is checked before it reaches you. If nothing passes, your credits come back.</p>
+      <div class="preview"><img id="previewImg" alt="The photo you uploaded"></div>
+      <div class="opts" id="opts"></div>
+
+      <label class="fld hidden" id="styleField"><span id="styleLabel">Style</span>
+        <select id="style"></select></label>
+      <label class="fld hidden" id="roomField"><span>Room type</span>
+        <select id="room"></select></label>
+
+      <div id="startErr" class="err hidden"></div>
+      <div class="row">
+        <button class="btn ghost" id="cancelPick" type="button">Back</button>
+        <button class="btn" id="startBtn" type="button" disabled>Start</button>
+      </div>
+    </div>
+
+    <!--
+      THE BATCH PICKER.
+      Shown instead of pickCard when more than one photo is uploaded. Each row is
+      one photograph with its own choice of fix, because an agent working a
+      listing has a mixed set — declutter the kitchen, twilight the exterior,
+      stage the empty bedroom — not four of the same thing.
+    -->
+    <div class="card hidden" id="batchCard">
+      <h2>What should we do to each?</h2>
+      <p class="muted">Choose a fix per photo, then start them together. Every result is checked before it reaches you; anything that doesn't pass gives the credits back.</p>
+      <div id="batchRows"></div>
+      <div id="batchErr" class="err hidden"></div>
+      <div class="row">
+        <button class="btn ghost" id="batchCancel" type="button">Start over</button>
+        <button class="btn" id="batchStart" type="button" disabled>Start</button>
+      </div>
+    </div>
+
+    <!--
+      THE QUEUE.
+      The screen that makes "close your phone and come back" real. Jobs run on
+      the server whether or not anything is watching, and results are stored
+      permanently — until this existed there was simply nowhere to see them from
+      once the tab was gone.
+    -->
+    <div class="card hidden" id="queueCard">
+      <div class="qhead">
+        <h2>My photos</h2>
+        <div class="qactions">
+          <button class="btn" id="queueAdd" type="button">+ Add photos</button>
+          <button class="btn ghost" id="queueBuy" type="button">Buy credits</button>
+          <button class="btn ghost hidden" id="queueSelect" type="button">Select</button>
+        </div>
+      </div>
+      <p class="muted" id="queueSub">Everything you've run. Finished ones stay here — you can close the app and come back whenever.</p>
+      <div id="queueRows"></div>
+      <div class="selbar hidden" id="selBar">
+        <span class="selcount" id="selCount">0 selected</span>
+        <button class="linkbtn" id="selAll" type="button">Select all</button>
+        <button class="btn hidden" id="selSave" type="button">Save to Camera Roll</button>
+        <a class="btn ghost" id="selZip" href="#" download>Download .zip</a>
+        <button class="linkbtn" id="selCancel" type="button">Cancel</button>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="queueBack" type="button">New photos</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="runCard">
+      <h2>Working on it</h2>
+      <p class="muted" id="runSub">This takes a few minutes, the vision model is working to ensure the images are correct.</p>
+      <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+      <div class="steps" id="steps"></div>
+      <div class="elapsed" id="elapsed">0:00</div>
+      <p class="faint" style="margin-top:14px">You can safely close this tab — this keeps running.</p>
+    </div>
+
+    <div class="card hidden" id="resultCard">
+      <h2 id="resultTitle">Done</h2>
+      <p class="muted" id="resultSub"></p>
+      <div id="resultBody"></div>
+      <div class="row">
+        <button class="btn ghost" id="againBtn" type="button">Another photo</button>
+        <button class="btn hidden" id="saveBtn" type="button">Save to Camera Roll</button>
+        <a class="btn ghost hidden" id="dlBtn" download>Download</a>
+      </div>
+      <!-- Kyle, 6 Sep 2026: "AI can make mistakes… please double check" — one
+           quiet line on every result, because the checker is good, not perfect. -->
+      <p style="margin:12px 0 0;text-align:center;font-size:11px;line-height:1.4;color:var(--studio-text-faint);opacity:.55">AI can make mistakes — please double-check before it goes live.</p>
+      <!-- Deliberately quiet (Kyle: "make it discreet") — a small line of faint
+           text, not a button inviting complaints. Files against this exact job. -->
+      <div id="reportWrap" class="hidden" style="margin-top:16px;text-align:center">
+        <button id="reportLink" class="linkbtn" style="font-size:12.5px;color:var(--studio-text-faint)">Something not right with this photo?</button>
+        <div id="reportForm" class="hidden" style="text-align:left;margin-top:8px">
+          <textarea id="reportMsg" rows="3" maxlength="2000" placeholder="Tell us what looks wrong — we read every one."
+            style="width:100%;padding:11px 12px;border-radius:var(--r-sm);background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);font:inherit;font-size:15px;resize:vertical"></textarea>
+          <button id="reportSend" class="btn ghost" type="button" style="margin-top:8px;min-height:44px;padding:10px 16px;width:auto">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+  <!-- Quiet footer: signed-in agents never revisit the auth card, so this is
+       their one standing pointer to the terms and a human. -->
+  <p class="faint" style="margin-top:40px;text-align:center;font-size:12px">
+    <a href="/terms" target="_blank" style="color:inherit">Terms</a> ·
+    <a href="/privacy" target="_blank" style="color:inherit">Privacy</a> ·
+    <button type="button" class="linkbtn supportOpen" style="color:inherit;padding:0;font-size:inherit;text-decoration:underline">Message support</button>
+  </p>
+</main>
+
+<script>
+/* ============================================================================
+   Listing Lab — the real client.
+
+   Everything here talks to the Worker. The browser never sees an API key and
+   never calls Google; it uploads a photo, starts a job, and polls until the
+   job finishes. A staging run takes minutes, so there is no request anywhere
+   in this file that waits on the pipeline.
+   ========================================================================== */
+
+// Fallback only until the first /api/credits response — the SERVER owns the
+// price list (src/ledger.js TRANSFORMATION_COST) and refreshCredits overwrites
+// this from it. A stale copy here is how declutter showed "1 credit" while the
+// ledger charged 2 (Kyle caught it live, 28 Aug 2026).
+const COSTS = { declutter:2, empty:2, twilight:1, staging:2 };
+const LABELS = { declutter:'Declutter', empty:'Empty the room', twilight:'Twilight', staging:'Virtual staging' };
+/* Closed lists, matching the pipeline exactly. There is no free-text box and
+   there never will be — that constraint is the product. */
+const STAGING_STYLES = ['Standard','Modern','Contemporary','Coastal','Luxury'];
+const ROOM_TYPES = ['Living Room','Dining Room','Primary Bedroom','Guest Bedroom','Nursery / Kids Room','Basement / Rec Room','Home Office','Other'];
+/* Twilight has ONE look and no picker. Kyle, 25 Aug 2026: three moods
+   "convoluted the whole workflow". The pipeline still supports Golden Hour and
+   Blue Hour; the product just does not ask. Dusk is the one that produces the
+   bright, pink-orange, lit-window result he grades as a pass. */
+const TWILIGHT_STYLE = 'Dusk';
+
+const $ = id => document.getElementById(id);
+const show = (el,on=true) => el.classList.toggle('hidden', !on);
+
+let state = { account:null, balance:0, photo:null, transformation:null, jobId:null, poll:null, started:0, tick:null, waiting:false,
+  batch:[],        // [{photo, file, url, fix, style, room}] while choosing
+  queuePoll:null,  // the queue screen's own polling handle
+  selecting:false, selected:new Set() };   // My Photos select mode
+
+/* The server decides what is offered and sends the list. This half only renders
+   it, so the two can never disagree about what an agent is allowed to do. */
+
+/* ------------------------------------------------------------------- api */
+
+async function api(path, opts = {}) {
+  // A plain object is serialized here, once, for every caller. Before this
+  // guard (30 Aug 2026), one call site passed `body` unstringified; fetch
+  // coerced it to "[object Object]" and the server refused every job in a
+  // multi-photo batch. The helper owning serialization means no call site
+  // can make that mistake again.
+  if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData) && !opts.raw) {
+    opts = { ...opts, body: JSON.stringify(opts.body) };
+  }
+  // TIMEOUT — the target user is an agent on a driveway with one bar of signal.
+  // A connection that stalls without a reset (routine on cell) leaves a bare
+  // fetch() pending forever; before this (security review, 31 Aug 2026) that
+  // meant a spinner that never stopped and a button that never re-enabled, with
+  // no escape but a full reload that discarded the whole batch. Now every call
+  // aborts after `timeoutMs` and surfaces a clear, retryable error instead.
+  const timeoutMs = opts.timeoutMs || 45000;
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), timeoutMs);
+  let res;
+  try {
+    res = await fetch(path, {
+      credentials:'same-origin',
+      signal: ac.signal,
+      ...opts,
+      headers: opts.body instanceof FormData || opts.raw
+        ? (opts.headers || {})
+        : { 'content-type':'application/json', ...(opts.headers||{}) },
+    });
+  } catch (e) {
+    clearTimeout(timer);
+    const err = new Error(
+      e.name === 'AbortError'
+        ? 'That took too long — check your signal and try again.'
+        : 'Connection problem — check your signal and try again.');
+    err.code = e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK';
+    err.retryable = true;   // caller decides whether a blind retry is safe
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+  const text = await res.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch {}
+  if (res.status === 401 && !path.startsWith('/api/signin') && !path.startsWith('/api/signup') && !path.startsWith('/api/me')) {
+    // The session expired or was ended in another tab. Nothing polling here
+    // can recover on its own — a progress screen would otherwise poll a dead
+    // job forever behind a live bar (audit, 3 Sep 2026). Reload: boot() lands
+    // on the sign-in form, and My photos still holds every job.
+    location.reload();
+    await new Promise(() => {});   // never resolves — the page is going away
+  }
+  if (!res.ok) {
+    const err = new Error(data?.error?.message || 'Something went wrong.');
+    err.code = data?.error?.code;
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+/* ---------------------------------------------------------------- signing */
+
+let mode = 'signin';
+function renderAuthMode(){
+  $('authTitle').textContent = mode === 'signin' ? 'Sign in' : 'Create an account';
+  $('authBtn').textContent   = mode === 'signin' ? 'Sign in' : 'Create account';
+  $('authSwapText').textContent = mode === 'signin' ? 'No account yet?' : 'Already have one?';
+  $('authSwap').textContent = mode === 'signin' ? 'Create one' : 'Sign in';
+  $('password').autocomplete = mode === 'signin' ? 'current-password' : 'new-password';
+}
+$('authSwap').onclick = () => { mode = mode === 'signin' ? 'signup' : 'signin'; show($('authErr'), false); renderAuthMode(); };
+
+$('authForm').onsubmit = async e => {
+  e.preventDefault();
+  const btn = $('authBtn');
+  btn.disabled = true;
+  show($('authErr'), false);
+  try {
+    const body = { email: $('email').value.trim(), password: $('password').value };
+    const out = await api(mode === 'signin' ? '/api/signin' : '/api/signup', { method:'POST', body: JSON.stringify(body) });
+    state.account = out.account;
+    await enterStudio();
+  } catch (err) {
+    $('authErr').textContent = err.message;
+    show($('authErr'), true);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+$('signOutBtn').onclick = async () => {
+  try { await api('/api/signout', { method:'POST', body:'{}' }); } catch {}
+  location.reload();
+};
+
+/* ---------------------------------------------------------------- studio */
+
+async function refreshCredits(){
+  const c = await api('/api/credits');
+  state.balance = c.balance;
+  if (c.costs) Object.assign(COSTS, c.costs);   // the server's prices win, always
+  $('creditChip').innerHTML = `<b>${c.balance}</b> credit${c.balance === 1 ? '' : 's'}`;
+}
+
+/* -------------------------------------------------------------- buy credits */
+
+/** Small transient message, bottom of the screen. The app had no shared one. */
+function toast(text){
+  let t = $('toastBox');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toastBox';
+    t.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1c1d1c;color:#f2ede6;padding:10px 16px;border-radius:9px;font-size:14px;z-index:80;box-shadow:0 3px 14px rgba(0,0,0,.3);transition:opacity .3s;max-width:90vw';
+    document.body.appendChild(t);
+  }
+  t.textContent = text;
+  t.style.opacity = '1';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => { t.style.opacity = '0'; }, 3200);
+}
+
+async function openPacks(){
+  const { packs } = await api('/api/packs');
+  $('packList').innerHTML = packs.map(p => {
+    const price = (p.priceCents / 100).toLocaleString('en-US', { style:'currency', currency:'USD' });
+    const each = (p.priceCents / p.credits / 100).toLocaleString('en-US', { style:'currency', currency:'USD' });
+    const badge = p.id === 'pack_30' ? '<span class="p-badge">MOST POPULAR</span>' : '';
+    return `<button class="pack" data-pack="${p.id}">
+      <span><span class="p-credits">${p.credits} credits</span>${badge}
+        <div class="p-each">${each} per credit</div></span>
+      <span class="p-price">${price}</span></button>`;
+  }).join('');
+  show($('packsOverlay'), true);
+}
+async function buyPack(packId){
+  const btns = document.querySelectorAll('#packList .pack');
+  btns.forEach(b => { b.disabled = true; });
+  try {
+    const out = await api('/api/checkout', { method:'POST', body: JSON.stringify({ packId }) });
+    location.href = out.url;             // Stripe's hosted page takes it from here
+  } catch (e) {
+    btns.forEach(b => { b.disabled = false; });
+    toast(e.message || 'Could not start checkout.');
+  }
+}
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#creditChip')) { openPacks().catch(err => toast(err.message)); return; }
+  const pk = e.target.closest('#packList .pack');
+  if (pk) { buyPack(pk.dataset.pack); return; }
+  if (e.target.closest('#packsClose') || e.target === $('packsOverlay')) show($('packsOverlay'), false);
+  if (e.target.closest('#viewerClose') || e.target === $('viewerOverlay')) show($('viewerOverlay'), false);
+  if (e.target.closest('.supportOpen')) {
+    show($('supportEmail'), !state.account);     // signed out → we need a reply address
+    show($('supportOverlay'), true);
+    $('supportMsg').focus();
+    return;
+  }
+  if (e.target.closest('#supportClose') || e.target === $('supportOverlay')) show($('supportOverlay'), false);
+  if (e.target.closest('#supportSend')) { sendSupport(); return; }
+  if (e.target.closest('#promoLink')) { show($('promoRow'), true); show($('promoLink'), false); $('promoInput').focus(); return; }
+  if (e.target.closest('#promoBtn')) { redeemPromo(); return; }
+  if (e.target.closest('#reportLink')) { show($('reportLink'), false); show($('reportForm'), true); $('reportMsg').focus(); return; }
+  if (e.target.closest('#reportSend')) { sendReport(); return; }
+});
+async function sendSupport(){
+  const msg = $('supportMsg').value.trim();
+  if (!msg) { toast('Write a message first.'); return; }
+  const btn = $('supportSend');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await api('/api/support', { method:'POST', body: JSON.stringify({
+      message: msg, email: $('supportEmail').value.trim() || undefined,
+    })});
+    $('supportMsg').value = '';
+    show($('supportOverlay'), false);
+    toast("Sent — we'll reply by email.");
+  } catch (e) {
+    toast(e.message || 'Could not send — try again in a moment.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send message';
+  }
+}
+
+async function sendReport(){
+  const message = $('reportMsg').value.trim();
+  if (!message) { toast('Tell us what looks wrong first.'); return; }
+  $('reportSend').disabled = true;
+  try {
+    const out = await api('/api/report', { method:'POST', body: JSON.stringify({ jobId: state.finishedJobId, message }) });
+    show($('reportForm'), false);
+    toast(out.alreadyReported ? "We've already got your note on this one — it's in the queue." : "Thanks — we've got it and we'll take a look.");
+  } catch (err) {
+    toast(err.message || 'Could not send that just now.');
+    $('reportSend').disabled = false;
+    return;
+  }
+  $('reportSend').disabled = false;
+}
+async function redeemPromo(){
+  const code = $('promoInput').value.trim();
+  if (!code) return;
+  $('promoBtn').disabled = true;
+  try {
+    const out = await api('/api/redeem', { method:'POST', body: JSON.stringify({ code }) });
+    state.balance = out.balance;
+    $('creditChip').innerHTML = `<b>${out.balance}</b> credit${out.balance === 1 ? '' : 's'}`;
+    show($('packsOverlay'), false);
+    $('promoInput').value = '';
+    toast(`${out.credits} credit${out.credits === 1 ? '' : 's'} added — enjoy!`);
+    if (state.transformation) pick(state.transformation);   // re-check affordability
+  } catch (err) {
+    toast(err.message || 'That code did not work.');
+  } finally { $('promoBtn').disabled = false; }
+}
+// Coming back from Stripe: thank them, show the new balance, clean the URL.
+// The webhook can land a beat after the redirect, so give the balance a moment
+// and check once more.
+if (location.search.includes('purchase=success')) {
+  history.replaceState(null, '', '/app');
+  setTimeout(() => refreshCredits().catch(()=>{}), 1500);
+  setTimeout(() => { refreshCredits().catch(()=>{}); toast('Credits added — thank you!'); }, 4500);
+} else if (location.search.includes('purchase=cancelled')) {
+  history.replaceState(null, '', '/app');
+} else if (location.search.includes('auth_error=')) {
+  // Google sign-in bounced. Plain words, not an error code.
+  const code = new URLSearchParams(location.search).get('auth_error');
+  history.replaceState(null, '', '/app');
+  setTimeout(() => toast(code === 'google_password_account'
+    ? 'That email already has a password account — sign in with your password.'
+    : "Google sign-in didn't finish — try again, or use email and password."), 400);
+}
+
+// Google sign-in: the button appears only when the server says the OAuth
+// client is configured, so an unconfigured deployment shows nothing broken.
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#googleBtn')) location.href = '/api/auth/google';
+});
+(async () => {
+  try {
+    const cfg = await api('/api/auth/config');
+    if (cfg.google) show($('googleAuth'), true);
+  } catch { /* leave hidden */ }
+})();
+
+// Park the landing page's redeem intent before any sign-in redirect can eat it.
+if (location.hash === '#promo') {
+  try { sessionStorage.setItem('promoIntent', '1'); } catch {}
+}
+
+async function enterStudio(){
+  show($('authView'), false);
+  show($('studioView'), true);
+  show($('creditChip'), true);
+  show($('queueBtn'), true);
+  show($('signOutBtn'), true);
+  await refreshCredits();
+  resetToUpload();
+  // Deep link from the landing page's "Have a code?" pill: someone arriving
+  // with a beta code in hand should land straight on the redeem field, not
+  // have to discover the quiet link inside the buy sheet. Survives the
+  // sign-in round trip because the hash rides along untouched.
+  let promoIntent = location.hash === '#promo';
+  // Google sign-in bounces through accounts.google.com and drops the hash, so
+  // the intent is parked in sessionStorage at page load and read back here.
+  try {
+    promoIntent = promoIntent || sessionStorage.getItem('promoIntent') === '1';
+    sessionStorage.removeItem('promoIntent');
+  } catch {}
+  if (promoIntent) {
+    history.replaceState(null, '', location.pathname);
+    openPacks().then(() => {
+      show($('promoRow'), true); show($('promoLink'), false);
+      $('promoInput').focus();
+    }).catch(() => {});
+  }
+}
+
+function resetToUpload(){
+  state.photo = null; state.transformation = null; state.jobId = null; state.batch = [];
+  stopQueueWatch();
+  document.body.classList.remove('wide');
+  show($('uploadCard'), true); show($('pickCard'), false);
+  show($('batchCard'), false); show($('queueCard'), false);
+  show($('runCard'), false); show($('resultCard'), false);
+  $('file').value = '';
+}
+
+/* ---------------------------------------------------------------- upload */
+
+$('drop').onclick = () => $('file').click();
+$('drop').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } };
+['dragenter','dragover'].forEach(t => $('drop').addEventListener(t, e => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave','drop'].forEach(t => $('drop').addEventListener(t, e => { e.preventDefault(); $('drop').classList.remove('over'); }));
+$('drop').addEventListener('drop', e => { const f = e.dataTransfer?.files; if (f?.length) uploadPhotos([...f]); });
+$('file').onchange = e => { const f = e.target.files; if (f?.length) uploadPhotos([...f]); };
+
+const DROP_IDLE = '<div class="big">Choose photos</div><div class="sub">JPEG or PNG, up to 25MB each — pick as many as you like</div>';
+
+/**
+ * Upload one photograph or several.
+ *
+ * Uploaded ONE AT A TIME on purpose, not all at once. Each upload runs a vision
+ * call to decide what the photo is and which fixes to offer, and a phone on a
+ * listing's driveway is not on good wifi — five parallel uploads on 5G is how
+ * you get five timeouts instead of five photographs. Sequential is slower on
+ * paper and finishes more often.
+ *
+ * One bad file does not sink the batch: it is reported and the rest carry on.
+ */
+/** Is this an iPhone HEIC/HEIF? MIME when the browser knows it, extension
+ *  because Windows frequently reports no type for .heic at all. */
+const isHeic = f => /image\/hei[cf]/.test(f.type) || /\.hei[cf]$/i.test(f.name);
+
+const loadScript = src => new Promise((resolve, reject) => {
+  const s = document.createElement('script');
+  s.src = src; s.onload = resolve; s.onerror = () => reject(new Error('script failed'));
+  document.head.appendChild(s);
+});
+
+/**
+ * Hand back a JPEG/PNG File whatever came in, or null if we truly cannot.
+ *
+ * HEIC is converted IN THE BROWSER so the server, the pipeline and the
+ * compliance chain never meet a format they can't open. Two decoders, tried
+ * in order: the browser's own (Safari has decoded HEIC natively since iOS 11
+ * — the common iPhone case costs zero download), then heic2any fetched on
+ * demand for Chrome/Firefox on desktop, where HEIC files usually arrive via
+ * AirDrop or "keep originals" transfers. createImageBitmap applies the EXIF
+ * orientation before the canvas bakes it in.
+ */
+/** The bytes don't lie: HEIC is ISO-BMFF ('ftyp' at offset 4 + a heif brand),
+ *  however the file is named. A HEIC renamed .jpg killed a real customer job
+ *  on 31 Aug 2026 — the name and MIME both said JPEG, so it skipped
+ *  conversion and reached a pipeline that can't decode it. */
+async function sniffsHeic(f){
+  try {
+    const b = new Uint8Array(await f.slice(0, 16).arrayBuffer());
+    if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) {
+      return /^(heic|heix|hevc|heim|heis|hevm|hevs|mif1|msf1)$/.test(
+        String.fromCharCode(b[8], b[9], b[10], b[11]));
+    }
+  } catch {}
+  return false;
+}
+
+async function toUploadable(f){
+  const disguised = await sniffsHeic(f);
+  if (!disguised && ['image/jpeg','image/png'].includes(f.type)) return f;
+  if (!disguised && !isHeic(f)) return null;
+  const asJpeg = async (blob) => {
+    const bmp = await createImageBitmap(blob);
+    const c = document.createElement('canvas');
+    c.width = bmp.width; c.height = bmp.height;
+    c.getContext('2d').drawImage(bmp, 0, 0);
+    const out = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+    if (!out) throw new Error('encode failed');
+    return new File([out], f.name.replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' });
+  };
+  try { return await asJpeg(f); } catch { /* browser can't decode HEIC natively */ }
+  try {
+    if (!window.heic2any) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js');
+    const blob = await heic2any({ blob: f, toType: 'image/jpeg', quality: 0.92 });
+    return new File([blob], f.name.replace(/\.hei[cf]$/i, '') + '.jpg', { type: 'image/jpeg' });
+  } catch { return null; }
+}
+
+async function uploadPhotos(files){
+  show($('uploadErr'), false);
+  const good = [], bad = [];
+  let converting = 0;
+  for (const f of files) {
+    if (f.size > 25 * 1024 * 1024) { bad.push(`${f.name} — over 25MB`); continue; }
+    if (isHeic(f)) {
+      converting++;
+      $('drop').innerHTML = `<div class="big">Converting iPhone photo${converting > 1 ? 's' : ''}…</div><div class="sub">${escapeHtml(f.name)}</div>`;
+    }
+    const u = await toUploadable(f);
+    if (!u) { bad.push(`${f.name} — not a photo format we can open (JPEG, PNG or iPhone HEIC)`); continue; }
+    good.push(u);
+  }
+  if (!good.length) { $('drop').innerHTML = DROP_IDLE; return failUpload(bad.join('; ') || 'Nothing to upload.'); }
+
+  state.batch = [];
+  // A real progress bar across the whole batch. fetch() cannot report upload
+  // progress, so the upload itself goes over XMLHttpRequest; on driveway 5G
+  // with four photos the difference between a spinner and a moving bar is
+  // whether the person believes anything is happening.
+  const totalBytes = good.reduce((s, f) => s + f.size, 0);
+  let doneBytes = 0, n = 0;
+  const paintProgress = (name, currentLoaded) => {
+    const pct = Math.min(100, Math.round(100 * (doneBytes + currentLoaded) / totalBytes));
+    $('drop').innerHTML = `
+      <div class="big">Uploading ${n} of ${good.length}…</div>
+      <div class="sub">${name}</div>
+      <div class="bar-track" style="max-width:280px;margin:14px auto 6px"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="sub" style="font-variant-numeric:tabular-nums">${pct}%</div>`;
+  };
+  const uploadOne = (file) => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/photos');
+    xhr.setRequestHeader('content-type', file.type);
+    // A stalled upload must not hang forever on bad signal. Large photos on slow
+    // 5G can legitimately take a while, so the ceiling is generous, but it is a
+    // ceiling: no upload leaves the drop stuck on "Uploading…" with no way out.
+    // The timer resets on each progress event, so a slow-but-moving upload is
+    // never cut off — only a truly dead connection trips it. (Review, 31 Aug.)
+    const STALL_MS = 60000;
+    let stall;
+    const arm = () => { clearTimeout(stall); stall = setTimeout(() => xhr.abort(), STALL_MS); };
+    arm();
+    xhr.upload.onprogress = (e) => { arm(); if (e.lengthComputable) paintProgress(file.name, e.loaded); };
+    xhr.onload = () => {
+      clearTimeout(stall);
+      let body = null;
+      try { body = JSON.parse(xhr.responseText); } catch { /* fall through */ }
+      if (xhr.status >= 200 && xhr.status < 300 && body) return resolve(body);
+      reject(new Error(body?.error?.message || `Upload failed (${xhr.status})`));
+    };
+    xhr.onerror = () => { clearTimeout(stall); reject(new Error('Network hiccup — check your connection and try again.')); };
+    xhr.onabort = () => reject(new Error('That upload stalled — check your signal and try again.'));
+    xhr.send(file);
+  });
+  for (const file of good) {
+    n++;
+    paintProgress(file.name, 0);
+    try {
+      const out = await uploadOne(file);
+      // Show the local file rather than fetching it back — instant, one less round trip.
+      state.batch.push({ photo: out, name: file.name, url: URL.createObjectURL(file), fix: null, style: null, room: null });
+      pollScene(out);
+    } catch (err) {
+      bad.push(`${file.name} — ${err.message}`);
+    }
+    doneBytes += file.size;
+  }
+  $('drop').innerHTML = DROP_IDLE;
+  $('file').value = '';
+
+  if (!state.batch.length) return failUpload(bad.join('; '));
+  if (bad.length) { $('uploadErr').textContent = bad.join('; '); show($('uploadErr'), true); }
+
+  // One photo keeps the original single-photo flow — the progress steps and the
+  // before/after slider are better than a list of one.
+  if (state.batch.length === 1) {
+    state.photo = state.batch[0].photo;
+    $('previewImg').src = state.batch[0].url;
+    show($('uploadCard'), false);
+    show($('pickCard'), true);
+    renderOptions();
+  } else {
+    show($('uploadCard'), false);
+    show($('batchCard'), true);
+    renderBatch();
+  }
+}
+function failUpload(msg){
+  $('uploadErr').textContent = msg;
+  show($('uploadErr'), true);
+}
+
+/* ------------------------------------------------------------- choosing */
+
+/**
+ * The room is read in the BACKGROUND now (1 Sep 2026): uploads answer the
+ * moment the bytes land, and this fills in the right buttons a moment later.
+ * Quietly: no spinner, no flicker — the default is every button, and the poll
+ * narrows them the instant the classifier reports. If the person has already
+ * picked a transformation, nothing is re-rendered under their thumb; the
+ * server re-checks scene rules at submission anyway.
+ */
+async function pollScene(photoObj){
+  if (!photoObj || !photoObj.classifying || !photoObj.photoId) return;
+  for (let i = 0; i < 15; i++) {
+    await new Promise(r => setTimeout(r, 1200));
+    try {
+      const r = await fetch(`/api/photos/${photoObj.photoId}/scene`);
+      if (!r.ok) return;
+      const sc = await r.json();
+      if (sc.ready) {
+        photoObj.signals = sc.signals; photoObj.offers = sc.offers;
+        photoObj.advice = sc.advice; photoObj.classifying = false;
+        if (state.photo === photoObj && !state.transformation) renderOptions();
+        return;
+      }
+    } catch { /* transient — keep polling */ }
+  }
+}
+
+function renderOptions(){
+  $('opts').innerHTML = '';
+  const offers = state.photo?.offers || ['declutter','empty','staging','twilight'];
+  $('pickCard').querySelector('.muted').textContent =
+    'Every result is checked before it reaches you. If nothing passes, your credits come back.';
+  for (const t of offers) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'opt'; b.setAttribute('aria-pressed','false');
+    // A nudge, never a block — the agent decides whether a small job is worth it.
+    const note = state.photo?.advice?.[t];
+    b.innerHTML = `<span class="n">${LABELS[t]}</span><span class="c">${COSTS[t]} credit${COSTS[t] > 1 ? 's' : ''}${note ? ' · ' + note : ''}</span>`;
+    b.onclick = () => pick(t);
+    $('opts').appendChild(b);
+  }
+  $('startBtn').disabled = true;
+  show($('styleField'), false);
+  show($('roomField'), false);
+}
+
+function pick(t){
+  state.transformation = t;
+  const offers = state.photo?.offers || ['declutter','empty','staging','twilight'];
+  [...$('opts').children].forEach((b,i) => b.setAttribute('aria-pressed', String(offers[i] === t)));
+
+  // Only staging asks anything. Twilight is one look; declutter and empty have
+  // nothing to choose.
+  $('styleLabel').textContent = 'Style';
+  fillSelect($('style'), STAGING_STYLES);
+  fillSelect($('room'), ROOM_TYPES);
+  show($('styleField'), t === 'staging');
+  show($('roomField'), t === 'staging');
+
+  const affordable = state.balance >= COSTS[t];
+  $('startBtn').disabled = !affordable;
+  $('startBtn').textContent = affordable
+    ? `Start · ${COSTS[t]} credit${COSTS[t] > 1 ? 's' : ''}`
+    : `Not enough credits`;
+  show($('startErr'), false);
+}
+
+function fillSelect(sel, values){
+  sel.innerHTML = '';
+  for (const v of values) {
+    const o = document.createElement('option');
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  }
+}
+
+$('cancelPick').onclick = resetToUpload;
+
+/* ---------------------------------------------------------------- batch */
+
+/**
+ * One row per photograph, each with its own fix.
+ *
+ * The fixes offered come from the same per-photo classification the single flow
+ * uses, so an already-furnished room is never offered staging here either — the
+ * batch screen is a different way in, not a different rulebook.
+ */
+function renderBatch(){
+  const rows = $('batchRows');
+  rows.innerHTML = '';
+  state.batch.forEach((item, i) => {
+    const offers = item.photo?.offers || ['declutter','empty','staging','twilight'];
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.innerHTML = `
+      <img src="${item.url}" alt="">
+      <div class="body">
+        <div class="name">${escapeHtml(item.name)}</div>
+        <select class="fix" data-i="${i}" data-k="fix" aria-label="What to do with ${escapeHtml(item.name)}">
+          <option value="">Choose a fix…</option>
+          ${offers.map(t => `<option value="${t}">${LABELS[t]} · ${COSTS[t]} credit${COSTS[t] > 1 ? 's' : ''}</option>`).join('')}
+          <option value="skip">Skip this one</option>
+        </select>
+        <select class="fix hidden" data-i="${i}" data-k="style" aria-label="Style">
+          ${STAGING_STYLES.map(v => `<option value="${v}">${v}</option>`).join('')}
+        </select>
+        <select class="fix hidden" data-i="${i}" data-k="room" aria-label="Room type">
+          ${ROOM_TYPES.map(v => `<option value="${v}">${v}</option>`).join('')}
+        </select>
+      </div>`;
+    rows.appendChild(el);
+  });
+
+  rows.querySelectorAll('select').forEach(sel => {
+    sel.onchange = () => {
+      const item = state.batch[+sel.dataset.i];
+      item[sel.dataset.k] = sel.value || null;
+      // Staging is the only one that asks anything more.
+      if (sel.dataset.k === 'fix') {
+        const extra = [...rows.querySelectorAll(`select[data-i="${sel.dataset.i}"]`)].slice(1);
+        extra.forEach(x => show(x, sel.value === 'staging'));
+        if (sel.value === 'staging') { item.style = extra[0].value; item.room = extra[1].value; }
+        else { item.style = null; item.room = null; }
+      }
+      updateBatchButton();
+    };
+  });
+  updateBatchButton();
+}
+
+/** The chosen photos, ignoring any the agent marked Skip. */
+const batchChosen = () => state.batch.filter(i => i.fix && i.fix !== 'skip');
+
+function updateBatchButton(){
+  const chosen = batchChosen();
+  const cost = chosen.reduce((n, i) => n + COSTS[i.fix], 0);
+  const btn = $('batchStart');
+  show($('batchErr'), false);
+  if (!chosen.length) {
+    btn.disabled = true; btn.textContent = 'Start';
+    return;
+  }
+  // Checked here as well as on the server, so an agent is told BEFORE they wait
+  // rather than watching some of a batch start and the rest bounce.
+  if (cost > state.balance) {
+    btn.disabled = true;
+    btn.textContent = `Not enough credits · needs ${cost}`;
+    $('batchErr').textContent = `That's ${cost} credits and you have ${state.balance}. Deselect one, or top up.`;
+    show($('batchErr'), true);
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = `Start ${chosen.length} photo${chosen.length > 1 ? 's' : ''} · ${cost} credit${cost > 1 ? 's' : ''}`;
+}
+
+$('batchCancel').onclick = resetToUpload;
+
+/**
+ * Start them all, then go straight to the queue.
+ *
+ * Started one after another rather than in parallel — the same reason as the
+ * uploads. These are quick calls that only enqueue work, so sequential costs a
+ * moment and means a flaky connection loses one photo instead of the batch.
+ */
+$('batchStart').onclick = async () => {
+  const chosen = batchChosen();
+  $('batchStart').disabled = true;
+  $('batchStart').textContent = 'Starting…';
+  const failed = [];
+  for (const item of chosen) {
+    try {
+      const body = { photoId: item.photo.photoId, transformation: item.fix };
+      if (item.fix === 'staging') { body.style = item.style; body.roomType = item.room; }
+      const out = await api('/api/transform', { method:'POST', body });
+      state.balance = out.balance;
+    } catch (err) {
+      failed.push(`${item.name} — ${err.message}`);
+    }
+  }
+  $('creditChip').innerHTML = `<b>${state.balance}</b> credit${state.balance === 1 ? '' : 's'}`;
+  if (failed.length && failed.length === chosen.length) {
+    $('batchErr').textContent = failed.join('; ');
+    show($('batchErr'), true);
+    updateBatchButton();
+    return;
+  }
+  show($('batchCard'), false);
+  openQueue(failed.length ? `Started, but ${failed.length} could not begin: ${failed.join('; ')}` : null);
+};
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+
+/* ---------------------------------------------------------------- queue */
+
+/**
+ * Everything the agent has run, and the reason any of this works.
+ *
+ * Jobs run on the server whether or not a browser is attached; the retry queue
+ * keeps them alive through outages and deploys; finished photographs are stored
+ * permanently. All of that was already true. What was missing was a screen to
+ * come back to — so a result only existed for as long as somebody kept the tab
+ * open, which is the opposite of "put your phone away".
+ */
+async function openQueue(notice){
+  show($('uploadCard'), false); show($('pickCard'), false);
+  show($('batchCard'), false); show($('runCard'), false); show($('resultCard'), false);
+  show($('queueCard'), true);
+  document.body.classList.add('wide');
+  $('queueSub').textContent = notice
+    || "Everything you've run. Finished ones stay here — you can close the app and come back whenever.";
+  $('queueRows').innerHTML = '<p class="faint">Loading…</p>';
+  await refreshQueue();
+  startQueueWatch();
+}
+
+const STATE_TEXT = {
+  queued:   ['go', 'Waiting to start'],
+  running:  ['go', 'Working on it'],
+  delivered:['ok', 'Ready'],
+  rejected: ['no', 'Nothing passed the checks — credits returned'],
+  failed:   ['no', 'Did not finish — credits returned'],
+};
+
+/**
+ * One tap on a returned card starts the same photo + transformation again.
+ * The charge is the normal one — the failed job's credits already came back —
+ * and the ambiguity rule from the Start button applies here too: on a network
+ * drop we refresh rather than invite a blind second tap.
+ */
+async function rerunJob(j, el, asTransformation){
+  if (el.dataset.busy) return;
+  el.dataset.busy = '1';
+  el.querySelector('.psub').textContent = 'Starting it again…';
+  try {
+    const t = asTransformation || j.transformation;
+    const body = { photoId: j.photoId, transformation: t };
+    // Options only carry over when the transformation stays the same — an
+    // Empty Room rerun of a failed declutter takes no style or room type.
+    if (t === j.transformation && j.style) body.style = j.style;
+    if (t === j.transformation && j.roomType) body.roomType = j.roomType;
+    const out = await api('/api/transform', { method:'POST', body: JSON.stringify(body) });
+    if (out.balance !== undefined) {
+      state.balance = out.balance;
+      $('creditChip').innerHTML = `<b>${out.balance}</b> credit${out.balance === 1 ? '' : 's'}`;
+    }
+    toast('Running it again — a fresh attempt, right here.');
+  } catch (err) {
+    toast(err.message || 'Could not start that again just now.');
+  }
+  delete el.dataset.busy;
+  await refreshQueue();
+  startQueueWatch();
+}
+
+/**
+ * The chooser behind a returned declutter card. Which option leads depends on
+ * how the job ended: rejected means the checks refused every tidy-up — the
+ * room is probably beyond tidying, so Empty Room goes first. Failed means the
+ * run never got a fair shot (an outage, an interruption) — the same declutter
+ * again goes first.
+ */
+function openReturnedSheet(j, el){
+  const rejected = j.status === 'rejected';
+  $('rerunTitle').textContent = rejected ? 'Nothing passed the checks' : 'That one did not finish';
+  // The reason, verbatim — the same sentence the result screen would have
+  // shown. A card that just says RETURNED explains nothing.
+  $('rerunReason').textContent = j.note ||
+    (rejected ? 'No result met our compliance and realism bar, so nothing was delivered.'
+              : 'The run was interrupted before it could finish.');
+  $('rerunCredit').textContent = 'Your credits came back the moment it ended — this attempt cost you nothing.';
+  const declutter = j.transformation === 'declutter';
+  $('rerunSub').textContent = declutter && rejected
+    ? 'Rooms this full are usually beyond a tidy-up — Empty Room clears everything in one pass, same price.'
+    : '';
+  const btn = (label, primary) =>
+    `<button type="button" class="btn${primary ? '' : ' ghost'}" style="margin:0">${label}</button>`;
+  let choices = [];
+  if (j.photoId) {
+    if (declutter) {
+      choices = rejected
+        ? [['empty', btn('Try Empty Room', true)], ['declutter', btn('Run Declutter again', false)]]
+        : [['declutter', btn('Run Declutter again', true)], ['empty', btn('Try Empty Room instead', false)]];
+    } else {
+      choices = [[j.transformation, btn('Run it again', true)]];
+    }
+  }
+  $('rerunChoices').innerHTML = choices.map(c => c[1]).join('');
+  [...$('rerunChoices').children].forEach((b, i) => b.onclick = () => {
+    show($('rerunOverlay'), false);
+    rerunJob(j, el, choices[i][0]);
+  });
+  show($('rerunOverlay'), true);
+}
+
+/**
+ * Tapping a WORKING card returns to the progress screen — the one with the
+ * step list and the honest clock — so "is it stuck?" has somewhere to look
+ * (Kyle, 31 Aug 2026). The clock resumes from when the job really started: a
+ * six-minute-old job opens at 6:00, not 0:00.
+ */
+function resumeWatching(j){
+  stopQueueWatch();
+  show($('queueCard'), false);
+  document.body.classList.remove('wide');
+  state.jobId = j.jobId;
+  state.transformation = j.transformation;
+  // The photo too — without it, "Try Empty Room" from a job resumed here
+  // reached Start with state.photo null and threw (audit, 3 Sep 2026).
+  if (j.photoId) state.photo = { photoId: j.photoId, offers: undefined };
+  if (j.originalUrl) $('previewImg').src = j.originalUrl;   // the before half of the delivery slider
+  startWatching();
+  if (j.startedAt) state.started = Date.parse(j.startedAt) || state.started;
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('#rerunClose') || e.target === $('rerunOverlay')) show($('rerunOverlay'), false);
+});
+
+async function refreshQueue(){
+  let jobs;
+  try { ({ jobs } = await api('/api/jobs')); }
+  catch { return false; }   // a blip is not an empty list; leave what is on screen
+
+  if (!jobs.length) {
+    $('queueRows').className = '';
+    $('queueRows').innerHTML = '<p class="faint">Nothing yet. Upload a photo to get started.</p>';
+    return false;
+  }
+
+  // A grid of photographs, because that is what this screen holds. Tapping a
+  // finished one opens the viewer (slider, versions, save); an unfinished or
+  // returned one explains itself on its badge and its second line.
+  const BADGE = { delivered:['ok','READY'], queued:['go','WORKING'], running:['go','WORKING'],
+                  rejected:['no','RETURNED'], failed:['no','RETURNED'] };
+  $('queueRows').className = 'pgrid';
+  $('queueRows').innerHTML = '';
+  for (const j of jobs) {
+    const [cls, badge] = BADGE[j.status] || ['no', j.status.toUpperCase()];
+    const [, label] = STATE_TEXT[j.status] || ['no', j.status];
+    const sub = j.waitingOnUpstream && cls === 'go'
+      ? 'Image service busy — nothing charged'
+      : (cls === 'go' ? label : (j.status === 'delivered'
+          ? [j.roomType, j.style].filter(Boolean).map(escapeHtml).join(' · ') || 'Tap to view'
+          : 'Credits returned'));
+    // A returned job with its photo still on file can be run again in one tap —
+    // fresh dice, normal credit charge (the failed one was already refunded).
+    // Born from the 31 Aug beta morning, when an outage failed two jobs and the
+    // customer's only road back was re-uploading and texting Kyle.
+    const returned = j.status === 'failed' || j.status === 'rejected';
+    const working = j.status === 'queued' || j.status === 'running';
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'pcard' + (j.status === 'delivered' ? '' : ' dim');
+    // Every card now answers its tap: delivered opens the viewer, working
+    // opens the progress screen, returned opens the why-and-what-now sheet.
+    el.dataset.job = j.jobId;
+    if (state.selected.has(j.jobId)) el.classList.add('picked');
+    el.innerHTML = `
+      <img class="thumb" src="${j.resultUrl || j.originalUrl || ''}" alt="" loading="lazy">
+      <span class="pbadge ${cls}">${badge}</span>
+      <span class="pcheck" aria-hidden="true">✓</span>
+      <div class="pmeta">
+        <div class="pname">${LABELS[j.transformation] || j.transformation}</div>
+        <div class="psub">${returned ? 'Credits returned — tap to see why'
+                          : working ? sub + ' — tap to watch'
+                          : sub}</div>
+      </div>`;
+    el.onclick = () => {
+      // In select mode a finished card toggles its tick; everything else is
+      // inert. Out of it, every card answers its tap as before.
+      if (state.selecting) { if (j.status === 'delivered') togglePick(j.jobId, el); return; }
+      if (j.status === 'delivered') openViewer(j);
+      else if (working) resumeWatching(j);
+      else if (returned) openReturnedSheet(j, el);
+    };
+    $('queueRows').appendChild(el);
+  }
+  state.queueJobs = jobs;
+  const ready = jobs.filter(j => j.status === 'delivered');
+  show($('queueSelect'), ready.length > 1 && !state.selecting);
+  // A photo that finished after the pick list was drawn is not silently
+  // dropped from "select all" — the bar recounts against the fresh list.
+  for (const id of [...state.selected]) if (!ready.some(j => j.jobId === id)) state.selected.delete(id);
+  $('queueRows').classList.toggle('selecting', state.selecting);
+  updateSelBar();
+  return jobs.some(j => j.status === 'queued' || j.status === 'running');
+}
+
+/**
+ * SELECT MODE (9 Sep 2026, Kyle: "group download from the My Photos page").
+ * An agent finishing a listing wants the whole set, not twenty round trips
+ * through the viewer. Pick the finished ones, then either share them all to
+ * the camera roll in one sheet (iPhone) or take a ZIP built server-side.
+ */
+function togglePick(jobId, el){
+  if (state.selected.has(jobId)) state.selected.delete(jobId); else state.selected.add(jobId);
+  el.classList.toggle('picked', state.selected.has(jobId));
+  updateSelBar();
+}
+function updateSelBar(){
+  show($('selBar'), state.selecting);
+  if (!state.selecting) return;
+  const ready = (state.queueJobs || []).filter(j => j.status === 'delivered');
+  const n = state.selected.size;
+  $('selCount').textContent = n === 1 ? '1 selected' : `${n} selected`;
+  $('selAll').textContent = n && n === ready.length ? 'Clear' : 'Select all';
+  const ids = [...state.selected].join(',');
+  const zip = $('selZip');
+  zip.href = n ? `/api/jobs/zip?ids=${encodeURIComponent(ids)}` : '#';
+  zip.classList.toggle('disabled', !n);
+  zip.setAttribute('aria-disabled', String(!n));
+  zip.textContent = n > 1 ? `Download ${n} as .zip` : 'Download .zip';
+  const canShareFiles = !!(navigator.canShare && navigator.share);
+  show($('selSave'), canShareFiles);
+  $('selSave').disabled = !n;
+  $('selSave').textContent = n > 1 ? `Save ${n} to Camera Roll` : 'Save to Camera Roll';
+}
+function setSelecting(on){
+  state.selecting = on;
+  if (!on) state.selected.clear();
+  $('queueRows').classList.toggle('selecting', on);
+  document.querySelectorAll('#queueRows .pcard').forEach(el => el.classList.toggle('picked', on && state.selected.has(el.dataset.job)));
+  show($('queueSelect'), !on && ((state.queueJobs || []).filter(j => j.status === 'delivered').length > 1));
+  updateSelBar();
+}
+$('queueSelect').onclick = () => setSelecting(true);
+$('selCancel').onclick = () => setSelecting(false);
+$('selAll').onclick = () => {
+  const ready = (state.queueJobs || []).filter(j => j.status === 'delivered');
+  if (state.selected.size === ready.length) state.selected.clear();
+  else ready.forEach(j => state.selected.add(j.jobId));
+  document.querySelectorAll('#queueRows .pcard').forEach(el => el.classList.toggle('picked', state.selected.has(el.dataset.job)));
+  updateSelBar();
+};
+$('selZip').onclick = (e) => { if (!state.selected.size) e.preventDefault(); };
+$('selSave').onclick = async () => {
+  const btn = $('selSave');
+  const picked = (state.queueJobs || []).filter(j => state.selected.has(j.jobId));
+  if (!picked.length) return;
+  try {
+    btn.disabled = true; btn.textContent = 'Getting the photos…';
+    const files = [];
+    for (const j of picked) {
+      const versions = [j.resultUrl, ...(j.variantUrls || [])];
+      for (let i = 0; i < versions.length; i++) {
+        const blob = await (await fetch(versions[i])).blob();
+        files.push(new File([blob], `listing-lab-${String(files.length + 1).padStart(2, '0')}-${j.transformation}${i ? '-version-' + (i + 1) : ''}.jpg`, { type: 'image/jpeg' }));
+      }
+    }
+    if (navigator.canShare({ files })) await navigator.share({ files });
+    else location.href = $('selZip').href;
+  } catch (e) { /* user closed the sheet — nothing to do */ }
+  finally { updateSelBar(); }
+};
+
+/**
+ * The viewer: the delivery moment, replayable from the library. Before/after
+ * slider against the original, the version picker when staging produced
+ * runners-up, and Save to Photos through the share sheet — the only road into
+ * the Photos app on an iPhone. Download stays as the quiet fallback.
+ */
+function openViewer(j){
+  const versions = [j.resultUrl, ...(j.variantUrls || [])];
+  let currentUrl = versions[0];
+  const hasBefore = !!j.originalUrl;
+  $('viewerTitle').textContent = LABELS[j.transformation] || j.transformation;
+  $('viewerSub').textContent = hasBefore ? 'Drag the slider to compare.' : '';
+  $('viewerBody').innerHTML = `
+    <div class="ba" id="vba">
+      <img alt="The finished result">
+      ${hasBefore ? `
+      <div class="orig"><img alt="Your original photo"></div>
+      <div class="handle"><div class="knob">↔</div></div>
+      <div class="tag l">ORIGINAL</div><div class="tag r">RESULT</div>` : ''}
+    </div>
+    ${versions.length > 1 ? `
+    <div class="faint" style="margin:12px 0 8px">${versions.length} versions passed our checks — keep the one you love:</div>
+    <div id="vversions" style="display:flex;gap:8px;flex-wrap:wrap">
+      ${versions.map((_, i) => `<button type="button" class="opt vbtn" style="padding:9px 16px;width:auto" aria-pressed="false">Version ${i + 1}</button>`).join('')}
+    </div>` : ''}
+    <div class="vactions" id="vActions">
+      <button class="btn hidden" id="vSave" type="button">Save to Camera Roll</button>
+      <a class="btn ghost" id="vDl" download>Download</a>
+    </div>
+    <p style="margin:12px 0 0;text-align:center;font-size:11px;line-height:1.4;color:var(--studio-text-faint);opacity:.55">AI can make mistakes — please double-check before it goes live.</p>`;
+  const vba = document.getElementById('vba');
+  const after = vba.querySelector(':scope > img');
+  if (hasBefore) vba.querySelector('.orig img').src = j.originalUrl;
+  const apply = (i) => {
+    currentUrl = versions[i];
+    after.src = currentUrl;
+    const dl = document.getElementById('vDl');
+    dl.href = currentUrl + '?download=1';
+    dl.download = `listing-lab-${j.transformation}${versions.length > 1 ? '-version-' + (i + 1) : ''}.jpg`;
+    document.querySelectorAll('#vversions .vbtn').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+  };
+  document.querySelectorAll('#vversions .vbtn').forEach((b, i) => { b.onclick = () => apply(i); });
+  apply(0);
+  const vSave = document.getElementById('vSave');
+  const canShareFiles = !!(navigator.canShare && navigator.share);
+  show(vSave, canShareFiles);
+  // ONE obvious button (Kyle, 29 Aug): where the share sheet exists, saving to
+  // the camera roll is what an agent actually wants, so Download steps back to
+  // a quiet line — two equal buttons had people tapping Download out of habit
+  // and losing the photo to the Files app.
+  if (canShareFiles) {
+    const dl = document.getElementById('vDl');
+    document.getElementById('vActions').style.cssText = 'display:block;margin-top:14px;text-align:center';
+    vSave.style.width = '100%';
+    dl.className = 'linkbtn';
+    dl.textContent = 'or download the file';
+    dl.style.cssText = 'display:inline-block;margin-top:10px;font-size:13px;color:var(--studio-text-faint)';
+  }
+  if (canShareFiles) {
+    vSave.onclick = async () => {
+      try {
+        vSave.disabled = true;
+        const blob = await (await fetch(currentUrl)).blob();
+        const file = new File([blob], `listing-lab-${j.transformation || 'result'}.jpg`, { type: 'image/jpeg' });
+        if (navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
+        else location.href = currentUrl + '?download=1';
+      } catch (e) { /* user closed the sheet — nothing to do */ }
+      finally { vSave.disabled = false; }
+    };
+  }
+  // THE CHAIN NUDGE, from the library too (Kyle, 29 Aug): an emptied room is
+  // still a blank canvas a week later. Same flow as the result screen — the
+  // staging runs on the emptied RESULT, re-uploaded as its own starting point.
+  if (j.transformation === 'empty') {
+    $('viewerBody').insertAdjacentHTML('beforeend', `
+      <div class="note" style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="flex:1;min-width:180px">Now that it's empty — want to furnish it? Buyers linger longer on staged rooms.</span>
+        <button id="vStageNext" class="btn" style="width:auto;margin:0;padding:10px 16px;font-size:14px">Stage this room</button>
+      </div>`);
+    document.getElementById('vStageNext').onclick = async () => {
+      const btn = document.getElementById('vStageNext');
+      btn.disabled = true; btn.textContent = 'One moment…';
+      try {
+        // Server-side copy from the CLEAN (pre-watermark) frame, so the staging
+        // never sees our corner stamp — feeding it the stamped delivery taught
+        // the model to redraw the stamp under the fresh one (31 Aug 2026).
+        const res = await fetch('/api/photos/from-job', { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify({ jobId: j.jobId || j.id }) });
+        const out = await res.json();
+        if (!res.ok) throw new Error(out?.error?.message || 'Could not start staging.');
+        state.photo = out;
+        pollScene(out);
+        $('previewImg').src = out.url;
+        show($('viewerOverlay'), false);
+        stopQueueWatch();
+        show($('queueCard'), false);
+        document.body.classList.remove('wide');
+        show($('pickCard'), true);
+        renderOptions();
+        pick('staging');
+      } catch (e) {
+        toast(e.message || 'Could not start staging.');
+        btn.disabled = false; btn.textContent = 'Stage this room';
+      }
+    };
+  }
+  // The quiet report line, here too (Kyle, 29 Aug: it existed only on the
+  // fresh-delivery screen). Same whisper, files against this exact job.
+  $('viewerBody').insertAdjacentHTML('beforeend', `
+    <div style="margin-top:14px;text-align:center">
+      <button id="vReportLink" class="linkbtn" style="font-size:12.5px;color:var(--studio-text-faint)">Something not right with this photo?</button>
+      <div id="vReportForm" class="hidden" style="text-align:left;margin-top:8px">
+        <textarea id="vReportMsg" rows="3" maxlength="2000" placeholder="Tell us what looks wrong — we read every one."
+          style="width:100%;padding:11px 12px;border-radius:var(--r-sm);background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);font:inherit;font-size:15px;resize:vertical"></textarea>
+        <button id="vReportSend" class="btn ghost" type="button" style="margin-top:8px;min-height:44px;padding:10px 16px;width:auto">Send</button>
+      </div>
+    </div>`);
+  document.getElementById('vReportLink').onclick = () => {
+    show(document.getElementById('vReportLink'), false);
+    show(document.getElementById('vReportForm'), true);
+    document.getElementById('vReportMsg').focus();
+  };
+  document.getElementById('vReportSend').onclick = async () => {
+    const msg = document.getElementById('vReportMsg').value.trim();
+    if (!msg) { toast('Tell us what looks wrong first.'); return; }
+    const btn = document.getElementById('vReportSend');
+    btn.disabled = true;
+    try {
+      const out = await api('/api/report', { method:'POST', body: JSON.stringify({ jobId: j.jobId, message: msg }) });
+      show(document.getElementById('vReportForm'), false);
+      toast(out.alreadyReported ? 'Already flagged — we have it.' : "Thank you — we'll take a look.");
+    } catch (e) {
+      toast(e.message || 'Could not send just now.');
+      btn.disabled = false;
+    }
+  };
+  if (hasBefore) wireSlider(vba);
+  show($('viewerOverlay'), true);
+}
+
+/**
+ * Poll only while something is actually running, and stop when nothing is.
+ * A finished list does not need refreshing, and a phone left on this screen
+ * should not sit there asking every few seconds all afternoon.
+ */
+function startQueueWatch(){
+  stopQueueWatch();
+  state.queuePoll = setInterval(async () => {
+    const busy = await refreshQueue();
+    if (!busy) stopQueueWatch();
+    refreshCredits().catch(() => {});
+  }, 6000);
+}
+function stopQueueWatch(){
+  if (state.queuePoll) clearInterval(state.queuePoll);
+  state.queuePoll = null;
+}
+
+$('queueBtn').onclick = () => openQueue();
+$('queueBack').onclick = () => { setSelecting(false); resetToUpload(); };
+$('queueAdd').onclick = () => { setSelecting(false); resetToUpload(); };
+$('queueBuy').onclick = () => openPacks().catch(err => toast(err.message));
+
+/* -------------------------------------------------------------- running */
+
+/* The steps a job actually goes through, per transformation.
+   The interior structural pass never runs on an exterior, so telling an agent we
+   are "measuring the room — doors, windows" while relighting a sky is simply
+   untrue. Every transformation, twilight included, ends with the disclosure (5 Sep 2026).
+   `secs` is roughly how long that job takes, and paces the bar honestly. */
+const STEPS = {
+  twilight: { secs: 120, text: [
+    'Reading the exterior — rooflines, windows, landscaping',
+    'Relighting the sky',
+    'Checking nothing about the house itself changed',
+    'Looking for the flaws that give AI away',
+    'Applying the disclosure',
+  ]},
+  declutter: { secs: 150, text: [
+    'Cataloguing what belongs in the room and must stay',
+    'Clearing the clutter',
+    'Checking every window, door and fitting survived',
+    'Confirming the clutter is gone',
+    'Applying the disclosure',
+  ]},
+  empty: { secs: 150, text: [
+    'Cataloguing the fixed features that must survive',
+    'Emptying the room',
+    'Checking every window, door and fitting survived',
+    'Looking for the flaws that give AI away',
+    'Applying the disclosure',
+  ]},
+  staging: { secs: 330, text: [
+    'Measuring the room — doors, windows, every fixed feature',
+    'Rendering several furnished versions in parallel',
+    'Checking each one against the rulebook',
+    'Zooming in on artwork, mirrors and rugs',
+    'Applying the disclosure to every version that passed — the pick is yours',
+  ]},
+};
+
+$('startBtn').onclick = async () => {
+  const t = state.transformation;
+  $('startBtn').disabled = true;
+  $('startBtn').innerHTML = '<span class="spin"></span> Starting';
+  show($('startErr'), false);
+  try {
+    const body = { photoId: state.photo.photoId, transformation: t };
+    if (t === 'staging') { body.style = $('style').value; body.roomType = $('room').value; }
+    if (t === 'twilight') body.style = TWILIGHT_STYLE;
+
+    const out = await api('/api/transform', { method:'POST', body: JSON.stringify(body) });
+    state.jobId = out.jobId;
+    state.balance = out.balance;
+    $('creditChip').innerHTML = `<b>${out.balance}</b> credit${out.balance === 1 ? '' : 's'}`;
+    startWatching();
+  } catch (err) {
+    // A timeout/network drop on THIS call is ambiguous: the job may have started
+    // on the server even though the reply never arrived. So we do NOT invite a
+    // blind re-tap (which could start — and charge — a second job). Instead we
+    // send the agent to My Photos, where the real state lives: if it started,
+    // it's there finishing; if not, they can start it again from a clean slate.
+    if (err.retryable) {
+      $('startErr').textContent = err.message + ' If it doesn’t appear in My Photos in a moment, try again.';
+      show($('startErr'), true);
+      $('startBtn').disabled = false;
+      $('startBtn').textContent = 'Start';
+      openQueue();
+      return;
+    }
+    $('startErr').textContent = err.code === 'INSUFFICIENT_CREDITS'
+      ? 'Not enough credits for that one.'
+      : err.message;   // NOT_APPLICABLE already reads as plain English from the server
+    show($('startErr'), true);
+    $('startBtn').disabled = false;
+    $('startBtn').textContent = 'Start';
+  }
+};
+
+function startWatching(){
+  show($('pickCard'), false);
+  show($('runCard'), true);
+  const plan = STEPS[state.transformation] || STEPS.staging;
+  const text = plan.text;
+  // Kyle's wording (28 Aug 2026). Sets the expectation while they wait, so a
+  // one-version delivery reads as strict judging, not a bug. Deliberately kept
+  // OFF receipts and anything near payment.
+  $('runSub').textContent = state.transformation === 'staging'
+    ? "A few minutes — we render several versions. You'll get every one that passes our checks, up to three."
+    : 'A couple of minutes — we inspect every detail before it leaves the lab.';
+  $('steps').innerHTML = text.map(s => `<div class="step"><span class="dot"></span><span>${s}</span></div>`).join('');
+  state.started = Date.now();
+  state.waiting = false;
+  state.lastAttempts = 1;
+
+  // The progress bar is honest about being an estimate: it eases toward 90% over
+  // the typical two minutes and waits there. It never claims to be finished.
+  state.tick = setInterval(() => {
+    const secs = (Date.now() - state.started) / 1000;
+    const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+    $('elapsed').textContent = `${m}:${String(s).padStart(2,'0')}`;
+    // Eases toward 90% over roughly how long this kind of job really takes, then
+    // waits. It never claims to be finished, because we do not know when it will be.
+    const pct = Math.min(90, 90 * (1 - Math.exp(-secs / (plan.secs / 2.6))));
+    $('barFill').style.width = pct + '%';
+    // The clock never lights the FINAL step. That one is the victory lap —
+    // it lights only when the server says delivered. Otherwise a job that
+    // fails late looks like it sailed through every check and stumbled on the
+    // last formality, which is not what happened (Kyle, 28 Aug 2026).
+    const stepIdx = Math.min(text.length - 2, Math.floor(secs / (plan.secs / text.length)));
+    [...$('steps').children].forEach((el,i) => {
+      el.classList.toggle('on', i === stepIdx);
+      el.classList.toggle('done', i < stepIdx);
+    });
+    if (state.waiting) {
+      // Google's image service is refusing work. Say so, plainly, rather than
+      // letting the estimate tick on as though everything were normal — and
+      // never as an error, because nothing has failed and nothing is charged.
+      $('runSub').textContent = 'The image service is busy right now. Your photo is still queued — we keep trying, '
+        + 'and nothing is charged unless it comes back.';
+    } else if (secs > plan.secs * 1.6) {
+      $('runSub').textContent = 'Still going. Some take longer than others — it will not give up early.';
+    }
+  }, 1000);
+
+  // Poll gently. Nothing here is in a hurry and the job takes minutes.
+  state.poll = setInterval(checkJob, 4000);
+  checkJob();
+}
+
+async function checkJob(){
+  try {
+    const job = await api('/api/jobs/' + state.jobId);
+    state.waiting = !!job.waitingOnUpstream;
+    // A new attempt means the last render did NOT pass — say so and walk the
+    // steps again from the top, because that is what is really happening.
+    if (job.attemptsUsed > 1 && job.attemptsUsed !== state.lastAttempts) {
+      state.lastAttempts = job.attemptsUsed;
+      state.started = Date.now();
+      $('runSub').textContent = `Take ${job.attemptsUsed} — the last one didn't meet our bar, so it's being redone. Only a pass gets delivered.`;
+    }
+    if (job.status === 'queued' || job.status === 'running') return;
+    stopWatching();
+    finish(job);
+  } catch (err) {
+    // A blip in the network is not a failed job — keep polling.
+    if (err.status === 404) { stopWatching(); finish({ status:'failed', note:'We lost track of that job.' }); }
+  }
+}
+
+function stopWatching(){
+  clearInterval(state.poll); clearInterval(state.tick);
+  state.poll = state.tick = null;
+}
+
+/* --------------------------------------------------------------- result */
+
+async function finish(job){
+  $('barFill').style.width = '100%';
+  show($('runCard'), false);
+  show($('resultCard'), true);
+  // The quiet report link, reset for this job.
+  show($('reportWrap'), true);
+  show($('reportLink'), true);
+  show($('reportForm'), false);
+  $('reportMsg').value = '';
+  state.finishedJobId = job.jobId || state.jobId;
+  await refreshCredits();
+
+  if (job.status === 'delivered' && job.resultUrl) {
+    $('resultTitle').textContent = 'Cleared for delivery';
+    $('resultSub').textContent = 'It passed every check. Drag the slider to compare.';
+    $('resultBody').innerHTML = `
+      <div class="ba" id="ba">
+        <img id="baAfter" alt="The finished result">
+        <div class="orig"><img id="baBefore" alt="Your original photo"></div>
+        <div class="handle"><div class="knob">↔</div></div>
+        <div class="tag l">ORIGINAL</div><div class="tag r">RESULT</div>
+      </div>`;
+    $('baBefore').src = $('previewImg').src;
+    // Up to three versions can pass the checks (staging). The slider, download
+    // and share always follow whichever one is selected.
+    const versions = [job.resultUrl, ...(job.variantUrls || [])];
+    let currentUrl = versions[0];
+    const applyVersion = (i) => {
+      currentUrl = versions[i];
+      $('baAfter').src = currentUrl;
+      $('dlBtn').href = currentUrl + '?download=1';
+      $('dlBtn').download = `listing-lab-${job.transformation || 'result'}${versions.length > 1 ? '-version-' + (i + 1) : ''}.jpg`;
+      document.querySelectorAll('#versionRow .vbtn').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    };
+    if (versions.length > 1) {
+      $('resultBody').insertAdjacentHTML('beforeend', `
+        <div style="margin-top:12px">
+          <div class="faint" style="margin-bottom:8px">${versions.length} versions passed our checks — keep the one you love:</div>
+          <div id="versionRow" style="display:flex;gap:8px;flex-wrap:wrap">
+            ${versions.map((_, i) => `<button type="button" class="opt vbtn" style="padding:9px 16px;width:auto" aria-pressed="false">Version ${i + 1}</button>`).join('')}
+          </div>
+        </div>`);
+      document.querySelectorAll('#versionRow .vbtn').forEach((b, i) => { b.onclick = () => applyVersion(i); });
+    }
+    applyVersion(0);
+    show($('dlBtn'), true);
+    // "Save to Photos": on iPhone the ONLY road from Safari into the Photos app
+    // is the share sheet — a download always lands in the Files app instead. So
+    // where file-sharing exists (iOS 15+, Android Chrome) the share sheet is the
+    // front door and the plain download becomes the quiet fallback.
+    const canShareFiles = !!(navigator.canShare && navigator.share);
+    show($('saveBtn'), canShareFiles);
+    // Same hierarchy as the viewer (Kyle, 29 Aug): one obvious road to the
+    // camera roll; Download becomes a quiet fallback where the sheet exists.
+    if (canShareFiles) {
+      $('dlBtn').className = 'linkbtn';
+      $('dlBtn').textContent = 'or download the file';
+      $('dlBtn').style.cssText = 'font-size:13px;color:var(--studio-text-faint);align-self:center';
+    } else {
+      $('dlBtn').className = 'btn ghost';
+      $('dlBtn').textContent = 'Download';
+      $('dlBtn').style.cssText = '';
+    }
+    if (canShareFiles) {
+      $('saveBtn').onclick = async () => {
+        try {
+          $('saveBtn').disabled = true;
+          const blob = await (await fetch(currentUrl)).blob();
+          const file = new File([blob], `listing-lab-${job.transformation || 'result'}.jpg`, { type: 'image/jpeg' });
+          if (navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
+          else location.href = job.resultUrl + '?download=1';
+        } catch (e) { /* user closed the sheet — nothing to do */ }
+        finally { $('saveBtn').disabled = false; }
+      };
+    }
+    wireSlider();
+    // THE CHAIN NUDGE (Kyle, 28 Aug 2026): an emptied room is a blank canvas,
+    // and the natural next thought is furniture. Offer it right here — the
+    // staged job runs on the emptied RESULT, not the original, so the finished
+    // photo is re-uploaded as its own starting point when they say yes.
+    if (job.transformation === 'empty') {
+      $('resultBody').insertAdjacentHTML('beforeend', `
+        <div class="note" style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="flex:1;min-width:180px">Now that it's empty — want to furnish it? Buyers linger longer on staged rooms.</span>
+          <button id="stageNextBtn" class="btn" style="width:auto;margin:0;padding:10px 16px;font-size:14px">Stage this room</button>
+        </div>`);
+      $('stageNextBtn').onclick = async () => {
+        const btn = $('stageNextBtn');
+        btn.disabled = true; btn.textContent = 'One moment…';
+        try {
+          // Same clean-copy route as the viewer's button — see that comment.
+          // job.jobId, not job.id — the result screen's job comes from /api/jobs/:id
+          // which names the field jobId, while the viewer's list items say id.
+          // Sending job.id here meant sending undefined: Kyle's 'no such job'
+          // (1 Sep 2026). Accept either shape at both sites, forever.
+          const res = await fetch('/api/photos/from-job', { method:'POST', headers:{ 'content-type':'application/json' }, body: JSON.stringify({ jobId: job.jobId || job.id }) });
+          const out = await res.json();
+          if (!res.ok) throw new Error(out?.error?.message || 'Could not start staging.');
+          state.photo = out;
+          pollScene(out);
+          $('previewImg').src = out.url;
+          show($('resultCard'), false);
+          show($('pickCard'), true);
+          renderOptions();
+          pick('staging');
+        } catch (e) {
+          toast(e.message || 'Could not start staging.');
+          btn.disabled = false; btn.textContent = 'Stage this room';
+        }
+      };
+    }
+  } else {
+    const rejected = job.status === 'rejected';
+    $('resultTitle').textContent = rejected ? 'Nothing passed the checks' : 'That one did not finish';
+    $('resultSub').textContent = '';
+    // The refund is stated HERE, on the screen where the money worry lives
+    // (audit, 3 Sep 2026: the picker promised it, the queue and the rerun
+    // sheet said it, and this screen — the fresh failure — never did). The
+    // note comes from the pipeline's prose, so it is escaped like everywhere
+    // else that renders it.
+    const refundLine = job.customerMessage
+      || (rejected ? 'Your credits have been returned.' : 'The run was interrupted before it could finish. Your credits have been returned.');
+    $('resultBody').innerHTML =
+      `<div class="note">${escapeHtml(job.note || (rejected ? 'Nothing compliant was produced.' : 'The run was interrupted before it could finish.'))}</div>
+       <p style="margin-top:12px;font-weight:600">${escapeHtml(refundLine)}</p>
+       <p class="faint" style="margin-top:8px">Your original photo is untouched. ${rejected
+        ? 'This is the system working as intended — it would rather deliver nothing than deliver something that misrepresents the property.'
+        : ''}</p>`;
+    // THE ESCAPE HATCH (Kyle, 28 Aug 2026): when a tidy-up fails, the room is
+    // usually beyond tidying — route them to the tool that wins on rooms like
+    // this instead of leaving them with a shrug. Credits already came back.
+    if (rejected && job.transformation === 'declutter') {
+      $('resultBody').insertAdjacentHTML('beforeend', `
+        <div class="note" style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="flex:1;min-width:180px">Rooms this full are usually beyond a tidy-up. Empty Room clears everything in one pass — and your credits are already back.</span>
+          <button id="tryEmptyBtn" class="btn" style="width:auto;margin:0;padding:10px 16px;font-size:14px">Try Empty Room</button>
+        </div>`);
+      $('tryEmptyBtn').onclick = () => {
+        show($('resultCard'), false);
+        show($('pickCard'), true);
+        renderOptions();
+        pick('empty');
+      };
+    }
+    show($('dlBtn'), false);
+    show($('saveBtn'), false);
+  }
+}
+
+function wireSlider(root){
+  const ba = root || $('ba'), orig = ba.querySelector('.orig'), handle = ba.querySelector('.handle');
+  const before = orig.querySelector('img'), after = ba.querySelector(':scope > img');
+  // pct is how much of the ORIGINAL is showing, measured from the left edge.
+  const set = clientX => {
+    const r = ba.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+    orig.style.width = pct + '%';
+    handle.style.left = pct + '%';
+  };
+  let dragging = false;
+  const down = e => {
+    dragging = true;
+    // Stop the browser starting a text-selection or image-drag from this press.
+    if (!e.touches) e.preventDefault();
+    set((e.touches ? e.touches[0] : e).clientX);
+  };
+  const move = e => { if (dragging) { set((e.touches ? e.touches[0] : e).clientX); e.preventDefault(); } };
+  const up = () => { dragging = false; };
+  ba.addEventListener('mousedown', down); ba.addEventListener('touchstart', down, { passive:true });
+  window.addEventListener('mousemove', move); window.addEventListener('touchmove', move, { passive:false });
+  window.addEventListener('mouseup', up); window.addEventListener('touchend', up);
+  // Match the clipped original to the container so the two line up at any width.
+  const sync = () => { before.style.height = ba.getBoundingClientRect().height + 'px'; };
+  before.onload = sync; after.onload = sync;
+  window.addEventListener('resize', sync);
+  sync();
+}
+
+$('againBtn').onclick = resetToUpload;
+
+/* ----------------------------------------------------------------- boot */
+
+(async function boot(){
+  renderAuthMode();
+  try {
+    const me = await api('/api/me');
+    state.account = me.account;
+    await enterStudio();
+  } catch {
+    show($('authView'), true);
+  }
+})();
+</script>
+<!-- Buy credits. The chip opens it; the server names the packs and prices
+     (/api/packs) and hosts the actual payment (Stripe Checkout) — this
+     dialog never sees a card number. -->
+<div id="packsOverlay" class="sheet-overlay hidden">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="packsTitle">
+    <div class="sheet-grab"></div>
+    <h3 id="packsTitle">Buy credits</h3>
+    <p class="sub">Credits never expire. If a photo can't be finished, its credits come back.</p>
+    <div id="packList"></div>
+    <!-- Promo redemption. A quiet link, not a field — most people don't have a
+         code and shouldn't be made to wonder if they're missing out on one. -->
+    <button type="button" id="promoLink" class="linkbtn" style="margin-top:12px;color:var(--pine);padding:0;font-size:13.5px">Have a promo code?</button>
+    <div id="promoRow" class="hidden" style="display:flex;gap:8px;margin-top:10px">
+      <input type="text" id="promoInput" placeholder="e.g. LL-A1B2C3" autocapitalize="characters" autocomplete="off"
+        style="flex:1;padding:11px 12px;border-radius:var(--r-sm);background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);text-transform:uppercase">
+      <button type="button" id="promoBtn" class="btn" style="width:auto;margin:0;padding:11px 18px;font-size:14.5px">Redeem</button>
+    </div>
+    <button id="packsClose" class="close">Not now</button>
+  </div>
+</div>
+
+<!-- The photo viewer. Opened from a gallery card: the same before/after slider
+     as the result screen, the version picker when staging produced more than
+     one, and the share-sheet save — so the library is as capable as the moment
+     of delivery. (Kyle, 29 Aug.) -->
+<!-- The returned-declutter chooser (Kyle, 31 Aug 2026): declutter is the
+     transform that struggles, and a failed tidy-up usually means the room is
+     beyond tidying. So a returned declutter card doesn't blindly rerun — it
+     asks, and leads with whichever option fits how the job ended. Same cost
+     either way (2 credits), and the failed job's credits already came back. -->
+<div id="rerunOverlay" class="sheet-overlay hidden">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rerunTitle">
+    <div class="sheet-grab"></div>
+    <h3 id="rerunTitle">Why this came back</h3>
+    <!-- The reason, in the same words the result screen uses — a returned card
+         must never be a dead end that just says FAILED (Kyle, 31 Aug 2026). -->
+    <div class="note" id="rerunReason"></div>
+    <p class="sub" id="rerunCredit" style="margin-top:10px"></p>
+    <p class="sub" id="rerunSub"></p>
+    <div id="rerunChoices" style="display:flex;flex-direction:column;gap:10px;margin-top:6px"></div>
+    <button id="rerunClose" class="close">Not now</button>
+  </div>
+</div>
+
+<div id="viewerOverlay" class="sheet-overlay hidden">
+  <div class="sheet" id="viewerSheet" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+    <div class="sheet-grab"></div>
+    <h3 id="viewerTitle">Photo</h3>
+    <p class="sub" id="viewerSub">Drag the slider to compare.</p>
+    <div id="viewerBody"></div>
+    <button id="viewerClose" class="close">Close</button>
+  </div>
+</div>
+
+<!-- Support box (Kyle, 29 Aug): a mailto link is a dead end on a phone with no
+     mail app configured. This sends through our own domain instead, with the
+     sender's account attached server-side. Works signed out too — someone who
+     cannot sign in needs this most — they just add a reply address. -->
+<div id="supportOverlay" class="sheet-overlay hidden">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+    <div class="sheet-grab"></div>
+    <h3 id="supportTitle">Message support</h3>
+    <p class="sub">Goes straight to a human. We reply by email, usually same day.</p>
+    <input type="email" id="supportEmail" placeholder="Your email (so we can reply)" autocomplete="email" class="hidden"
+      style="width:100%;margin-bottom:10px;padding:11px 12px;border-radius:var(--r-sm);background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);font:inherit;font-size:15px">
+    <textarea id="supportMsg" rows="5" maxlength="4000" placeholder="What can we help with?"
+      style="width:100%;padding:11px 12px;border-radius:var(--r-sm);background:var(--studio-surface-2);border:1px solid var(--studio-line);color:var(--ink);font:inherit;font-size:15px;resize:vertical"></textarea>
+    <button id="supportSend" class="btn" type="button" style="margin-top:12px">Send message</button>
+    <button id="supportClose" class="close">Cancel</button>
+  </div>
+</div>
+</body>
+</html>
