@@ -663,3 +663,49 @@ Taken from `web/app.html` (`toUploadable`, `uploadPhotos`, `uploadOne`, `api`):
 - How long webhook-driven credit grants take after Stripe's success redirect; the web assumes "a beat" and re-checks at 1.5 s and 4.5 s.
 - Whether the pipeline enforces any minimum/maximum image dimensions; the Worker does not.
 - `attemptsUsed` semantics mid-job: the code that would increment it during a run is documented as dead, so it is only reliable on finished jobs.
+
+---
+
+## 11. Endpoints added for the iOS app (9 Sep 2026)
+
+Three routes exist only for the native app. Everything in §0 applies (JSON bodies, the error shape, `Cookie: ll_session=…`). Source: `src/apple.js`, `src/worker.js`; tests: `test/apple-signin.test.js`, `test/iap.test.js`, `test/delete-account.test.js`.
+
+### 11.1 `POST /api/auth/apple` — Sign in with Apple
+
+- Auth: none. Rate limit: `LIMIT_AUTH` (shared with sign-in/sign-up, 10/min/IP).
+- Body:
+
+  ```json
+  { "identityToken": "<JWS from ASAuthorizationAppleIDCredential.identityToken>",
+    "authorizationCode": "<optional, not used by the server>",
+    "user": { "email": "…", "name": { "givenName": "…", "familyName": "…" } } }
+  ```
+
+  `user` is only present on the very first sign-in (iOS sends it once); treat it as optional. Only `user.name` is read — the email comes from the verified token, never from the body.
+- Server checks: RS256 signature against Apple's JWKS (`https://appleid.apple.com/auth/keys`, cached a day, refetched once on an unknown `kid`), `iss == https://appleid.apple.com`, `aud == com.horizonhomemedia.listinglab`, `exp` in the future.
+- Account rule: look up by Apple's `sub` first (`accounts.apple_sub`). If none: an existing **password** account with the token's email → `409 APPLE_PASSWORD_ACCOUNT`; an existing **Google** account → `409 APPLE_GOOGLE_ACCOUNT`; otherwise create the account (`password_hash = '$apple-only$'`, `name` from `user.name` if sent).
+- Success **201** (created) or **200** (existing), with `Set-Cookie: ll_session=…` exactly as sign-in, and:
+
+  ```json
+  { "account": { "id", "email", "name", "company" }, "session": "<64 hex — the cookie value>" }
+  ```
+
+  The native app stores `session` in the Keychain and sends `Cookie: ll_session=<session>` itself.
+- Errors: 400 `APPLE_TOKEN_REQUIRED`; 401 `APPLE_TOKEN` "That Apple sign-in could not be verified — try again."; 401 `APPLE_EMAIL` (Apple shared no email and no account exists yet); 409 `APPLE_PASSWORD_ACCOUNT` "That email already has a password account — sign in with your password."; 409 `APPLE_GOOGLE_ACCOUNT` "That email signed up with Google — sign in with Google on the website."; 502 `APPLE_KEYS_UNREACHABLE`; 429 `RATE_LIMITED`.
+- `POST /api/signin` on an Apple account now answers 401 `APPLE_ACCOUNT` "That email signed up with Apple — use Sign in with Apple." (and 401 `GOOGLE_ACCOUNT` for Google accounts). Every other wrong sign-in is still `BAD_CREDENTIALS`.
+
+### 11.2 `POST /api/iap/verify` — credits bought with In-App Purchase
+
+- Auth: required. Not rate-limited.
+- Body: `{ "signedTransaction": "<Transaction.jwsRepresentation>" }` (StoreKit 2).
+- Server checks: `x5c` chain in the JWS header chains to Apple Root CA - G3 (embedded in `src/apple-root.js`), each certificate valid now, the leaf carries Apple's App Store signing OID and the intermediate the WWDR OID, ES256 signature with the leaf key, `bundleId == com.horizonhomemedia.listinglab`, `environment == "Production"` (or `"Sandbox"` when the `IAP_ALLOW_SANDBOX` var is set), `productId` ∈ {`…credits10` → 10, `…credits30` → 30, `…credits75` → 75}, no `revocationDate`.
+- Grant: a `purchase` ledger entry with key `iap:<transactionId>` and `pack_id` `pack_10|pack_30|pack_75` — the statement reads "Bought N credits". The ledger's PRIMARY KEY makes every replay a no-op.
+- Success **200**: `{ "ok": true, "granted": 10, "balance": 12, "alreadyGranted": false }`. On a replay `alreadyGranted` is `true` and `balance` is unchanged. The app calls `transaction.finish()` only after a 200 (either value of `alreadyGranted`).
+- Errors: 400 `IAP_TRANSACTION_REQUIRED`; 400 with the verifier's code (`IAP_MALFORMED`, `IAP_ALG`, `IAP_CHAIN`, `IAP_UNTRUSTED_ROOT`, `IAP_CERT_EXPIRED`, `IAP_CERT_PURPOSE`, `IAP_SIGNATURE`, `IAP_WRONG_APP`, `IAP_UNKNOWN_PRODUCT`, `IAP_REVOKED`) and the message "That purchase could not be verified."; 400 `IAP_SANDBOX` "That was a test purchase, so no credits were added."; **503 `IAP_ROOT_NOT_CONFIGURED`** "Purchases cannot be confirmed right now — the app will try again automatically." (the root certificate is not on the server yet — keep the transaction unfinished and retry later); 401.
+
+### 11.3 `DELETE /api/me` — delete the account
+
+- Auth: required. Rate limit: `LIMIT_AUTH`. No body.
+- Effect, in order: every session for the account is deleted; every R2 object under `<accountId>/` is deleted (listed by prefix, deleted in batches); the account row is deleted, and `ON DELETE CASCADE` removes listings, photos, jobs, attempts, grades, reports and **ledger entries** (credits are forfeited). If storage refuses partway the row stays (500) and the person can sign in and try again; they are already signed out everywhere.
+- Success **200** `{ "ok": true }` with `Set-Cookie: ll_session=; …Max-Age=0`.
+- Errors: 401 `NOT_SIGNED_IN`, 429 `RATE_LIMITED`, 500 `INTERNAL`.

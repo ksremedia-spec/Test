@@ -17,7 +17,8 @@ import {
 } from '../src/apple.js';
 
 const SITE = 'https://listinglab.test';
-const NOW = Date.parse('2026-09-09T12:00:00Z');
+// The route verifies against the real clock, so the tokens are minted against it too.
+const NOW = Date.now();
 
 const enc = new TextEncoder();
 const b64url = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -80,26 +81,26 @@ test('a token Apple signed for our app verifies, and its claims come back', asyn
 test('a token signed by a key Apple does not publish is refused', async () => {
   const apple = await makeSigner('kid-1');
   const forger = await makeSigner('kid-1');   // same kid, different key
-  await refuses(() => verifyAppleIdentityToken(await forger.sign(claimsFor()), { keys: apple.keys, now: NOW }), 'APPLE_TOKEN_SIGNATURE');
+  await refuses(async () => verifyAppleIdentityToken(await forger.sign(claimsFor()), { keys: apple.keys, now: NOW }), 'APPLE_TOKEN_SIGNATURE');
 });
 
 test('a token naming an unknown key id is refused', async () => {
   const s = await makeSigner('kid-1');
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor(), { alg: 'RS256', kid: 'kid-9' }), { keys: s.keys, now: NOW }), 'APPLE_KEY_UNKNOWN');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor(), { alg: 'RS256', kid: 'kid-9' }), { keys: s.keys, now: NOW }), 'APPLE_KEY_UNKNOWN');
 });
 
 test('the algorithm a token claims for itself is not trusted', async () => {
   const s = await makeSigner();
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor(), { alg: 'none', kid: 'kid-1' }), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_ALG');
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor(), { alg: 'HS256', kid: 'kid-1' }), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_ALG');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor(), { alg: 'none', kid: 'kid-1' }), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_ALG');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor(), { alg: 'HS256', kid: 'kid-1' }), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_ALG');
 });
 
 test('issuer, audience and expiry are each checked', async () => {
   const s = await makeSigner();
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor({ iss: 'https://accounts.google.com' })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_ISSUER');
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor({ aud: 'com.example.otherapp' })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_AUDIENCE');
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor({ exp: Math.floor(NOW / 1000) - 1 })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_EXPIRED');
-  await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor({ sub: '' })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_MALFORMED');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor({ iss: 'https://accounts.google.com' })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_ISSUER');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor({ aud: 'com.example.otherapp' })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_AUDIENCE');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor({ exp: Math.floor(NOW / 1000) - 1 })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_EXPIRED');
+  await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor({ sub: '' })), { keys: s.keys, now: NOW }), 'APPLE_TOKEN_MALFORMED');
 });
 
 test('garbage is refused as malformed, not thrown as a crash', async () => {
@@ -124,7 +125,7 @@ test("Apple's keys are fetched once and cached; an unknown kid refetches once (r
     await verifyAppleIdentityToken(await s2.sign(claimsFor()), { now: NOW });
 
     // A kid nobody publishes is refused without hammering Apple on every call.
-    await refuses(() => verifyAppleIdentityToken(await s2.sign(claimsFor(), { alg: 'RS256', kid: 'kid-3' }), { now: NOW }), 'APPLE_KEY_UNKNOWN');
+    await refuses(async () => verifyAppleIdentityToken(await s2.sign(claimsFor(), { alg: 'RS256', kid: 'kid-3' }), { now: NOW }), 'APPLE_KEY_UNKNOWN');
   } finally { stub.restore(); resetAppleKeyCache(); }
 });
 
@@ -134,7 +135,7 @@ test("when Apple's key endpoint is down the answer is 'unreachable', not 'forged
   const real = globalThis.fetch;
   globalThis.fetch = async () => { throw new Error('ECONNRESET'); };
   try {
-    await refuses(() => verifyAppleIdentityToken(await s.sign(claimsFor()), { now: NOW }), 'APPLE_KEYS_UNREACHABLE');
+    await refuses(async () => verifyAppleIdentityToken(await s.sign(claimsFor()), { now: NOW }), 'APPLE_KEYS_UNREACHABLE');
   } finally { globalThis.fetch = real; resetAppleKeyCache(); }
 });
 
