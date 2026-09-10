@@ -53,9 +53,9 @@ Why this is allowed: since the Epic v. Apple injunction, US apps may link out to
 - **Listing copy, keywords, review notes:** ready to paste from `docs/APP-STORE.md`. The review note says credits are purchased on our website via Stripe, opened from the app and returning to it, US storefront only, and that the demo account is pre-loaded with credits. Make that dedicated review account on the site, add credits with a promo code, and paste its login into the review notes.
 - **Screenshots:** you take these on your phone from real jobs (`assets/sample-photos` are the frames to use).
 
-### 5. One line that needs your OK before it ships
+### 5. The FAQ line (approved 10 Sep 2026)
 
-The FAQ answer "Are my photos private?" could add: *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* I did not add it. Say the word and it goes in.
+The FAQ answer "Are my photos private?" now ends with: *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* It is in `backend/web/faq.html` (the visible answer and the search-engine copy) and goes live with the deploy in step 1.
 
 ## What to test on your phone (the definition of done, §8.3 of the brief)
 

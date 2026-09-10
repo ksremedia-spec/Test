@@ -193,7 +193,7 @@ Contract details are in `../docs/API.md` §11; the code is `src/apple.js`
 2. **Deploy:** `npm test && npx wrangler deploy` (the Worker plus the new `web/purchase-return.html` — nothing under `pipeline/` or `container/` changed, so no image build and no fleet cycle). Check: `curl -s https://thelistinglab.app/purchase/return?status=success | grep -c "Open Listing Lab"` prints 1.
 3. **Nothing to set up in Stripe.** The app uses the same Checkout and the same webhook; it only returns to a different page.
 4. **Sign in with Apple:** in the Apple Developer portal, on the App ID `com.horizonhomemedia.listinglab`, enable the "Sign in with Apple" capability. Nothing else server-side.
-5. **FAQ wording — needs your OK before it ships.** The answer to "Are my photos private?" in `web/faq.html` could add one sentence: *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* Not added; say the word and it goes in.
+5. **FAQ wording** (approved 10 Sep 2026): the answer to "Are my photos private?" in `web/faq.html` now ends with *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* It ships with the deploy.
 
 ## Deploying
 
