@@ -69,7 +69,7 @@ cd ~/Desktop/iosapp/horizonhomemedia/push-relay/gameplan/Gameplan/Features/GameP
 
 **Done — you ran it on 10 Sep 2026 and the website now holds the key.** No redeploy needed; secrets take effect at once. The key file stays on your Desktop and is never put in the code.
 
-*I verified* the sending code against a stand-in for Apple's service with a real signing key of the same kind (7 tests), and the routes on the live site. *I could not* send a real notification, because there is no key yet. A build you run from Xcode registers with Apple's test push service; the app knows this and tells the site, so it works for both TestFlight and Xcode builds.
+*I verified* the sending code against a stand-in for Apple's service with a real signing key of the same kind (8 tests), and the routes on the live site. **And the real thing: on 10 Sep 2026 your phone received "Your Twilight is ready." from a real job — the whole chain works.** A build you run from Xcode registers with Apple's test push service; the app knows this and tells the site, so it works for both TestFlight and Xcode builds.
 
 ### 3. Xcode (same steps as the Horizon Home Media app)
 
