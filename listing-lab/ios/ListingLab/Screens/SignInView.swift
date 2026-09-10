@@ -2,8 +2,10 @@ import SwiftUI
 import AuthenticationServices
 
 /// Sign in / Create an account. Email + password against the existing API,
-/// and Sign in with Apple. No Google on iOS (a browser-redirect flow only a
-/// web view can finish); an account made with Google is told so by the server.
+/// Sign in with Apple, and Continue with Google — the website's own Google
+/// flow in a sheet over the app, finished by `AppSession.handle(url:)` when
+/// the site's return page opens `listinglab://signin`. The Google button
+/// shows only when `/api/auth/config` says the server has it, as on the web.
 struct SignInView: View {
     @Environment(AppSession.self) private var session
     @State private var signingUp = false
@@ -15,6 +17,7 @@ struct SignInView: View {
     @State private var legalPage: WebPage?
 
     var body: some View {
+        @Bindable var session = session
         StudioPage {
             HStack { Wordmark(); Spacer() }
                 .padding(.top, 10)
@@ -64,6 +67,24 @@ struct SignInView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .disabled(busy)
 
+                if session.googleAvailable {
+                    Button {
+                        error = nil
+                        session.startGoogleSignIn()
+                    } label: {
+                        if session.googleExchanging {
+                            ButtonSpinner()
+                        } else {
+                            HStack(spacing: 10) {
+                                GoogleMark().frame(width: 18, height: 18)
+                                Text("Continue with Google")
+                            }
+                        }
+                    }
+                    .buttonStyle(GoogleButtonStyle())
+                    .disabled(busy || session.googleExchanging)
+                }
+
                 HStack(spacing: 6) {
                     Text(signingUp ? "Already have one?" : "No account yet?")
                         .font(Theme.ui(14)).foregroundStyle(Theme.textSoft)
@@ -79,6 +100,15 @@ struct SignInView: View {
         }
         .sheet(isPresented: $showSupport) { SupportSheet() }
         .sheet(item: $legalPage) { page in SafariView(url: page.url).ignoresSafeArea() }
+        // Google's sign-in page, in a sheet over the app. The site's return
+        // page opens listinglab://signin, which closes this and finishes.
+        .sheet(item: $session.googleSignIn) { flow in SafariView(url: flow.url).ignoresSafeArea() }
+        .onChange(of: session.googleSignInError) { _, message in
+            guard let message else { return }
+            error = message
+            session.googleSignInError = nil
+        }
+        .task { await session.checkGoogleAvailable() }
     }
 
     /// `By signing in or creating an account you agree to the Terms of Service

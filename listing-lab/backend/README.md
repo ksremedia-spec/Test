@@ -166,18 +166,19 @@ routes are the marketing sections — the prototype app it once carried is dead
 code behind a redirect. Static assets are served **before** the sign-in gate
 because the sign-in form lives in them.
 
-## The iOS app's three doors (9 Sep 2026)
+## The iOS app's four doors (9–10 Sep 2026)
 
 The native iPhone app (`../ios/`) uses every customer endpoint the web app
-uses, plus two that exist only for it and one small option on checkout.
-Contract details are in `../docs/API.md` §11; the code is `src/apple.js`
-(token verification), the handlers in `src/worker.js`, and the tests in
-`test/apple-signin.test.js`, `test/delete-account.test.js`,
-`test/checkout-ios.test.js`.
+uses, plus three that exist only for it and one small option on checkout.
+Contract details are in `../docs/API.md` §2.5 and §11; the code is
+`src/apple.js` (token verification), the handlers in `src/worker.js`, and
+the tests in `test/apple-signin.test.js`, `test/google-ios.test.js`,
+`test/delete-account.test.js`, `test/checkout-ios.test.js`.
 
 | route | what | idempotency |
 |---|---|---|
 | `POST /api/auth/apple` | Sign in with Apple. Verifies the identity token against Apple's published keys (RS256, issuer, our bundle id, expiry), finds the account by Apple's `sub` (new `accounts.apple_sub` column, migration 010), refuses to merge into a password or Google account by email, else creates one with the `$apple-only$` marker. Returns the session in the JSON **and** as the cookie. Rate-limited with sign-in. | one account per Apple `sub` (unique index) |
+| `GET /api/auth/google?platform=ios&challenge=…` then `POST /api/auth/google/exchange` | Google sign-in from the app (10 Sep 2026). The app shows the website's own Google flow in a sheet; the callback, seeing `ios` in the state cookie, hands the app a one-time code on `/signin/return` (`web/signin-return.html`, which opens `listinglab://signin?code=…`) instead of a session cookie. The app swaps the code for a session at the exchange route, presenting the secret behind the challenge it started with (PKCE). Codes live five minutes in the new `app_signins` table (migration 011) and are deleted in the same statement that reads them. The account rules are the website's, untouched. Rate-limited with sign-in. | a code works once, whatever the outcome |
 | `DELETE /api/me` | The customer deleting their own account: every session, every R2 object under `<accountId>/`, then the account row (the schema's `ON DELETE CASCADE` takes the rest, ledger included). Rate-limited with sign-in. | — |
 | `POST /api/checkout` with `platform: "ios"` | The same hosted Stripe Checkout the web uses; only the return URLs differ — `/purchase/return?status=success|cancelled`, a static page (`web/purchase-return.html`) that hands back to the app via `listinglab://purchase?status=…`. Credits are **not** sold through Apple (decided 10 Sep 2026): the app links out to pay on the site, which Apple's guidelines allow in the US storefront. The webhook grants exactly as for the web. | Stripe session id, as before |
 
@@ -189,11 +190,14 @@ Contract details are in `../docs/API.md` §11; the code is `src/apple.js`
 
 1. **Database:** `npx wrangler d1 export listinglab --remote --output backup-$(date +%F).sql`, then
    `npx wrangler d1 execute listinglab --remote --file migrations/010-apple-sub.sql`, then
-   check with `npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"` — you should see `apple_sub`.
-2. **Deploy:** `npm test && npx wrangler deploy` (the Worker plus the new `web/purchase-return.html` — nothing under `pipeline/` or `container/` changed, so no image build and no fleet cycle). Check: `curl -s https://thelistinglab.app/purchase/return?status=success | grep -c "Open Listing Lab"` prints 1.
+   `npx wrangler d1 execute listinglab --remote --file migrations/011-app-signins.sql`, then
+   check with `npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"` — you should see `apple_sub` —
+   and `npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(app_signins)"` — you should see five columns.
+2. **Deploy:** `npm test && npx wrangler deploy` (the Worker plus the new `web/purchase-return.html` and `web/signin-return.html` — nothing under `pipeline/` or `container/` changed, so no image build and no fleet cycle). Check: `curl -s https://thelistinglab.app/purchase/return?status=success | grep -c "Open Listing Lab"` prints 1, and so does `curl -s https://thelistinglab.app/signin/return | grep -c "Open Listing Lab"`.
 3. **Nothing to set up in Stripe.** The app uses the same Checkout and the same webhook; it only returns to a different page.
-4. **Sign in with Apple:** in the Apple Developer portal, on the App ID `com.horizonhomemedia.listinglab`, enable the "Sign in with Apple" capability. Nothing else server-side.
-5. **FAQ wording** (approved 10 Sep 2026): the answer to "Are my photos private?" in `web/faq.html` now ends with *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* It ships with the deploy.
+4. **Nothing to set up in Google.** The app uses the same OAuth client and the same callback address as the website; only where the callback sends the person afterwards differs.
+5. **Sign in with Apple:** in the Apple Developer portal, on the App ID `com.horizonhomemedia.listinglab`, enable the "Sign in with Apple" capability. Nothing else server-side.
+6. **FAQ wording** (approved 10 Sep 2026): the answer to "Are my photos private?" in `web/faq.html` now ends with *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* It ships with the deploy.
 
 ## Deploying
 

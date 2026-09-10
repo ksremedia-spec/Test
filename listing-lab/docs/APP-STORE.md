@@ -71,7 +71,7 @@ Enable the "Sign in with Apple" capability on the App ID in the developer portal
 ## Things reviewers commonly flag — already handled by the brief
 
 - Guideline 3.1.1 / 3.1.3 (purchases): credits are bought on the website through Stripe, opened from the app — permitted for US apps since the Epic v. Apple injunction; no entitlement, no commission. The link-out is shown only on the US storefront. The app's copy never mentions Apple, the App Store or in-app purchase.
-- Guideline 4.8 (Sign in with Apple when third-party sign-in offered): Google sign-in is not offered on iOS; Sign in with Apple is.
+- Guideline 4.8 (Sign in with Apple when third-party sign-in offered): the app offers Google sign-in (added 10 Sep 2026) and so must, and does, offer Sign in with Apple alongside it.
 - Guideline 5.1.1(v) (account deletion): in-app deletion is built.
 - Guideline 2.1 (completeness): demo account with credits; nothing behind an invite.
 - Privacy manifest present; no tracking.

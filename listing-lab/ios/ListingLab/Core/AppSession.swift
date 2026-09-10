@@ -33,6 +33,15 @@ final class AppSession {
     /// Set when Stripe sends the person back into the app; the buy sheet acts on it.
     var checkoutReturn: CheckoutReturn.Status?
 
+    /// `GET /api/auth/config` said `google: true` — show the button, as the web does.
+    var googleAvailable = false
+    /// A Google sign-in in progress: the sheet the sign-in screen shows, and the secret it keeps.
+    var googleSignIn: GoogleSignInFlow?
+    /// True while the code is being swapped for a session, after the sheet has closed.
+    var googleExchanging = false
+    /// What the sign-in screen should show when a Google sign-in bounced; it clears this once shown.
+    var googleSignInError: String?
+
     init() {
         Task { await api.setSessionLostHandler { [weak self] in await self?.sessionLost() } }
     }
@@ -82,6 +91,41 @@ final class AppSession {
         await enter(account: res.account, token: res.session)
     }
 
+    /// The Google button appears only when the server says the OAuth client is configured, as on the web.
+    func checkGoogleAvailable() async {
+        guard let config: AuthConfig = try? await api.get("/api/auth/config") else { return }
+        googleAvailable = config.google
+    }
+
+    /// Opens the website's Google sign-in in a sheet over the app; `handle(url:)` finishes it.
+    func startGoogleSignIn() {
+        googleSignInError = nil
+        googleSignIn = GoogleSignInFlow()
+    }
+
+    /// `listinglab://signin?code=…` or `?error=…` arrived: close the sheet,
+    /// then swap the code for a session with the secret only this app holds.
+    func finishGoogleSignIn(_ outcome: GoogleSignIn.Outcome) async {
+        guard let flow = googleSignIn else { return }   // the sheet was already closed by hand
+        googleSignIn = nil
+        switch outcome {
+        case .error(let code):
+            googleSignInError = GoogleSignIn.message(forError: code)
+        case .code(let code):
+            googleExchanging = true
+            defer { googleExchanging = false }
+            do {
+                let res: GoogleSignInResponse = try await api.post("/api/auth/google/exchange",
+                                                                   ["code": code, "verifier": flow.verifier], allow401: true)
+                await enter(account: res.account, token: res.session)
+            } catch let e as APIError {
+                googleSignInError = e.message
+            } catch {
+                googleSignInError = "Something went wrong."
+            }
+        }
+    }
+
     private func enter(account: Account, token: String) async {
         Keychain.save(token)
         await api.setToken(token)
@@ -112,6 +156,8 @@ final class AppSession {
         flow.reset()
         selectedTab = .studio
         showBuyCredits = false
+        googleSignIn = nil
+        googleSignInError = nil
         phase = .signedOut
     }
 
@@ -151,9 +197,11 @@ final class AppSession {
         await refreshCredits()
     }
 
-    /// `listinglab://purchase?status=…` — the return from the website's checkout.
+    /// `listinglab://purchase?status=…` — the return from the website's checkout —
+    /// or `listinglab://signin?code=…` — the return from Google sign-in.
     func handle(url: URL) {
         if let status = CheckoutReturn.status(from: url) { checkoutReturn = status }
+        if let outcome = GoogleSignIn.outcome(from: url) { Task { await finishGoogleSignIn(outcome) } }
     }
 }
 

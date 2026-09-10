@@ -1,16 +1,17 @@
 # Listing Lab iPhone app — hand-back
 
-Written 9 Sep 2026 for Kyle; updated 10 Sep 2026 when credits moved from in-app purchase to the website's Stripe checkout. Plain English; every "I verified" and "I'm assuming" is labelled.
+Written 9 Sep 2026 for Kyle; updated 10 Sep 2026 when credits moved from in-app purchase to the website's Stripe checkout, and again on 10 Sep 2026 when the app was first compiled on your Mac and Google sign-in was added to it (section 2b). Plain English; every "I verified" and "I'm assuming" is labelled.
 
 ## The one-paragraph version
 
-The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the four native things: Sign in with Apple, buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (409 tests green) and committed in `backend/` — **not deployed**. Nothing is live until you do the steps below.
+The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the five native things: Sign in with Apple, Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (409 tests green before the Google door; its 10 new tests are written but could not be run on your Mac — see the next section) and committed in `backend/` — **not deployed**. Nothing is live until you do the steps below.
 
 ## What I could and could not verify here
 
 - **I verified** the backend: every new route has tests that run the real code against a real SQLite database, and the whole suite passes (`npm test` → 409 pass, 0 fail). I ran it before and after.
-- **I could not compile or run the iPhone app.** The machine this was built on is Linux with no Xcode and no iPhone simulator. I wrote the Swift carefully and re-read every file for mistakes, but the first time it is compiled will be on your Mac. **Expect a handful of small compile errors on the first build** — the kind Xcode points at with a red line and a one-line fix. If you hit one you cannot fix, paste the error text back to me; it will be quick.
-- **Nothing was tested against the live site with a real account** — I had no credentials, and the app could not run here. Section "What to test on your phone" is the checklist.
+- **I verified the app compiles and its unit tests pass** (10 Sep 2026, on your Mac, Xcode 26.6, iPhone 17 simulator): a clean build with no errors and no warnings, and 26 of 26 unit tests green. The app was written on a Linux machine with no Xcode; the first compile found nothing to fix. One test found a small bug in the HEIC-to-JPEG step (a file already called `.jpg` got a second `.jpg`), which is fixed.
+- **I could not run the server's tests for the Google door.** Your Mac has no Node installed, so `npm test` cannot run here. The 10 new tests in `backend/test/google-ios.test.js` are written in exactly the style of the Apple ones and walk the whole trip against the real router and a real database, but they have not been executed. Step 1 below runs them before anything deploys; if any fail, paste the output back to me.
+- **Nothing was tested against the live site with a real account** — I had no credentials. Section "What to test on your phone" is the checklist. Google sign-in in the app cannot work against the live site until step 1 is done, because the site does not yet know how to hand the app its code.
 
 ## What you need to do, in order
 
@@ -18,21 +19,38 @@ The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, Swi
 
 ```bash
 npm install                                  # once, if node_modules is missing
-npm test                                     # must say 409 pass
+npm test                                     # should say 419 pass (409 before, plus the 10 new Google tests)
 npx wrangler d1 export listinglab --remote --output backup-$(date +%F).sql
 npx wrangler d1 execute listinglab --remote --file migrations/010-apple-sub.sql
+npx wrangler d1 execute listinglab --remote --file migrations/011-app-signins.sql
 npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"   # you should see apple_sub
+npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(app_signins)"   # you should see five columns
 npx wrangler deploy
 curl -s "https://thelistinglab.app/purchase/return?status=success" | grep -c "Open Listing Lab"   # prints 1
+curl -s "https://thelistinglab.app/signin/return" | grep -c "Open Listing Lab"                    # prints 1
 ```
 
-Nothing under `pipeline/` or `container/` changed, so there is no container build and no fleet cycle. Nothing changes in Stripe: the app uses the same Checkout and the same webhook as the website; only the page Stripe returns to is different.
+Nothing under `pipeline/` or `container/` changed, so there is no container build and no fleet cycle. Nothing changes in Stripe: the app uses the same Checkout and the same webhook as the website; only the page Stripe returns to is different. Nothing changes in Google either: the app uses the same sign-in client and the same callback address as the website.
 
 ### 2. Buying credits — how it works now (decided 10 Sep 2026)
 
 Credits are **not** sold through Apple. In the app, the buy-credits sheet looks like the web's (the three packs, MOST POPULAR on the 30, the promo link, "Credits never expire.") with one line above the packs: "You'll pay on our website — it opens in Safari and brings you back here." Tapping a pack opens the website's Stripe Checkout in Safari inside the app; after paying, Stripe lands on a new small page on the site (`/purchase/return`) that says "Payment received — returning you to the app…" and jumps straight back into the app. The app then re-reads the balance at 1.5 and 4.5 seconds, exactly as the web does, and says "Credits added — thank you!". The buy path shows only on the United States App Store storefront; elsewhere the packs are listed with "Credits can be bought at thelistinglab.app" and no link. Nothing in the app's copy mentions Apple, the App Store or in-app purchase.
 
 Why this is allowed: since the Epic v. Apple injunction, US apps may link out to pay on the web; Apple's guidelines permit it, no entitlement is needed, and Apple currently takes no commission on those purchases.
+
+### 2b. Google sign-in in the app (added 10 Sep 2026)
+
+You asked for Google sign-in in the app, and for it to stay in the app rather than bouncing out to Safari. Here is what was built and the one thing to know about it.
+
+**What the person sees.** Under Sign in with Apple there is now a white **Continue with Google** button, the website's own (same words, same "G"). Tapping it slides a sheet up over the app with Google's account chooser in it. They pick their Google account, the sheet closes by itself, and they are in. If something goes wrong, the sheet closes and the red box shows the website's own sentence: "That email already has a password account — sign in with your password." when that is the case, or "Google sign-in didn't finish — try again, or use email and password." for anything else. Tapping Done on the sheet shows nothing, like closing checkout.
+
+**The one thing to know.** Google refuses to show its sign-in page inside a page that an app draws itself (it blocks what Apple calls a web view — a policy Google enforces, not something we choose). Every legitimate Google sign-in on an iPhone, including the one in Google's own software kit, shows Google's page in a system sheet like this one. So this is as "in the app" as Google allows: no Safari app opens, no permission pop-up appears, the person never leaves Listing Lab, and the sheet is the same kind the app already uses for checkout. *I'm assuming* this is what you meant by "in app, not Safari"; if you meant something else, tell me.
+
+**How it works underneath** (for the record; you do not need this). The app opens the website's Google sign-in with two extra words on the address: that it is the app asking, and a scrambled fingerprint of a secret the app made up a moment ago. The website sends the person to Google and back exactly as it does for the browser. At the end, instead of handing the browser a sign-in cookie, the site hands the app a one-time code on a small page (`/signin/return`, same design as the credits return page) that jumps straight back into the app. The app then sends the code and the secret to the site; the site checks the secret matches the fingerprint, throws the code away (it works once, and only for five minutes), and gives the app its session. A code that somehow leaked from the phone is useless without the secret. Nothing was changed in the Google console: same sign-in client, same callback address. The website's own Google sign-in is untouched — its tests still pass in the same file.
+
+**One sentence of yours you may want to change** — I left it exactly as it was, because copy is yours. The server still says "That email signed up with Google — sign in with Google on the website." in two places: to someone who types a password for a Google account, and when a Sign in with Apple lands on a Google address. In the app, "on the website" is no longer necessary — they can tap Continue with Google right there. If you would like it to end at "— sign in with Google." instead, say so; it is a two-line change in `backend/src/worker.js` and two test expectations.
+
+**New wording, none in the app.** The button and both error sentences are the website's. The return page reuses lines from the credits return page ("Returning you to the app…", "Open Listing Lab", "You can also just switch back to the app.") with the small heading "Sign in".
 
 ### 3. Xcode (same steps as the Horizon Home Media app)
 
@@ -59,7 +77,7 @@ The FAQ answer "Are my photos private?" now ends with: *"You can also delete you
 
 ## What to test on your phone (the definition of done, §8.3 of the brief)
 
-Sign in with email · Create an account · Sign in with Apple (first time, and again) · upload a HEIC from the library, a JPEG, several at once · take a photo with the camera · Browse from Files · the four fixes (staging with a style and room) · the run screen, then leave it for My photos and tap the WORKING card to come back · Save to Camera Roll · "or download the file" · the versions pills on a staging with more than one · "Stage this room" after an Empty Room · a returned job's sheet and "Run it again" / "Try Empty Room" · Select → Save N to Camera Roll and Download N as .zip · Buy credits (a real card, or a Stripe test card if you switch Stripe to test mode; check that Safari closes and the balance rises, and that "Check again" appears if it has not) · Have a promo code · Something not right with this photo? · Message support (signed in, and signed out from the sign-in screen) · Sign out · Delete my account.
+Sign in with email · Create an account · Sign in with Apple (first time, and again) · Continue with Google (first time, again, and with an address that already has a password account — it should refuse with the password sentence; then tap Done on the sheet without choosing an account — nothing should appear) · upload a HEIC from the library, a JPEG, several at once · take a photo with the camera · Browse from Files · the four fixes (staging with a style and room) · the run screen, then leave it for My photos and tap the WORKING card to come back · Save to Camera Roll · "or download the file" · the versions pills on a staging with more than one · "Stage this room" after an Empty Room · a returned job's sheet and "Run it again" / "Try Empty Room" · Select → Save N to Camera Roll and Download N as .zip · Buy credits (a real card, or a Stripe test card if you switch Stripe to test mode; check that Safari closes and the balance rises, and that "Check again" appears if it has not) · Have a promo code · Something not right with this photo? · Message support (signed in, and signed out from the sign-in screen) · Sign out · Delete my account.
 
 ## What I built, in more detail
 
@@ -76,9 +94,10 @@ Sign in with email · Create an account · Sign in with Apple (first time, and a
 
 ### The backend (`backend/`)
 
-Documented in `backend/README.md` and `docs/API.md` §11, tests in `backend/test/apple-signin.test.js`, `delete-account.test.js`, `checkout-ios.test.js`:
+Documented in `backend/README.md` and `docs/API.md` §2 and §11, tests in `backend/test/apple-signin.test.js`, `google-ios.test.js`, `delete-account.test.js`, `checkout-ios.test.js`:
 
 - `POST /api/auth/apple` — verifies Apple's token with Apple's published keys, finds the account by Apple's stable id (new `apple_sub` column), refuses to merge into a password or Google account by email (same rule as Google), returns the session.
+- `GET /api/auth/google?platform=ios&challenge=…` and `POST /api/auth/google/exchange` — the app's ending to the website's Google sign-in: a one-time code on `/signin/return` (new page `web/signin-return.html`, new table `app_signins`, migration 011), swapped for a session by the app that started it. Section 2b.
 - `POST /api/checkout` accepts `platform: "ios"` — the same Stripe Checkout, but Stripe returns to `/purchase/return`, a new static page (`web/purchase-return.html`, in the site's design) that hands back to the app. The webhook grants credits exactly as for the web.
 - `DELETE /api/me` — signs the account out everywhere, deletes its photos from storage, deletes the account.
 - Sign-in now tells an Apple or Google account which door to use instead of "do not match".
@@ -105,7 +124,7 @@ Everything in `docs/BRIEF.md` was followed as written. Where it was silent or wr
 9. **Leaving the run screen stops its polling** and My photos becomes the source of truth (APP-SCREENS §8.5).
 10. **The app icon** was made from `assets/icons/icon-512.png` (the mark with transparency) scaled to 737px, rather than by cutting the mark out of the 1254px source, which sits on a white plate with black corners and has white parts inside the house that a cut-out would lose. At icon sizes the difference is invisible. If you have the mark as a transparent PNG at 1024 or larger, drop it in `ios/ListingLab/Assets.xcassets/AppIcon.appiconset/` and regenerate.
 11. **A cancelled checkout** (Stripe's cancel link, or Done in Safari) shows nothing, as the web shows nothing on `?purchase=cancelled`. If Safari is closed by hand after paying, the app still checks the balance quietly and says "Credits added — thank you!" if it rose.
-12. **Google sign-in is not offered** in the app, as decided. Someone who signed up with Google on the web and tries a password in the app sees "That email signed up with Google — sign in with Google on the website."
+12. **Google sign-in is in the app** (you asked for it on 10 Sep 2026, reversing the earlier decision) — section 2b. It shows only when the website says it has Google configured, as the web's button does. Someone who signed up with Google and tries a password in the app still sees the server's "That email signed up with Google — sign in with Google on the website." — see section 2b for the two sentences you may want to shorten.
 13. **The drop-zone sub line** uses the HTML wording ("JPEG, PNG or iPhone HEIC, up to 25MB each — pick as many as you like"), as APP-SCREENS §8.1 suggested.
 
 ## Phase 2 (not built, designed for)

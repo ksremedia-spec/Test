@@ -174,6 +174,7 @@ Create an email+password account and start a session.
   ```
 
 - If Google is not configured: **404** `NOT_FOUND` "Google sign-in is not configured."
+- **From the iPhone app** (10 Sep 2026): `GET /api/auth/google?platform=ios&challenge=<43 base64url chars>`. The redirect to Google is identical (same client, same callback); the state cookie becomes `ll_gstate=<48 hex>.ios.<challenge>`, which is how the callback later knows to hand back a code instead of a cookie. `challenge` is `base64url(SHA-256(verifier))` for a verifier the app made up and keeps (PKCE, RFC 7636). Missing or malformed: **400** `CHALLENGE_REQUIRED` "Google sign-in did not start properly — try again."
 
 ### 2.3 `GET /api/auth/google/callback?code=…&state=…` (Google redirects here)
 
@@ -193,14 +194,28 @@ Create an email+password account and start a session.
 | `google_password_account` | an account with this email already exists **and was created with a password** — the user must sign in with their password instead (no silent merge, by design) |
 
 - Account behaviour: if no account exists for the verified Google email, one is created with `name` = Google's `name` claim, `company` = null, and an unusable password marker. If a Google-created account exists, it is signed in. The response never contains JSON — it is always a redirect to a web URL.
+- **When the state cookie says `ios`** (see 2.2): on success, **302** to `https://thelistinglab.app/signin/return?code=<64 hex>` with **no** session cookie — the app makes its session in 2.5. On any failure, **302** to `https://thelistinglab.app/signin/return?error=<code>` with the same codes as the table above. Either way `ll_gstate` is cleared. The account rules are identical.
 
-### 2.4 What this means for a native app
+### 2.4 `GET /signin/return` — the hand-back page for the app
 
-This is a **browser redirect flow** whose only output is an `HttpOnly` cookie set on the `thelistinglab.app` origin, followed by a redirect to the web page `/app`. There is no custom-scheme redirect, no token in the URL, no JSON. Concretely:
+A static page (`web/signin-return.html`) in the site's design, served with the query string passed through. Its script opens `listinglab://signin?code=<code>` or `listinglab://signin?error=<code>` and shows an "Open Listing Lab" button for a browser that blocks the automatic jump. `noindex`. No sign-in needed.
 
-- `ASWebAuthenticationSession` / `SFSafariViewController` will complete the sign-in **inside the system browser's cookie jar**, which the app cannot read, and the flow never redirects to a custom scheme the session could intercept. So those APIs cannot hand the session to the app with the backend as it stands.
-- What does work today: load `https://thelistinglab.app/api/auth/google` in a **`WKWebView`** owned by the app (its `WKWebsiteDataStore.default().httpCookieStore` is readable by the app). The state cookie and the session cookie are both set within that web view. Observe navigation: when the web view lands on `https://thelistinglab.app/app` (no `auth_error`), read `ll_session` from `WKHTTPCookieStore`, copy it into your own storage, and dismiss the web view. If it lands on `/app?auth_error=<code>`, show the message for that code (the web client shows "That email already has a password account — sign in with your password." for `google_password_account`, and "Google sign-in didn't finish — try again, or use email and password." for everything else) and dismiss. Note Google may block sign-in from embedded web views ("disallowed_useragent") depending on the user agent string; this is a Google policy, not something the backend controls.
-- A clean native flow (custom-scheme redirect, or a `POST /api/auth/google/token` that accepts a native Google id_token) **does not exist** in this backend and would require a backend change. There is also **no Sign in with Apple** endpoint.
+### 2.5 `POST /api/auth/google/exchange` — the app swaps its code for a session
+
+- Auth: none. Rate limit: `LIMIT_AUTH` (shared with sign-in/sign-up, 10/min/IP).
+- Body: `{ "code": "<64 hex from the return link>", "verifier": "<the app's secret, 43–128 base64url chars>" }`.
+- Server checks, in order: the code is taken out of `app_signins` in the same statement that reads it (so it works exactly once, whatever happens next); it has not expired (five minutes from the callback); `base64url(SHA-256(verifier))` equals the stored `challenge`; the account still exists.
+- Success **200**, with `Set-Cookie: ll_session=…` exactly as sign-in, and the same JSON shape as Sign in with Apple:
+
+  ```json
+  { "account": { "id", "email", "name", "company" }, "session": "<64 hex — the cookie value>" }
+  ```
+
+- Every refusal is **401** `GOOGLE_CODE` "Google sign-in didn't finish — try again, or use email and password." — the web's own sentence; nothing distinguishes an expired code from a wrong verifier or a made-up code. 429 `RATE_LIMITED`.
+
+### 2.6 How the iPhone app uses this
+
+The app shows `GET /api/auth/google?platform=ios&challenge=…` in an `SFSafariViewController` sheet over the app (Google refuses to show its sign-in page inside an app-owned web view). Google's page, the callback and the hand-back page all run in that sheet; the sheet closes when `listinglab://signin` opens the app, and the app calls 2.5. The button shows only when 2.1 says `google: true`, as on the web. The two bounce messages are the web's: "That email already has a password account — sign in with your password." for `google_password_account`, and "Google sign-in didn't finish — try again, or use email and password." for everything else. Sign in with Apple is §11.1.
 
 ---
 
@@ -595,7 +610,8 @@ A job moves `queued → running → (delivered | rejected | failed)`, possibly b
 | POST | `/api/signout` | optional | — | 200 |
 | GET | `/api/auth/config` | none | — | 200 |
 | GET | `/api/auth/google` | none | — | 302 → Google |
-| GET | `/api/auth/google/callback` | none (state cookie) | — | 302 → `/app` |
+| GET | `/api/auth/google/callback` | none (state cookie) | — | 302 → `/app`, or `/signin/return` for the app |
+| POST | `/api/auth/google/exchange` | none | 10/min | 200 + cookie |
 | POST | `/api/support` | optional | 3/min | 200 |
 | GET | `/api/me` | required | — | 200 |
 | GET | `/api/credits` | required | — | 200 |
@@ -651,7 +667,7 @@ Taken from `web/app.html` (`toUploadable`, `uploadPhotos`, `uploadOne`, `api`):
 11. **Result naming and saving**: files named `listing-lab-<transformation>[-version-N].jpg`; "Save to Camera Roll" is the primary action, download the fallback; the disclaimer "AI can make mistakes — please double-check before it goes live." is shown under every result.
 12. **Chain nudge**: after an `empty` delivery, offer "Stage this room" via `/api/photos/from-job`; after a rejected `declutter`, offer "Try Empty Room" on the same `photoId`.
 13. **Poll cadences**: scene 1.2 s × 15; single job 4 s; job list 6 s while busy; credits re-fetched 1.5 s and 4.5 s after checkout return.
-14. **Google sign-in** requires a web view the app can read cookies from (see §2.4); there is no native token endpoint.
+14. **Google sign-in**: the website's flow in a sheet, finished with a one-time code (see §2.2–2.6).
 
 ---
 
@@ -659,7 +675,6 @@ Taken from `web/app.html` (`toUploadable`, `uploadPhotos`, `uploadOne`, `api`):
 
 - The effect, if any, of sending `style` with `declutter` or `empty` (stored and forwarded to the pipeline but unvalidated). Omit it.
 - `options` on `/api/transform` is stored but never consumed by anything in this repo.
-- Whether Google permits the OAuth consent screen inside a `WKWebView` for this client id (depends on Google's embedded-browser policy and the user agent, not on this backend).
 - How long webhook-driven credit grants take after Stripe's success redirect; the web assumes "a beat" and re-checks at 1.5 s and 4.5 s.
 - Whether the pipeline enforces any minimum/maximum image dimensions; the Worker does not.
 - `attemptsUsed` semantics mid-job: the code that would increment it during a run is documented as dead, so it is only reliable on finished jobs.
@@ -668,7 +683,7 @@ Taken from `web/app.html` (`toUploadable`, `uploadPhotos`, `uploadOne`, `api`):
 
 ## 11. Endpoints added for the iOS app (9 Sep 2026)
 
-Two routes exist only for the native app, plus one option on checkout. Everything in §0 applies (JSON bodies, the error shape, `Cookie: ll_session=…`). Source: `src/apple.js`, `src/worker.js`; tests: `test/apple-signin.test.js`, `test/delete-account.test.js`, `test/checkout-ios.test.js`.
+Two routes exist only for the native app, plus one option on checkout, plus Google sign-in's app-side ending in §2.2–2.6 (10 Sep 2026). Everything in §0 applies (JSON bodies, the error shape, `Cookie: ll_session=…`). Source: `src/apple.js`, `src/worker.js`; tests: `test/apple-signin.test.js`, `test/google-ios.test.js`, `test/delete-account.test.js`, `test/checkout-ios.test.js`.
 
 ### 11.1 `POST /api/auth/apple` — Sign in with Apple
 

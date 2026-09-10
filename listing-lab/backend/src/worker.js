@@ -467,7 +467,8 @@ const RATE_LIMITED_ROUTES = Object.freeze({
   '/api/signin': 'LIMIT_AUTH',     // 10 / minute / IP
   '/api/signup': 'LIMIT_AUTH',
   '/api/auth/apple': 'LIMIT_AUTH', // the iOS app's Sign in with Apple — same door, same limit
-  '/api/me': 'LIMIT_AUTH',         // DELETE only (account deletion); GET is never limited
+  '/api/auth/google/exchange': 'LIMIT_AUTH', // the iOS app swapping its Google code for a session
+  '/api/me': 'LIMIT_AUTH',        // DELETE only (account deletion); GET is never limited
   '/api/redeem': 'LIMIT_REDEEM',   // 5 / minute / IP
   '/api/support': 'LIMIT_SUPPORT', // 3 / minute / IP
 });
@@ -1070,10 +1071,14 @@ async function route(request, url, env, ctx, store) {
   if (path === '/api/auth/config' && method === 'GET') {
     return json({ google: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) });
   }
-  if (path === '/api/auth/google' && method === 'GET') return googleStart(env);
+  if (path === '/api/auth/google' && method === 'GET') return googleStart(env, url);
   if (path === '/api/auth/google/callback' && method === 'GET') {
     return googleCallback(request, url, env, store);
   }
+  // The iOS app's third leg: it swaps the one-time code the callback handed
+  // it for a session. Public like the two above; the code and the secret
+  // behind it are what prove who is asking.
+  if (path === '/api/auth/google/exchange' && method === 'POST') return googleExchange(request, env, store);
 
   // The web client itself is public — it HAS to be, because it is where the
   // sign-in form lives. Putting this after the auth gate below serves a signed-out
@@ -1090,6 +1095,13 @@ async function route(request, url, env, ctx, store) {
     // address Stripe returns to is one path, not a file.
     if (path === '/purchase/return' && env.ASSETS) {
       const page = new URL('/purchase-return.html', url.origin);
+      page.search = url.search;
+      return env.ASSETS.fetch(new Request(page.toString(), request));
+    }
+    // Where Google's callback sends the iPhone app's customer after signing
+    // in: the same kind of page, handing the app its one-time code.
+    if (path === '/signin/return' && env.ASSETS) {
+      const page = new URL('/signin-return.html', url.origin);
       page.search = url.search;
       return env.ASSETS.fetch(new Request(page.toString(), request));
     }
@@ -1240,14 +1252,35 @@ async function startSession(account, env, store, status = 200) {
  *
  * Failures land back on /app with a readable banner code, never a JSON error
  * page — the person on the phone came from a button, not an API client.
+ *
+ * THE iPHONE APP (10 Sep 2026) walks the same three steps inside a sheet
+ * over the app, with one difference at the end. It cannot take a session
+ * cookie from a web page, so step 4 hands it a one-time code instead — on
+ * /signin/return, a page whose only job is to open listinglab://signin — and
+ * the app swaps the code for a session at /api/auth/google/exchange. The
+ * code is bound to the app that asked: it starts with `challenge`, the hash
+ * of a secret it made up (PKCE, RFC 7636), and the exchange must present
+ * that secret. A code that leaked from the phone is useless without it.
+ * The app says it is the app with `platform=ios`; both facts ride in the
+ * state cookie so the callback needs nothing it did not set itself.
  */
 const GSTATE_COOKIE = 'll_gstate';
+/** How long the iPhone app has to swap its code for a session. */
+const APP_SIGNIN_TTL_MS = 5 * 60 * 1000;
+/** base64url of a SHA-256: 43 characters, no padding. */
+const CHALLENGE_SHAPE = /^[A-Za-z0-9_-]{43}$/;
 
 function googleRedirectUri(env) { return `${env.SITE_URL}/api/auth/google/callback`; }
 
-function googleStart(env) {
+function googleStart(env, url) {
   if (!env.GOOGLE_CLIENT_ID) return fail(404, 'NOT_FOUND', 'Google sign-in is not configured.');
   const state = randomId(24);
+  let cookieValue = state;
+  if (url?.searchParams.get('platform') === 'ios') {
+    const challenge = url.searchParams.get('challenge') || '';
+    if (!CHALLENGE_SHAPE.test(challenge)) return fail(400, 'CHALLENGE_REQUIRED', 'Google sign-in did not start properly — try again.');
+    cookieValue = `${state}.ios.${challenge}`;
+  }
   const q = new URLSearchParams({
     client_id: env.GOOGLE_CLIENT_ID,
     redirect_uri: googleRedirectUri(env),
@@ -1260,24 +1293,30 @@ function googleStart(env) {
     status: 302,
     headers: {
       location: `https://accounts.google.com/o/oauth2/v2/auth?${q}`,
-      'set-cookie': `${GSTATE_COOKIE}=${state}; Max-Age=600; Path=/api/auth/google/callback; HttpOnly; Secure; SameSite=Lax`,
+      'set-cookie': `${GSTATE_COOKIE}=${cookieValue}; Max-Age=600; Path=/api/auth/google/callback; HttpOnly; Secure; SameSite=Lax`,
     },
   });
 }
 
 async function googleCallback(request, url, env, store) {
+  // The state cookie is `<state>` for the website and `<state>.ios.<challenge>`
+  // for the iPhone app. Read it before anything can fail, so a failure goes
+  // back to whichever of the two asked.
+  const [cookieState, platform, challenge] = ((request.headers.get('cookie') || '')
+    .split(/;\s*/).find(c => c.startsWith(`${GSTATE_COOKIE}=`))?.slice(GSTATE_COOKIE.length + 1) || '').split('.');
+  const fromApp = platform === 'ios' && CHALLENGE_SHAPE.test(challenge || '');
   const back = (code) => new Response(null, {
     status: 302,
     headers: {
-      location: `${env.SITE_URL}/app${code ? `?auth_error=${code}` : ''}`,
+      location: fromApp
+        ? `${env.SITE_URL}/signin/return?error=${code}`
+        : `${env.SITE_URL}/app${code ? `?auth_error=${code}` : ''}`,
       'set-cookie': `${GSTATE_COOKIE}=; Max-Age=0; Path=/api/auth/google/callback; HttpOnly; Secure; SameSite=Lax`,
     },
   });
   if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) return back('google_off');
 
   const state = url.searchParams.get('state');
-  const cookieState = (request.headers.get('cookie') || '')
-    .split(/;\s*/).find(c => c.startsWith(`${GSTATE_COOKIE}=`))?.slice(GSTATE_COOKIE.length + 1);
   if (!state || state !== cookieState) return back('state_mismatch');
   const code = url.searchParams.get('code');
   if (!code) return back('google_denied');
@@ -1333,6 +1372,28 @@ async function googleCallback(request, url, env, store) {
       at: nowISO(),
     });
   }
+  if (fromApp) {
+    // No session yet: the app gets a one-time code and makes the session
+    // itself at /api/auth/google/exchange, proving it holds the secret
+    // behind `challenge`. Nothing private is set in the sheet's cookies.
+    const code = randomId(32);
+    const now = Date.now();
+    await store.purgeExpiredAppSignins(new Date(now).toISOString());
+    await store.putAppSignin({
+      code_hash: await hashToken(code),
+      account_id: account.id,
+      challenge,
+      created_at: new Date(now).toISOString(),
+      expires_at: new Date(now + APP_SIGNIN_TTL_MS).toISOString(),
+    });
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: `${env.SITE_URL}/signin/return?code=${code}`,
+        'set-cookie': `${GSTATE_COOKIE}=; Max-Age=0; Path=/api/auth/google/callback; HttpOnly; Secure; SameSite=Lax`,
+      },
+    });
+  }
   const { token, record } = await newSession(account.id);
   await store.putSession(record);
   // Two cookies, so headers.append — a comma-joined Set-Cookie is undefined
@@ -1341,6 +1402,38 @@ async function googleCallback(request, url, env, store) {
   headers.append('set-cookie', sessionCookie(token, { secure: env.SITE_URL !== 'http://localhost:8787' }));
   headers.append('set-cookie', `${GSTATE_COOKIE}=; Max-Age=0; Path=/api/auth/google/callback; HttpOnly; Secure; SameSite=Lax`);
   return new Response(null, { status: 302, headers });
+}
+
+/**
+ * POST /api/auth/google/exchange — the iPhone app turning its one-time code
+ * into a session. Body: { code, verifier }. The code is taken out of the
+ * table in the same statement that reads it, so it works exactly once
+ * whatever happens next; then it must not have expired, and the SHA-256 of
+ * the verifier must be the challenge the app started with. Every refusal is
+ * the same 401 with the web's own sentence for a Google sign-in that did
+ * not finish — there is nothing useful to tell an impostor.
+ */
+async function googleExchange(request, env, store) {
+  const body = await readJson(request);
+  const code = String(body.code || '');
+  const verifier = String(body.verifier || '');
+  const refuse = () => fail(401, 'GOOGLE_CODE', "Google sign-in didn't finish — try again, or use email and password.");
+  if (!/^[0-9a-f]{64}$/.test(code) || !/^[A-Za-z0-9_-]{43,128}$/.test(verifier)) return refuse();
+
+  const row = await store.takeAppSignin(await hashToken(code));
+  if (!row) return refuse();
+  if (new Date(row.expires_at).getTime() <= Date.now()) return refuse();
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  if (challenge !== row.challenge) return refuse();
+
+  const account = await store.accountById(row.account_id);
+  if (!account) return refuse();
+  const { token, record } = await newSession(account.id);
+  await store.putSession(record);
+  return json({ account: publicAccount(account), session: token }, {
+    headers: { 'set-cookie': sessionCookie(token, { secure: env.SITE_URL !== 'http://localhost:8787' }) },
+  });
 }
 
 /* ------------------------------------------------------- Sign in with Apple */

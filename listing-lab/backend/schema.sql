@@ -58,6 +58,21 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_account ON sessions (account_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry  ON sessions (expires_at);
 
+-- Google sign-in from the iPhone app: a one-time code the app swaps for a
+-- session within five minutes, bound to a secret only that app holds (the
+-- `challenge` is its hash). Deleted on use. Mirrored in
+-- migrations/011-app-signins.sql.
+CREATE TABLE IF NOT EXISTS app_signins (
+  -- The hash of the code, never the code itself — as with sessions.
+  code_hash  TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  challenge  TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_signins_expiry ON app_signins (expires_at);
+
 -- ------------------------------------------------------- listings and photos
 
 CREATE TABLE IF NOT EXISTS listings (

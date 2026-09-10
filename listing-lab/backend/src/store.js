@@ -125,6 +125,32 @@ export class Store {
     await this.db.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(nowISO).run();
   }
 
+  /* ---------------------------------------------- the iPhone app's sign-in codes */
+
+  /**
+   * Google sign-in from the iPhone app (10 Sep 2026): the code Google's
+   * callback hands the app, stored hashed, with the challenge the app sent
+   * when it started. See googleExchange in worker.js.
+   */
+  async putAppSignin(record) {
+    await this.db.prepare(
+      'INSERT INTO app_signins (code_hash, account_id, challenge, created_at, expires_at) VALUES (?, ?, ?, ?, ?)'
+    ).bind(record.code_hash, record.account_id, record.challenge, record.created_at, record.expires_at).run();
+  }
+
+  /**
+   * Take a code out of the table and return it — one statement, so a code
+   * can only ever be used once, whatever the outcome of the checks that follow.
+   */
+  async takeAppSignin(codeHash) {
+    return this.db.prepare('DELETE FROM app_signins WHERE code_hash = ? RETURNING *').bind(codeHash).first();
+  }
+
+  /** Codes live five minutes; sweep the ones nobody used. */
+  async purgeExpiredAppSignins(nowISO) {
+    await this.db.prepare('DELETE FROM app_signins WHERE expires_at <= ?').bind(nowISO).run();
+  }
+
   /* --------------------------------------------------------------- ledger */
 
   /**

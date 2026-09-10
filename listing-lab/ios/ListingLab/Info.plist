@@ -63,7 +63,8 @@
   <key>NSCameraUsageDescription</key>
   <string>Take a photo of the room to enhance it.</string>
   <!-- Stripe's return page on the website opens listinglab://purchase?status=…
-       to bring the person back after paying in Safari. -->
+       to bring the person back after paying in Safari, and the site's sign-in
+       return page opens listinglab://signin?code=… after Google sign-in. -->
   <key>CFBundleURLTypes</key>
   <array>
     <dict>

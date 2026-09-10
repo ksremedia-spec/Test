@@ -97,6 +97,19 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
+/// The website's `#googleBtn` — white, near-black text, radius 10, 600 15px.
+struct GoogleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(Theme.ui(15, weight: .semibold))
+            .foregroundStyle(Color(hex: 0x1F1F1F))
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .padding(.horizontal, 18)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: Theme.rMd))
+            .opacity(configuration.isPressed ? 0.85 : 1)
+    }
+}
+
 /// `.btn.ghost` — transparent with a 1px line border.
 struct GhostButtonStyle: ButtonStyle {
     var small = false

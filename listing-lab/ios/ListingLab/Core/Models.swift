@@ -11,6 +11,10 @@ struct Account: Codable, Equatable, Sendable {
 
 struct AccountResponse: Decodable, Sendable { let account: Account }
 struct AppleSignInResponse: Decodable, Sendable { let account: Account; let session: String }
+/// `POST /api/auth/google/exchange` — the same shape as Apple's.
+struct GoogleSignInResponse: Decodable, Sendable { let account: Account; let session: String }
+/// `GET /api/auth/config` — whether the server has Google sign-in configured.
+struct AuthConfig: Decodable, Sendable { let google: Bool }
 struct OkResponse: Decodable, Sendable { let ok: Bool }
 
 /// The four transformations. A closed set: there is no prompt box.
