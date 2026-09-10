@@ -57,6 +57,7 @@ final class AppSession {
             account = me.account
             phase = .signedIn
             await refreshCredits()
+            await refreshJobs()
         } catch APIError.server(let status, _, _) where status == 401 {
             await sessionLost()
         } catch {
@@ -132,6 +133,7 @@ final class AppSession {
         self.account = account
         phase = .signedIn
         await refreshCredits()
+        await refreshJobs()
     }
 
     func signOut() async {
@@ -158,6 +160,8 @@ final class AppSession {
         showBuyCredits = false
         googleSignIn = nil
         googleSignInError = nil
+        previewPrefetch?.cancel()
+        prefetchedPaths = []
         phase = .signedOut
     }
 
@@ -185,6 +189,41 @@ final class AppSession {
         guard let r: JobsResponse = try? await api.get("/api/jobs") else { return }
         jobs = r.jobs
         jobsLoaded = true
+        prefetchPreviews()
+    }
+
+    private var previewPrefetch: Task<Void, Never>?
+    private var prefetchedPaths: [String] = []
+
+    /// Downloads the grid's previews quietly in the background as soon as the
+    /// job list is known — at sign-in, at launch, and whenever the list
+    /// changes — newest first, three at a time, so My photos opens with its
+    /// pictures already there instead of pulling sixty full-size photos while
+    /// the person watches (Kyle, 10 Sep 2026). Anything already downloaded
+    /// is skipped; the grid and this never fetch the same photo twice.
+    private func prefetchPreviews() {
+        let paths = jobs.compactMap(\.thumbnailUrl)
+        // The list is re-read every 6 s while something is working; only
+        // start over when a preview appeared or disappeared.
+        guard paths != prefetchedPaths else { return }
+        prefetchedPaths = paths
+        previewPrefetch?.cancel()
+        let api = api
+        previewPrefetch = Task(priority: .utility) {
+            var pending: [String] = []
+            for path in paths where await !api.hasImage(path) { pending.append(path) }
+            await withTaskGroup(of: Void.self) { group in
+                var next = pending.makeIterator()
+                for _ in 0..<3 {
+                    guard let path = next.next() else { break }
+                    group.addTask { _ = try? await api.imageData(path) }
+                }
+                for await _ in group {
+                    guard !Task.isCancelled, let path = next.next() else { continue }
+                    group.addTask { _ = try? await api.imageData(path) }
+                }
+            }
+        }
     }
 
     var hasWorkingJobs: Bool { jobs.contains { $0.jobStatus.isWorking } }

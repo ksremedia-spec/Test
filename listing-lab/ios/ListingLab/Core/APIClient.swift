@@ -57,6 +57,9 @@ actor APIClient {
     /// Called on any 401 from a signed-in endpoint: the app clears the session and shows sign-in.
     private var onSessionLost: (@Sendable () async -> Void)?
     private let imageCache = NSCache<NSString, NSData>()
+    /// Downloads in progress by path, so the grid and the background
+    /// pre-fetch never pull the same photo twice at once.
+    private var inFlight: [String: Task<Data, Error>] = [:]
 
     init() {
         let config = URLSessionConfiguration.default
@@ -161,10 +164,17 @@ actor APIClient {
     /// Bytes of `/api/photos/<key>`, with the session attached. Cached: a key is never rewritten.
     func imageData(_ path: String) async throws -> Data {
         if let cached = imageCache.object(forKey: path as NSString) { return cached as Data }
-        let data = try await rawGET(path)
+        if let running = inFlight[path] { return try await running.value }
+        let task = Task { try await self.rawGET(path) }
+        inFlight[path] = task
+        defer { inFlight[path] = nil }
+        let data = try await task.value
         imageCache.setObject(data as NSData, forKey: path as NSString, cost: data.count)
         return data
     }
+
+    /// True when a photo is already in memory — the pre-fetch skips these.
+    func hasImage(_ path: String) -> Bool { imageCache.object(forKey: path as NSString) != nil }
 
     /// A file download (the ZIP, or a result for saving). Not cached in memory.
     func fileData(_ path: String) async throws -> Data {
