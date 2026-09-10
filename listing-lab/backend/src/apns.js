@@ -35,7 +35,7 @@ export function jobFinishedMessage(job) {
   const label = JOB_LABELS[job.transformation] || 'photo';
   return job.status === 'delivered'
     ? `Your ${label} is ready.`
-    : `Your ${label} came back — credits returned.`;
+    : `Your ${label}: nothing delivered — credits returned.`;
 }
 
 const enc = new TextEncoder();

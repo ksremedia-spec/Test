@@ -129,8 +129,8 @@ test("a dead token is reported as gone; Apple being down is not", async () => {
 test('the wording: ready, or came back with credits returned', () => {
   assert.equal(jobFinishedMessage({ transformation: 'twilight', status: 'delivered' }), 'Your Twilight is ready.');
   assert.equal(jobFinishedMessage({ transformation: 'staging', status: 'delivered' }), 'Your Virtual Staging is ready.');
-  assert.equal(jobFinishedMessage({ transformation: 'empty', status: 'rejected' }), 'Your Empty Room came back — credits returned.');
-  assert.equal(jobFinishedMessage({ transformation: 'declutter', status: 'failed' }), 'Your Declutter came back — credits returned.');
+  assert.equal(jobFinishedMessage({ transformation: 'empty', status: 'rejected' }), 'Your Empty Room: nothing delivered — credits returned.');
+  assert.equal(jobFinishedMessage({ transformation: 'declutter', status: 'failed' }), 'Your Declutter: nothing delivered — credits returned.');
   assert.equal(pushConfigured({}), false);
   assert.equal(pushConfigured({ APNS_KEY_ID: 'k', APNS_TEAM_ID: 't', APNS_PRIVATE_KEY: 'p' }), true);
 });
@@ -234,7 +234,7 @@ test('a job that came back says so, and with no APNs key nothing is sent at all'
   try {
     await worker.fetch(resultReq(jobId, { jobId, outcome: 'rejected', attemptsUsed: 3, note: 'No compliant result was produced.' }), env, ctx);
     await ctx.settled();
-    assert.deepEqual(apple.sent.map(c => c.body.aps.alert.body), ['Your Twilight came back — credits returned.']);
+    assert.deepEqual(apple.sent.map(c => c.body.aps.alert.body), ['Your Twilight: nothing delivered — credits returned.']);
   } finally { apple.restore(); }
 
   const db2 = new TestD1(); const quiet = makeEnv(db2, key, { APNS_PRIVATE_KEY: undefined }); const ctx2 = testCtx();
