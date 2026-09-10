@@ -12,7 +12,14 @@ struct RemoteImage: View {
     var body: some View {
         ZStack {
             Theme.surface3
-            if let image {
+            if let image, contentMode == .fill {
+                // Drawn as an overlay on a clear box so the photo's own size
+                // never decides the tile's — a wide photo used to push its
+                // card past the grid column (Kyle's phone, 10 Sep 2026).
+                Color.clear
+                    .overlay(Image(uiImage: image).resizable().scaledToFill())
+                    .clipped()
+            } else if let image {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: contentMode)

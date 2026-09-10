@@ -43,6 +43,7 @@ struct UploadView: View {
 
     var body: some View {
         StudioPage {
+            BrandBar()
             VStack(alignment: .leading, spacing: 14) {
                 CardHeading(title: "Start with your photos",
                             sub: "Pick one or several. Choose what to do with each, start them together, and put your phone away.")
@@ -64,12 +65,7 @@ struct UploadView: View {
             }
             .card()
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) { Wordmark(size: 18) }
-            ToolbarItem(placement: .topBarTrailing) { CreditChip() }
-        }
-        .toolbarBackground(Theme.bg.opacity(0.92), for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
         .onChange(of: picked) { _, items in
             guard !items.isEmpty else { return }
             let chosen = items

@@ -21,6 +21,7 @@ struct MyPhotosView: View {
     var body: some View {
         NavigationStack(path: $path) {
             StudioPage {
+                BrandBar()
                 header
                 if !session.jobsLoaded {
                     Text("Loading…").font(Theme.ui(14)).foregroundStyle(Theme.textFaint)
@@ -33,12 +34,7 @@ struct MyPhotosView: View {
                     .buttonStyle(GhostButtonStyle())
             }
             .safeAreaInset(edge: .bottom) { if selecting { selectBar } }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) { Wordmark(size: 18) }
-                ToolbarItem(placement: .topBarTrailing) { CreditChip() }
-            }
-            .toolbarBackground(Theme.bg.opacity(0.92), for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: LibraryRoute.self) { route in
                 switch route {
                 case .run(let ctx):
@@ -60,19 +56,23 @@ struct MyPhotosView: View {
 
     // MARK: - Header and grid
 
+    /// The web's `.qhead`: the title, then the actions row — which wraps
+    /// under the title on a phone, each button on one line (`.card h2` 20px;
+    /// `.qhead .btn` 40px tall, 14px).
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 8) {
-                Text("My photos")
-                    .font(Theme.display(22, weight: .semibold, relativeTo: .title2))
-                    .foregroundStyle(Theme.text)
-                Spacer()
+        VStack(alignment: .leading, spacing: 10) {
+            Text("My photos")
+                .font(Theme.display(20, weight: .semibold, relativeTo: .title3))
+                .foregroundStyle(Theme.text)
+            HStack(spacing: 8) {
                 Button("+ Add photos") { newPhotos() }.buttonStyle(PrimaryButtonStyle(small: true))
                 Button("Buy credits") { session.showBuyCredits = true }.buttonStyle(GhostButtonStyle(small: true))
                 if delivered.count > 1, !selecting {
                     Button("Select") { selecting = true; selected = [] }.buttonStyle(GhostButtonStyle(small: true))
                 }
             }
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             Text(session.flow.batchNotice ?? "Everything you've run. Finished ones stay here — you can close the app and come back whenever.")
                 .font(Theme.ui(14.5)).foregroundStyle(Theme.textSoft)
         }
@@ -252,6 +252,7 @@ struct JobCard: View {
                 }
                 .padding(EdgeInsets(top: 8, leading: 10, bottom: 10, trailing: 10))
             }
+            .frame(maxWidth: .infinity)
             .background(Theme.surface2)
             .clipShape(RoundedRectangle(cornerRadius: Theme.rMd))
             .overlay(RoundedRectangle(cornerRadius: Theme.rMd).stroke(picked ? Theme.pine : Theme.line, lineWidth: picked ? 2 : 1))

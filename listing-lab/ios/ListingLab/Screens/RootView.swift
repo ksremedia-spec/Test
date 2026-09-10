@@ -7,9 +7,11 @@ struct RootView: View {
         Group {
             switch session.phase {
             case .loading:
+                // The same picture as the launch screen, so the hand-over from
+                // the splash to the first request is invisible.
                 ZStack {
                     Theme.paper.ignoresSafeArea()
-                    Image("LaunchMark").resizable().scaledToFit().frame(width: 120, height: 120)
+                    Image("LaunchLockup").resizable().scaledToFit().frame(width: 220, height: 148)
                 }
             case .signedOut:
                 SignInView()
@@ -48,8 +50,27 @@ struct MainTabs: View {
     }
 }
 
+/// The web's header bar (`.bar-in`): the brand on the left, the credit chip
+/// on the right. Drawn inside the page rather than as a navigation toolbar,
+/// because iOS 26 wraps every toolbar item in a glass capsule of its own —
+/// the chip sat inside a second, bigger pill (Kyle, 10 Sep 2026).
+struct BrandBar: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Wordmark(size: 22)
+            Spacer(minLength: 8)
+            CreditChip()
+        }
+        .padding(.top, 4)
+        .padding(.bottom, 12)
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
+    }
+}
+
 /// The header's credit chip — a button, because it is the only way to buy
-/// credits. `— credits` until the first balance arrives.
+/// credits. `— credits` until the first balance arrives. The web's `.chip`:
+/// 12.5px, 600, 5px 11px, surface-2 on a line border, soft text with the
+/// number in ink.
 struct CreditChip: View {
     @Environment(AppSession.self) private var session
 
@@ -59,15 +80,16 @@ struct CreditChip: View {
         } label: {
             Group {
                 if let balance = session.balance {
-                    (Text("\(balance)").bold() + Text(balance == 1 ? " credit" : " credits"))
+                    (Text("\(balance)").bold().foregroundStyle(Theme.text) + Text(balance == 1 ? " credit" : " credits"))
                 } else {
                     Text("— credits")
                 }
             }
-            .font(Theme.ui(13, weight: .medium))
+            .font(Theme.ui(12.5, weight: .semibold))
             .monospacedDigit()
-            .foregroundStyle(Theme.text)
-            .padding(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
+            .lineLimit(1)
+            .foregroundStyle(Theme.textSoft)
+            .padding(EdgeInsets(top: 5, leading: 11, bottom: 5, trailing: 11))
             .background(Theme.surface2, in: Capsule())
             .overlay(Capsule().stroke(Theme.line, lineWidth: 1))
         }

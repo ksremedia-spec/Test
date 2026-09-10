@@ -13,6 +13,7 @@ struct AccountView: View {
     var body: some View {
         NavigationStack {
             StudioPage {
+                BrandBar()
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Account").font(Theme.display(22, weight: .semibold, relativeTo: .title2)).foregroundStyle(Theme.text)
                     Text(session.account?.email ?? "—").font(Theme.ui(16, weight: .semibold)).foregroundStyle(Theme.text)
@@ -80,12 +81,7 @@ struct AccountView: View {
                     .frame(maxWidth: .infinity)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) { Wordmark(size: 18) }
-                ToolbarItem(placement: .topBarTrailing) { CreditChip() }
-            }
-            .toolbarBackground(Theme.bg.opacity(0.92), for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .task { await session.refreshCredits() }
         .sheet(item: $page) { page in SafariView(url: page.url).ignoresSafeArea() }
