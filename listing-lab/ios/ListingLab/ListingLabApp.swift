@@ -25,7 +25,12 @@ struct ListingLabApp: App {
         .onChange(of: scenePhase) { _, phase in
             // The native advantage: coming back to the app refreshes the job
             // list and the balance.
-            if phase == .active { Task { await session.foregroundRefresh() } }
+            if phase == .active {
+                Task { await session.foregroundRefresh() }
+                // Back in front and locked: ask now (the lock screen's own
+                // ask happened while the app was still in the background).
+                if lock.locked { Task { await lock.unlock() } }
+            }
             if phase == .background { lock.lockIfEnabled() }
         }
     }

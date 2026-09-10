@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import LocalAuthentication
 
 /// Face ID (10 Sep 2026). With the switch on, the app locks whenever it goes
@@ -34,18 +35,30 @@ final class AppLock {
         if enabled { locked = true; error = nil }
     }
 
-    /// The system prompt; the passcode is the fallback Apple offers inside it.
+    /// The system prompt: Face ID, with the passcode as the fallback Apple
+    /// offers inside it. A phone with Face ID but no passcode (the simulator,
+    /// in practice) gets Face ID alone.
+    private static func authenticate(_ reason: String) async throws -> Bool {
+        do {
+            return try await LAContext().evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
+        } catch let e as LAError where e.code == .passcodeNotSet {
+            return try await LAContext().evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)
+        }
+    }
+
+    /// Only while the app is in front: iOS refuses the prompt from the
+    /// background, and the lock goes on the moment the app leaves the front.
     func unlock() async {
-        guard locked, !unlocking else { return }
+        guard locked, !unlocking, UIApplication.shared.applicationState == .active else { return }
         unlocking = true
         defer { unlocking = false }
         do {
-            if try await LAContext().evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock Listing Lab") {
+            if try await Self.authenticate("Unlock Listing Lab") {
                 locked = false
                 error = nil
             }
-        } catch let e as LAError where [.userCancel, .systemCancel, .appCancel].contains(e.code) {
-            // Cancelled: stay locked, no red box.
+        } catch let e as LAError where [.userCancel, .systemCancel, .appCancel, .notInteractive].contains(e.code) {
+            // Cancelled, or asked at a moment iOS would not show it: stay locked, no red box.
         } catch {
             self.error = "Couldn't unlock — try again."
         }
@@ -55,7 +68,7 @@ final class AppLock {
     func setEnabled(_ on: Bool) async {
         if on {
             let reason = "Unlock Listing Lab with \(Self.biometryName ?? "your passcode")"
-            guard (try? await LAContext().evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)) == true else { return }
+            guard (try? await Self.authenticate(reason)) == true else { return }
         }
         enabled = on
     }
