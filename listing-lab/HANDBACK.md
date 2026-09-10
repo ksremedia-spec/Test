@@ -1,16 +1,15 @@
 # Listing Lab iPhone app — hand-back
 
-Written 9 Sep 2026 for Kyle. Plain English; every "I verified" and "I'm assuming" is labelled.
+Written 9 Sep 2026 for Kyle; updated 10 Sep 2026 when credits moved from in-app purchase to the website's Stripe checkout. Plain English; every "I verified" and "I'm assuming" is labelled.
 
 ## The one-paragraph version
 
-The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the four native things: Sign in with Apple, credits as In-App Purchases, "Save to Camera Roll" that writes straight into Photos, and Delete my account. The three server additions those need are built, tested (424 tests green) and committed in `backend/` — **not deployed**. Nothing is live until you do the steps below.
+The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the four native things: Sign in with Apple, buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (409 tests green) and committed in `backend/` — **not deployed**. Nothing is live until you do the steps below.
 
 ## What I could and could not verify here
 
-- **I verified** the backend: every new route has tests that run the real code against a real SQLite database, and the whole suite passes (`npm test` → 424 pass, 0 fail). I ran it before and after.
+- **I verified** the backend: every new route has tests that run the real code against a real SQLite database, and the whole suite passes (`npm test` → 409 pass, 0 fail). I ran it before and after.
 - **I could not compile or run the iPhone app.** The machine this was built on is Linux with no Xcode and no iPhone simulator. I wrote the Swift carefully and re-read every file for mistakes, but the first time it is compiled will be on your Mac. **Expect a handful of small compile errors on the first build** — the kind Xcode points at with a red line and a one-line fix. If you hit one you cannot fix, paste the error text back to me; it will be quick.
-- **I could not download Apple's root certificate** (the network here blocks apple.com). The purchase checker is written to refuse every purchase until that certificate is in place — it fails safe, not open. One command fetches it (step 2 below).
 - **Nothing was tested against the live site with a real account** — I had no credentials, and the app could not run here. Section "What to test on your phone" is the checklist.
 
 ## What you need to do, in order
@@ -19,65 +18,48 @@ The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, Swi
 
 ```bash
 npm install                                  # once, if node_modules is missing
-npm test                                     # must say 424 pass
+npm test                                     # must say 409 pass
 npx wrangler d1 export listinglab --remote --output backup-$(date +%F).sql
 npx wrangler d1 execute listinglab --remote --file migrations/010-apple-sub.sql
 npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"   # you should see apple_sub
-node scripts/fetch-apple-root.mjs            # step 2 — see below
-npm test                                     # still 424
 npx wrangler deploy
+curl -s "https://thelistinglab.app/purchase/return?status=success" | grep -c "Open Listing Lab"   # prints 1
 ```
 
-Nothing under `pipeline/` or `container/` changed, so there is no container build and no fleet cycle.
+Nothing under `pipeline/` or `container/` changed, so there is no container build and no fleet cycle. Nothing changes in Stripe: the app uses the same Checkout and the same webhook as the website; only the page Stripe returns to is different.
 
-### 2. Apple's root certificate (one command, then compare one number)
+### 2. Buying credits — how it works now (decided 10 Sep 2026)
 
-`node scripts/fetch-apple-root.mjs` downloads "Apple Root CA - G3" from apple.com, prints its SHA-256 fingerprint, and writes it into `src/apple-root.js`. Open https://www.apple.com/certificateauthority/ and check the fingerprint it printed matches the one Apple lists for "Apple Root CA - G3". Then deploy. Until this is done, every in-app purchase is answered "Purchases cannot be confirmed right now — the app will try again automatically", and the app keeps the purchase unfinished, so no one's money is lost — it just cannot add credits yet.
+Credits are **not** sold through Apple. In the app, the buy-credits sheet looks like the web's (the three packs, MOST POPULAR on the 30, the promo link, "Credits never expire.") with one line above the packs: "You'll pay on our website — it opens in Safari and brings you back here." Tapping a pack opens the website's Stripe Checkout in Safari inside the app; after paying, Stripe lands on a new small page on the site (`/purchase/return`) that says "Payment received — returning you to the app…" and jumps straight back into the app. The app then re-reads the balance at 1.5 and 4.5 seconds, exactly as the web does, and says "Credits added — thank you!". The buy path shows only on the United States App Store storefront; elsewhere the packs are listed with "Credits can be bought at thelistinglab.app" and no link. Nothing in the app's copy mentions Apple, the App Store or in-app purchase.
 
-### 3. While you test purchases (and only then)
+Why this is allowed: since the Epic v. Apple injunction, US apps may link out to pay on the web; Apple's guidelines permit it, no entitlement is needed, and Apple currently takes no commission on those purchases.
 
-TestFlight purchases go through Apple's **sandbox**. The server refuses sandbox purchases unless you switch it on:
-
-```bash
-npx wrangler secret put IAP_ALLOW_SANDBOX     # type: 1
-```
-
-**Before real customers can buy:** `npx wrangler secret delete IAP_ALLOW_SANDBOX`. With it on, a sandbox purchase (which costs nothing) adds real credits. Note: test with a sandbox tester account or TestFlight, not with Xcode's local "StoreKit configuration file" — the server can only accept Apple's real signatures.
-
-### 4. Xcode (same steps as the Horizon Home Media app)
+### 3. Xcode (same steps as the Horizon Home Media app)
 
 1. Open `ios/ListingLab.xcodeproj`.
 2. Click the blue **ListingLab** project → the **ListingLab** target → **Signing & Capabilities** → **Team**: pick your team. Do the same for the **ListingLabTests** target.
-3. Bundle identifier is `com.horizonhomemedia.listinglab`. If App Store Connect says it is taken, change it here **and** tell me — the server checks it on Apple sign-in and on purchases (`APP_BUNDLE_ID` in `backend/src/apple.js`, and the three product ids start with it).
+3. Bundle identifier is `com.horizonhomemedia.listinglab`. If App Store Connect says it is taken, change it here **and** tell me — the server checks it on Apple sign-in (`APP_BUNDLE_ID` in `backend/src/apple.js`).
 4. Xcode will ask to add the **Sign in with Apple** capability to the App ID — say yes (or enable it on the App ID in the developer portal first).
 5. **Product → Build** (⌘B). Fix any red lines (see above). Then **Product → Test** (⌘U) runs the unit tests.
 6. Plug in your iPhone, press Run. Sign in with your test account.
 7. TestFlight: **Product → Archive → Distribute App → TestFlight & App Store → Upload.** Add yourself as an internal tester.
 
-### 5. App Store Connect
+### 4. App Store Connect
 
 - **Create the app** with bundle id `com.horizonhomemedia.listinglab`, name **Listing Lab**.
-- **In-App Purchases → create three consumables**, exact product ids (the server refuses anything else):
-
-  | Reference name | Product ID | Price (USD) | Display name | Description |
-  |---|---|---|---|---|
-  | 10 credits | `com.horizonhomemedia.listinglab.credits10` | 19.99 | 10 credits | Credits for finished, checked listing photos. Never expire. |
-  | 30 credits | `com.horizonhomemedia.listinglab.credits30` | 56.99 | 30 credits | Credits for finished, checked listing photos. Never expire. |
-  | 75 credits | `com.horizonhomemedia.listinglab.credits75` | 137.99 | 75 credits | Credits for finished, checked listing photos. Never expire. |
-
-  Each needs a review screenshot (the buy-credits sheet). No App Store Server API key is needed. Apple keeps 30%, or 15% if you enrol in the **App Store Small Business Program** — do it.
+- **No In-App Purchases to create.** Credits are bought on the website (section 2).
 - **Sign in with Apple:** enable the capability on the App ID (Certificates, Identifiers & Profiles → your App ID → Sign in with Apple).
 - **App Privacy:** the answers are in `docs/APP-STORE.md` (email, name, photos, purchase history, support messages — all "app functionality", none for tracking). The app's `PrivacyInfo.xcprivacy` says the same.
-- **Listing copy, keywords, review notes:** ready to paste from `docs/APP-STORE.md`. Make a dedicated review account on the site, add credits with a promo code, and paste its login into the review notes.
+- **Listing copy, keywords, review notes:** ready to paste from `docs/APP-STORE.md`. The review note says credits are purchased on our website via Stripe, opened from the app and returning to it, US storefront only, and that the demo account is pre-loaded with credits. Make that dedicated review account on the site, add credits with a promo code, and paste its login into the review notes.
 - **Screenshots:** you take these on your phone from real jobs (`assets/sample-photos` are the frames to use).
 
-### 6. One line that needs your OK before it ships
+### 5. One line that needs your OK before it ships
 
 The FAQ answer "Are my photos private?" could add: *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* I did not add it. Say the word and it goes in.
 
 ## What to test on your phone (the definition of done, §8.3 of the brief)
 
-Sign in with email · Create an account · Sign in with Apple (first time, and again) · upload a HEIC from the library, a JPEG, several at once · take a photo with the camera · Browse from Files · the four fixes (staging with a style and room) · the run screen, then leave it for My photos and tap the WORKING card to come back · Save to Camera Roll · "or download the file" · the versions pills on a staging with more than one · "Stage this room" after an Empty Room · a returned job's sheet and "Run it again" / "Try Empty Room" · Select → Save N to Camera Roll and Download N as .zip · Buy credits (sandbox) · Have a promo code · Something not right with this photo? · Message support (signed in, and signed out from the sign-in screen) · Sign out · Delete my account.
+Sign in with email · Create an account · Sign in with Apple (first time, and again) · upload a HEIC from the library, a JPEG, several at once · take a photo with the camera · Browse from Files · the four fixes (staging with a style and room) · the run screen, then leave it for My photos and tap the WORKING card to come back · Save to Camera Roll · "or download the file" · the versions pills on a staging with more than one · "Stage this room" after an Empty Room · a returned job's sheet and "Run it again" / "Try Empty Room" · Select → Save N to Camera Roll and Download N as .zip · Buy credits (a real card, or a Stripe test card if you switch Stripe to test mode; check that Safari closes and the balance rises, and that "Check again" appears if it has not) · Have a promo code · Something not right with this photo? · Message support (signed in, and signed out from the sign-in screen) · Sign out · Delete my account.
 
 ## What I built, in more detail
 
@@ -88,16 +70,16 @@ Sign in with email · Create an account · Sign in with Apple (first time, and a
 - **Every string** is the web's, taken from APP-SCREENS.md, with the exceptions listed under "Assumptions" below.
 - **Networking:** one `APIClient` that sends the session as a `Cookie: ll_session=…` header itself, 45-second timeout on every call, 60-second stall timeout on uploads that resets on every progress event, and any 401 sends you back to sign-in. Uploads are one at a time, HEIC is converted to JPEG on the phone at quality 0.92 with the orientation baked in and no downscale, and a HEIC renamed .jpg is caught by its bytes.
 - **Polling, as the web does it:** scene 1.2 s × 15, job every 4 s, library every 6 s while anything is working, and a refresh of the list, the balance and any unsettled purchase every time the app comes back to the foreground.
-- **Purchases:** StoreKit 2. The app only "finishes" a purchase after the server says the credits were added; anything unfinished is replayed on launch and on foreground, so a crash mid-purchase loses nothing.
+- **Purchases:** the website's Stripe Checkout, opened in Safari from the buy sheet with `platform: "ios"`, returning through the `listinglab://` URL scheme (registered in Info.plist). The balance is re-read at 1.5 s and 4.5 s; if it has not moved the sheet stays open with "Your credits haven't shown up yet — it can take a moment." and a **Check again** button. Coming back to the app by hand refreshes the balance too. StoreKit is used only to read the storefront country.
 - **Icon:** 1024×1024, the camera mark centred at 72% width on `#0F141B`, with the dark and tinted variants Xcode 16 wants. Launch screen: the mark on the same dark.
-- **Unit tests:** decoding of the API shapes, HEIC→JPEG conversion (bytes sniffed, orientation baked, size kept), the retry matrix, the honest progress clock, and the purchase "finish only after the server answers" rule.
+- **Unit tests:** decoding of the API shapes, HEIC→JPEG conversion (bytes sniffed, orientation baked, size kept), the retry matrix, the honest progress clock, the checkout return link and the balance-polling rule.
 
 ### The backend (`backend/`)
 
-Three routes, documented in `backend/README.md` and `docs/API.md` §11, tests in `backend/test/apple-signin.test.js`, `iap.test.js`, `delete-account.test.js`:
+Documented in `backend/README.md` and `docs/API.md` §11, tests in `backend/test/apple-signin.test.js`, `delete-account.test.js`, `checkout-ios.test.js`:
 
 - `POST /api/auth/apple` — verifies Apple's token with Apple's published keys, finds the account by Apple's stable id (new `apple_sub` column), refuses to merge into a password or Google account by email (same rule as Google), returns the session.
-- `POST /api/iap/verify` — checks the purchase's certificate chain to Apple's root, its signature, our bundle id, Production-vs-Sandbox, and the product; then adds credits through the same ledger as Stripe, keyed on the transaction id so a replay can never credit twice.
+- `POST /api/checkout` accepts `platform: "ios"` — the same Stripe Checkout, but Stripe returns to `/purchase/return`, a new static page (`web/purchase-return.html`, in the site's design) that hands back to the app. The webhook grants credits exactly as for the web.
 - `DELETE /api/me` — signs the account out everywhere, deletes its photos from storage, deletes the account.
 - Sign-in now tells an Apple or Google account which door to use instead of "do not match".
 
@@ -112,15 +94,17 @@ Everything in `docs/BRIEF.md` was followed as written. Where it was silent or wr
    - "Take Photo" and "Browse" — the two alternatives to the library picker, named as iOS names them.
    - The delete-account confirmation: "This erases your photos, results and account details from our storage. Any credits left on the account are forfeited. It cannot be undone." — built from the privacy policy's erasure sentence.
    - "Your account has been deleted." after deletion.
-   - "Credit statement", "Nothing yet." on the Account screen; "Waiting for approval — the credits will be added once the purchase is approved." for a child account's Ask-to-Buy purchase; "Listing Lab can't save to your library — allow it under Settings → Listing Lab → Photos." when Photos access is refused.
+   - "Credit statement", "Nothing yet." on the Account screen; "Listing Lab can't save to your library — allow it under Settings → Listing Lab → Photos." when Photos access is refused.
+   - "Your credits haven't shown up yet — it can take a moment." with the **Check again** button, when the balance has not moved 4.5 seconds after coming back from checkout. The web has no wording for this case (it toasts "Credits added — thank you!" regardless), so this is mine.
+   - The sign-in error for a failed Sign in with Apple reads "That sign-in could not be verified — try again." (no "Apple" in the app's own copy). The server's two sentences that name Apple and Google — "That email signed up with Apple — use Sign in with Apple." and "That email signed up with Google — sign in with Google on the website." — are the ones the brief specified and are shown as the server sends them.
 4. **Account deletion and the ledger.** The brief says to delete the account row and let the database cascade, which removes the credit ledger too. The privacy policy says "the only records we keep are the minimal purchase records we are required to retain". The Stripe receipts (`stripe_events`) do survive deletion; the credit ledger entries do not. If you would rather keep an anonymised ledger (as your owner erase tool does), that is a small server change — tell me.
-5. **The purchase body field** is `signedTransaction` (the brief did not name it). It is in `docs/API.md` §11.2.
+5. **Purchases changed on 10 Sep 2026** from in-app purchase to the website's Stripe checkout; §6.2 of `docs/BRIEF.md` is superseded by section 2 above. All StoreKit purchase code, receipt verification and the `/api/iap/verify` endpoint were removed.
 6. **Apple sign-in edge:** an address that already belongs to a *different* Apple sign-in is refused with `409 APPLE_OTHER_ACCOUNT` ("That email already belongs to a different Apple sign-in."). It should never happen in practice.
 7. **Twilight** always sends `style: "Dusk"`, in the batch flow too (the web omits it in batch; the server defaults it — same result, one less inconsistency).
 8. **Batch rows re-narrow** when a photo's classification arrives after the screen is drawn (the web does not, and APP-SCREENS §8.3 asks for it on iOS). A row where a fix is already chosen is left alone.
 9. **Leaving the run screen stops its polling** and My photos becomes the source of truth (APP-SCREENS §8.5).
 10. **The app icon** was made from `assets/icons/icon-512.png` (the mark with transparency) scaled to 737px, rather than by cutting the mark out of the 1254px source, which sits on a white plate with black corners and has white parts inside the house that a cut-out would lose. At icon sizes the difference is invisible. If you have the mark as a transparent PNG at 1024 or larger, drop it in `ios/ListingLab/Assets.xcassets/AppIcon.appiconset/` and regenerate.
-11. **`IAP_TRUST_ROOT_BASE64`** is a server var that overrides the embedded Apple root. The tests use it. Leave it unset in production once the constant is filled in.
+11. **A cancelled checkout** (Stripe's cancel link, or Done in Safari) shows nothing, as the web shows nothing on `?purchase=cancelled`. If Safari is closed by hand after paying, the app still checks the balance quietly and says "Credits added — thank you!" if it rose.
 12. **Google sign-in is not offered** in the app, as decided. Someone who signed up with Google on the web and tries a password in the app sees "That email signed up with Google — sign in with Google on the website."
 13. **The drop-zone sub line** uses the HTML wording ("JPEG, PNG or iPhone HEIC, up to 25MB each — pick as many as you like"), as APP-SCREENS §8.1 suggested.
 

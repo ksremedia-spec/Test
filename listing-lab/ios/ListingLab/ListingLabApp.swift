@@ -15,10 +15,11 @@ struct ListingLabApp: App {
                 .environment(session)
                 .preferredColorScheme(.dark)
                 .tint(Theme.pine)
+                .onOpenURL { url in session.handle(url: url) }
         }
         .onChange(of: scenePhase) { _, phase in
             // The native advantage: coming back to the app refreshes the job
-            // list and the balance, and settles any purchase still waiting.
+            // list and the balance.
             if phase == .active { Task { await session.foregroundRefresh() } }
         }
     }

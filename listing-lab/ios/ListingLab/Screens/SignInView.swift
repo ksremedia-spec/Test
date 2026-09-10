@@ -116,12 +116,12 @@ struct SignInView: View {
         case .failure(let e):
             // A dismissed Apple sheet is not an error worth a red box.
             if let ae = e as? ASAuthorizationError, ae.code == .canceled { return }
-            error = "That Apple sign-in could not be verified — try again."
+            error = "That sign-in could not be verified — try again."
         case .success(let auth):
             guard let credential = auth.credential as? ASAuthorizationAppleIDCredential,
                   let tokenData = credential.identityToken,
                   let token = String(data: tokenData, encoding: .utf8) else {
-                error = "That Apple sign-in could not be verified — try again."
+                error = "That sign-in could not be verified — try again."
                 return
             }
             let code = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }

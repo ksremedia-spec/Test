@@ -668,7 +668,7 @@ Taken from `web/app.html` (`toUploadable`, `uploadPhotos`, `uploadOne`, `api`):
 
 ## 11. Endpoints added for the iOS app (9 Sep 2026)
 
-Three routes exist only for the native app. Everything in §0 applies (JSON bodies, the error shape, `Cookie: ll_session=…`). Source: `src/apple.js`, `src/worker.js`; tests: `test/apple-signin.test.js`, `test/iap.test.js`, `test/delete-account.test.js`.
+Two routes exist only for the native app, plus one option on checkout. Everything in §0 applies (JSON bodies, the error shape, `Cookie: ll_session=…`). Source: `src/apple.js`, `src/worker.js`; tests: `test/apple-signin.test.js`, `test/delete-account.test.js`, `test/checkout-ios.test.js`.
 
 ### 11.1 `POST /api/auth/apple` — Sign in with Apple
 
@@ -694,14 +694,15 @@ Three routes exist only for the native app. Everything in §0 applies (JSON bodi
 - Errors: 400 `APPLE_TOKEN_REQUIRED`; 401 `APPLE_TOKEN` "That Apple sign-in could not be verified — try again."; 401 `APPLE_EMAIL` (Apple shared no email and no account exists yet); 409 `APPLE_PASSWORD_ACCOUNT` "That email already has a password account — sign in with your password."; 409 `APPLE_GOOGLE_ACCOUNT` "That email signed up with Google — sign in with Google on the website."; 502 `APPLE_KEYS_UNREACHABLE`; 429 `RATE_LIMITED`.
 - `POST /api/signin` on an Apple account now answers 401 `APPLE_ACCOUNT` "That email signed up with Apple — use Sign in with Apple." (and 401 `GOOGLE_ACCOUNT` for Google accounts). Every other wrong sign-in is still `BAD_CREDENTIALS`.
 
-### 11.2 `POST /api/iap/verify` — credits bought with In-App Purchase
+### 11.2 `POST /api/checkout` with `platform: "ios"` — buying credits from the app
 
-- Auth: required. Not rate-limited.
-- Body: `{ "signedTransaction": "<Transaction.jwsRepresentation>" }` (StoreKit 2).
-- Server checks: `x5c` chain in the JWS header chains to Apple Root CA - G3 (embedded in `src/apple-root.js`), each certificate valid now, the leaf carries Apple's App Store signing OID and the intermediate the WWDR OID, ES256 signature with the leaf key, `bundleId == com.horizonhomemedia.listinglab`, `environment == "Production"` (or `"Sandbox"` when the `IAP_ALLOW_SANDBOX` var is set), `productId` ∈ {`…credits10` → 10, `…credits30` → 30, `…credits75` → 75}, no `revocationDate`.
-- Grant: a `purchase` ledger entry with key `iap:<transactionId>` and `pack_id` `pack_10|pack_30|pack_75` — the statement reads "Bought N credits". The ledger's PRIMARY KEY makes every replay a no-op.
-- Success **200**: `{ "ok": true, "granted": 10, "balance": 12, "alreadyGranted": false }`. On a replay `alreadyGranted` is `true` and `balance` is unchanged. The app calls `transaction.finish()` only after a 200 (either value of `alreadyGranted`).
-- Errors: 400 `IAP_TRANSACTION_REQUIRED`; 400 with the verifier's code (`IAP_MALFORMED`, `IAP_ALG`, `IAP_CHAIN`, `IAP_UNTRUSTED_ROOT`, `IAP_CERT_EXPIRED`, `IAP_CERT_PURPOSE`, `IAP_SIGNATURE`, `IAP_WRONG_APP`, `IAP_UNKNOWN_PRODUCT`, `IAP_REVOKED`) and the message "That purchase could not be verified."; 400 `IAP_SANDBOX` "That was a test purchase, so no credits were added."; **503 `IAP_ROOT_NOT_CONFIGURED`** "Purchases cannot be confirmed right now — the app will try again automatically." (the root certificate is not on the server yet — keep the transaction unfinished and retry later); 401.
+Credits are **not** sold through Apple (decided 10 Sep 2026). The app opens the website's hosted Stripe Checkout in `SFSafariViewController` and Stripe returns the person to a page that hands back to the app.
+
+- Auth: required. Body: `{ "packId": "pack_10" | "pack_30" | "pack_75", "platform": "ios" }`. Any value other than `"ios"` (or no field) behaves exactly as the web.
+- Success **200** `{ "url": "https://checkout.stripe.com/c/pay/cs_…", "sessionId": "cs_…" }` — open `url`. Errors as §3.3.
+- With `platform: "ios"` the Stripe session's return URLs are `{SITE_URL}/purchase/return?status=success` and `{SITE_URL}/purchase/return?status=cancelled`. That path serves `web/purchase-return.html`, which says "Payment received — returning you to the app…" (or "No charge — returning you to the app…"), immediately opens `listinglab://purchase?status=<status>`, offers an **Open Listing Lab** button that does the same, and says "You can also just switch back to the app."
+- The app registers the `listinglab` URL scheme, dismisses Safari on return, and re-reads `/api/credits` at 1.5 s and 4.5 s exactly as the web does after `?purchase=success`. Credits arrive through the Stripe webhook (§3.3) — nothing else on the server changes.
+- The buy path is shown only on the United States storefront (`Storefront.current?.countryCode == "USA"`); elsewhere the app shows the packs with "Credits can be bought at thelistinglab.app" and no link.
 
 ### 11.3 `DELETE /api/me` — delete the account
 

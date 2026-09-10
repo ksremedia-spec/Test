@@ -137,6 +137,8 @@ struct JobSummary: Decodable, Identifiable, Sendable, Equatable {
 }
 struct JobsResponse: Decodable, Sendable { let jobs: [JobSummary] }
 
+/// `POST /api/checkout` — the hosted Stripe Checkout page to open in Safari.
+struct CheckoutResponse: Decodable, Sendable { let url: String; let sessionId: String? }
 struct RedeemResponse: Decodable, Sendable { let ok: Bool; let credits: Int; let balance: Int }
 struct ReportResponse: Decodable, Sendable { let ok: Bool; let alreadyReported: Bool? }
 struct SupportResponse: Decodable, Sendable { let sent: Bool }
@@ -183,12 +185,14 @@ func creditsWord(_ n: Int) -> String { n == 1 ? "\(n) credit" : "\(n) credits" }
 func photosWord(_ n: Int) -> String { n == 1 ? "\(n) photo" : "\(n) photos" }
 
 /// `$X.XX`, en-US USD, as the web formats prices.
-func usd(cents: Int) -> String {
+func usd(cents: Int) -> String { usd(dollars: Double(cents) / 100) }
+
+func usd(dollars: Double) -> String {
     let f = NumberFormatter()
     f.numberStyle = .currency
     f.locale = Locale(identifier: "en_US")
     f.currencyCode = "USD"
-    return f.string(from: NSNumber(value: Double(cents) / 100)) ?? "$\(cents / 100)"
+    return f.string(from: NSNumber(value: dollars)) ?? String(format: "$%.2f", dollars)
 }
 
 /// The server's ISO timestamps (with fractional seconds) → Date.

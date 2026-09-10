@@ -30,10 +30,10 @@ final class AppSession {
     let api = APIClient()
     let toasts = ToastCenter()
     let flow = StudioFlow()
-    private(set) var store: StoreManager!
+    /// Set when Stripe sends the person back into the app; the buy sheet acts on it.
+    var checkoutReturn: CheckoutReturn.Status?
 
     init() {
-        store = StoreManager(verifier: api) { [weak self] balance in self?.balance = balance }
         Task { await api.setSessionLostHandler { [weak self] in await self?.sessionLost() } }
     }
 
@@ -48,7 +48,6 @@ final class AppSession {
             account = me.account
             phase = .signedIn
             await refreshCredits()
-            await store.replayUnfinished()
         } catch APIError.server(let status, _, _) where status == 401 {
             await sessionLost()
         } catch {
@@ -89,7 +88,6 @@ final class AppSession {
         self.account = account
         phase = .signedIn
         await refreshCredits()
-        await store.replayUnfinished()
     }
 
     func signOut() async {
@@ -146,12 +144,16 @@ final class AppSession {
     var hasWorkingJobs: Bool { jobs.contains { $0.jobStatus.isWorking } }
 
     /// What the app does when it comes back to the foreground: the job list
-    /// and balance may have moved on, and a purchase may be waiting to settle.
+    /// and balance may have moved on (a purchase finished in Safari, say).
     func foregroundRefresh() async {
         guard phase == .signedIn else { return }
         await refreshJobs()
         await refreshCredits()
-        await store.replayUnfinished()
+    }
+
+    /// `listinglab://purchase?status=…` — the return from the website's checkout.
+    func handle(url: URL) {
+        if let status = CheckoutReturn.status(from: url) { checkoutReturn = status }
     }
 }
 

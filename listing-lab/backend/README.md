@@ -7,7 +7,7 @@ board and the grading tool are all in production. Invited beta; public launch
 per `LAUNCH.md`.
 
 ```bash
-npm test        # 424 tests, ~80s — real SQLite + real pixels, no mocks of money
+npm test        # 409 tests, ~80s — real SQLite + real pixels, no mocks of money
 ```
 
 Day-to-day operation — deploys, container cycling, top-ups, the golden set,
@@ -169,52 +169,31 @@ because the sign-in form lives in them.
 ## The iOS app's three doors (9 Sep 2026)
 
 The native iPhone app (`../ios/`) uses every customer endpoint the web app
-uses, plus three that exist only for it. Contract details are in
-`../docs/API.md` §11; the code is `src/apple.js` (verification), the three
-handlers in `src/worker.js`, and the tests in `test/apple-signin.test.js`,
-`test/iap.test.js`, `test/delete-account.test.js`.
+uses, plus two that exist only for it and one small option on checkout.
+Contract details are in `../docs/API.md` §11; the code is `src/apple.js`
+(token verification), the handlers in `src/worker.js`, and the tests in
+`test/apple-signin.test.js`, `test/delete-account.test.js`,
+`test/checkout-ios.test.js`.
 
 | route | what | idempotency |
 |---|---|---|
 | `POST /api/auth/apple` | Sign in with Apple. Verifies the identity token against Apple's published keys (RS256, issuer, our bundle id, expiry), finds the account by Apple's `sub` (new `accounts.apple_sub` column, migration 010), refuses to merge into a password or Google account by email, else creates one with the `$apple-only$` marker. Returns the session in the JSON **and** as the cookie. Rate-limited with sign-in. | one account per Apple `sub` (unique index) |
-| `POST /api/iap/verify` | In-app purchase of credits. Verifies the StoreKit 2 signed transaction — certificate chain to **Apple Root CA - G3**, ES256 signature, bundle id, Production (Sandbox only with `IAP_ALLOW_SANDBOX` set), one of the three product ids — then grants through the ledger exactly like the Stripe webhook. | ledger key `iap:<transactionId>`; replays answer `alreadyGranted` |
 | `DELETE /api/me` | The customer deleting their own account: every session, every R2 object under `<accountId>/`, then the account row (the schema's `ON DELETE CASCADE` takes the rest, ledger included). Rate-limited with sign-in. | — |
+| `POST /api/checkout` with `platform: "ios"` | The same hosted Stripe Checkout the web uses; only the return URLs differ — `/purchase/return?status=success|cancelled`, a static page (`web/purchase-return.html`) that hands back to the app via `listinglab://purchase?status=…`. Credits are **not** sold through Apple (decided 10 Sep 2026): the app links out to pay on the site, which Apple's guidelines allow in the US storefront. The webhook grants exactly as for the web. | Stripe session id, as before |
 
 `POST /api/signin` also grew a courtesy: a `$apple-only$` account is told
 `401 APPLE_ACCOUNT` "use Sign in with Apple", a `$google-only$` one
 `401 GOOGLE_ACCOUNT`.
-
-**Apple's root certificate.** `src/apple-root.js` must hold the DER of
-Apple Root CA - G3 (base64). It ships empty if it was never fetched — the
-verifier then fails closed with `IAP_ROOT_NOT_CONFIGURED` (503), and the app
-keeps the transaction unfinished and retries later, so no purchase is lost.
-`node scripts/fetch-apple-root.mjs` downloads the certificate, prints its
-fingerprint for you to compare with https://www.apple.com/certificateauthority/,
-and writes it in. `IAP_TRUST_ROOT_BASE64` (a var) overrides the constant —
-the tests use it to trust their fixture chain (`test/fixtures/apple-iap/`,
-built by `make-chain.sh` there; the private keys in that folder are
-throwaway test keys, not secrets).
 
 ### For Kyle — what only you can do
 
 1. **Database:** `npx wrangler d1 export listinglab --remote --output backup-$(date +%F).sql`, then
    `npx wrangler d1 execute listinglab --remote --file migrations/010-apple-sub.sql`, then
    check with `npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"` — you should see `apple_sub`.
-2. **Apple's root certificate:** `node scripts/fetch-apple-root.mjs`, compare the fingerprint it prints, then `npm test` (must stay green).
-3. **Deploy:** `npm test && npx wrangler deploy` (the Worker only — nothing under `pipeline/` or `container/` changed, so no image build and no fleet cycle).
-4. **While you test purchases on your phone** (TestFlight uses Apple's sandbox): `npx wrangler secret put IAP_ALLOW_SANDBOX` and type `1`. **Before real customers buy:** `npx wrangler secret delete IAP_ALLOW_SANDBOX`. With it set, sandbox purchases add real credits.
-5. **App Store Connect → In-App Purchases:** create three **consumables** with exactly these product ids (the server refuses anything else):
-
-   | Reference name | Product ID | Price (USD) | Display name | Description |
-   |---|---|---|---|---|
-   | 10 credits | `com.horizonhomemedia.listinglab.credits10` | 19.99 | 10 credits | Credits for finished, checked listing photos. Never expire. |
-   | 30 credits | `com.horizonhomemedia.listinglab.credits30` | 56.99 | 30 credits | Credits for finished, checked listing photos. Never expire. |
-   | 75 credits | `com.horizonhomemedia.listinglab.credits75` | 137.99 | 75 credits | Credits for finished, checked listing photos. Never expire. |
-
-   No App Store Server API key is needed — the app sends each signed transaction to the server and the server checks Apple's signature itself.
-   Apple keeps 30% of each sale, or 15% if you enrol in the **App Store Small Business Program** (do — it takes a form).
-6. **Sign in with Apple:** in the Apple Developer portal, on the App ID `com.horizonhomemedia.listinglab`, enable the "Sign in with Apple" capability. Nothing else server-side.
-7. **FAQ wording — needs your OK before it ships.** The answer to "Are my photos private?" in `web/faq.html` could add one sentence: *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* Not added; say the word and it goes in.
+2. **Deploy:** `npm test && npx wrangler deploy` (the Worker plus the new `web/purchase-return.html` — nothing under `pipeline/` or `container/` changed, so no image build and no fleet cycle). Check: `curl -s https://thelistinglab.app/purchase/return?status=success | grep -c "Open Listing Lab"` prints 1.
+3. **Nothing to set up in Stripe.** The app uses the same Checkout and the same webhook; it only returns to a different page.
+4. **Sign in with Apple:** in the Apple Developer portal, on the App ID `com.horizonhomemedia.listinglab`, enable the "Sign in with Apple" capability. Nothing else server-side.
+5. **FAQ wording — needs your OK before it ships.** The answer to "Are my photos private?" in `web/faq.html` could add one sentence: *"You can also delete your account — and every photo with it — from the iPhone app, under Account."* Not added; say the word and it goes in.
 
 ## Deploying
 

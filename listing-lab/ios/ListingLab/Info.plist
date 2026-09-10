@@ -62,6 +62,19 @@
   <string>Listing Lab saves your finished photos to your library.</string>
   <key>NSCameraUsageDescription</key>
   <string>Take a photo of the room to enhance it.</string>
+  <!-- Stripe's return page on the website opens listinglab://purchase?status=…
+       to bring the person back after paying in Safari. -->
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>com.horizonhomemedia.listinglab</string>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>listinglab</string>
+      </array>
+    </dict>
+  </array>
   <key>ITSAppUsesNonExemptEncryption</key>
   <false/>
 </dict>

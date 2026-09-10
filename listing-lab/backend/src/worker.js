@@ -22,9 +22,7 @@ import {
   sessionCookie, clearedSessionCookie, readSessionCookie, isExpired, AuthError,
 } from './auth.js';
 import { Store } from './store.js';
-import {
-  verifyAppleIdentityToken, verifyAppStoreTransaction, AppleVerificationError, APP_BUNDLE_ID,
-} from './apple.js';
+import { verifyAppleIdentityToken, AppleVerificationError, APP_BUNDLE_ID } from './apple.js';
 import { zipStream } from './zip.js';
 import { GRADER_HTML } from './grader.js';
 import { livePage, liveJobsJson, liveJobJson } from './live-page.js';
@@ -1087,6 +1085,14 @@ async function route(request, url, env, ctx, store) {
     if (path === '/pricing' || path === '/pricing/') {
       return Response.redirect(new URL('/#pricing', url.origin).toString(), 301);
     }
+    // Where Stripe sends the iPhone app's customer after Checkout: a page
+    // whose only job is to hand back to the app. Served by name so the
+    // address Stripe returns to is one path, not a file.
+    if (path === '/purchase/return' && env.ASSETS) {
+      const page = new URL('/purchase-return.html', url.origin);
+      page.search = url.search;
+      return env.ASSETS.fetch(new Request(page.toString(), request));
+    }
     if (env.ASSETS) return env.ASSETS.fetch(request);
     return fail(404, 'NOT_FOUND', 'Not found.');
   }
@@ -1106,7 +1112,6 @@ async function route(request, url, env, ctx, store) {
 
   if (path === '/api/me'       && method === 'GET')  return json({ account: publicAccount(account) });
   if (path === '/api/me'       && method === 'DELETE') return deleteAccount(request, env, account, store);
-  if (path === '/api/iap/verify' && method === 'POST') return verifyPurchase(request, env, account, store);
   if (path === '/api/jobs'     && method === 'GET')  return jobList(account, store);
   if (path === '/api/credits'  && method === 'GET')  return credits(account, store);
   if (path === '/api/packs'    && method === 'GET')  return json({ packs: CREDIT_PACKS });
@@ -1613,10 +1618,19 @@ async function startCheckout(request, env, account, store) {
   const pack = CREDIT_PACKS.find(p => p.id === body.packId);
   if (!pack) return fail(400, 'UNKNOWN_PACK', 'Choose one of the credit packs.');
 
+  /**
+   * THE iPHONE APP PAYS HERE TOO (decided 10 Sep 2026). Credits are not sold
+   * through Apple: the app opens this same hosted Checkout in Safari and
+   * Stripe sends the person back to /purchase/return, a small page that
+   * hands off to the app (listinglab://purchase?status=…). The webhook grants
+   * the credits exactly as for the web — nothing else here knows or cares
+   * which client started the purchase. `platform` is the only difference.
+   */
+  const ios = body.platform === 'ios';
   const form = new URLSearchParams();
   form.set('mode', 'payment');
-  form.set('success_url', `${env.SITE_URL}/app?purchase=success`);
-  form.set('cancel_url', `${env.SITE_URL}/app?purchase=cancelled`);
+  form.set('success_url', ios ? `${env.SITE_URL}/purchase/return?status=success` : `${env.SITE_URL}/app?purchase=success`);
+  form.set('cancel_url', ios ? `${env.SITE_URL}/purchase/return?status=cancelled` : `${env.SITE_URL}/app?purchase=cancelled`);
   form.set('client_reference_id', account.id);
   form.set('customer_email', account.email);
   // What the webhook reads back. account_id is how we know whose balance to raise.
@@ -1733,87 +1747,6 @@ async function grantCredits(event, store) {
     console.error('grant failed', event.id, err?.stack || err);
     await store.markStripeEventProcessed(event.id, nowISO(), String(err?.message || err).slice(0, 500));
   }
-}
-
-/* ------------------------------------------------------------ in-app purchase */
-
-/**
- * POST /api/iap/verify — credits bought inside the iOS app (9 Sep 2026).
- *
- * Apple requires digital credits consumed in the app to be sold through
- * In-App Purchase, so on iPhone the buy sheet is StoreKit, not Stripe. The
- * money is Apple's business; ours is to count it exactly once. The app sends
- * the signed transaction (`Transaction.jwsRepresentation`), and this route:
- *
- *   1. verifies it — certificate chain to Apple's root, signature, our
- *      bundle id, the Production environment (Sandbox only while the owner
- *      has IAP_ALLOW_SANDBOX set for testing), one of the three product ids;
- *   2. grants the credits through the ledger exactly as the Stripe webhook
- *      does, keyed `iap:<transactionId>`. The ledger's PRIMARY KEY is the
- *      referee: the app replays every unfinished transaction on launch, and
- *      every replay of a granted one is answered `alreadyGranted` with the
- *      balance unchanged.
- *
- * The app only calls `transaction.finish()` after a 200 from here, so a
- * purchase interrupted by a crash or a dead connection is never lost — it
- * simply comes back through this door later.
- */
-async function verifyPurchase(request, env, account, store) {
-  const body = await readJson(request);
-  const jws = String(body.signedTransaction || '');
-  if (!jws) return fail(400, 'IAP_TRANSACTION_REQUIRED', 'No purchase to check.');
-
-  let tx;
-  try {
-    tx = await verifyAppStoreTransaction(jws, {
-      bundleId: env.APPLE_BUNDLE_ID || APP_BUNDLE_ID,
-      allowSandbox: flagOn(env.IAP_ALLOW_SANDBOX),
-      roots: trustedAppleRoots(env),
-    });
-  } catch (err) {
-    if (err instanceof AppleVerificationError) {
-      console.warn('purchase refused', err.code, account.id);
-      if (err.code === 'IAP_ROOT_NOT_CONFIGURED') {
-        return fail(503, err.code, 'Purchases cannot be confirmed right now — the app will try again automatically.');
-      }
-      if (err.code === 'IAP_SANDBOX') {
-        return fail(400, err.code, 'That was a test purchase, so no credits were added.');
-      }
-      return fail(400, err.code, 'That purchase could not be verified.');
-    }
-    throw err;
-  }
-
-  const key = `iap:${tx.transactionId}`;
-  const ledger = await store.ledgerFor(account.id);
-  const { entry, applied } = ledger.purchase({ key, credits: tx.credits, packId: tx.packId, at: nowISO() });
-  let granted = false;
-  if (applied) {
-    // Another account replaying this transaction id lands here too: its own
-    // ledger has never seen the key, but the database has.
-    ({ applied: granted } = await store.appendEntry(account.id, entry));
-  }
-  const balance = await store.balanceFor(account.id);
-  if (granted) console.log('purchase granted', account.id, tx.productId, tx.environment);
-  return json({ ok: true, granted: tx.credits, balance, alreadyGranted: !granted });
-}
-
-/** "1", "true", "yes", "on" — the ways a var gets set from a shell. */
-function flagOn(v) { return typeof v === 'string' && /^(1|true|yes|on)$/i.test(v.trim()); }
-
-/**
- * The trust anchor for App Store transactions: the root embedded in
- * src/apple-root.js. IAP_TRUST_ROOT_BASE64 is an OVERRIDE, not a second
- * anchor — it exists so the tests can trust their fixture chain, and so the
- * owner can put Apple's root in place with `wrangler secret put` without a
- * redeploy. Leave it unset in production once the constant is filled in.
- */
-function trustedAppleRoots(env) {
-  if (typeof env.IAP_TRUST_ROOT_BASE64 === 'string' && env.IAP_TRUST_ROOT_BASE64.trim()) {
-    try { return [Uint8Array.from(atob(env.IAP_TRUST_ROOT_BASE64.trim()), c => c.charCodeAt(0))]; }
-    catch { console.error('IAP_TRUST_ROOT_BASE64 is not valid base64; ignoring it'); }
-  }
-  return undefined;   // the module default: Apple Root CA - G3
 }
 
 /* ------------------------------------------------------------------- transform */
