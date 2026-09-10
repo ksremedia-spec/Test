@@ -4,18 +4,19 @@ Written 9 Sep 2026 for Kyle; updated 10 Sep 2026 when credits moved from in-app 
 
 ## The one-paragraph version
 
-The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the five native things: Sign in with Apple, Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (409 tests green before the Google door; its 10 new tests are written but could not be run on your Mac — see the next section) and committed in `backend/` — **not deployed**. Nothing is live until you do the steps below.
+The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the five native things: Sign in with Apple, Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (419 tests green, run on your Mac on 10 Sep 2026) and **deployed** — the database changes and the website update went live from your Mac on 10 Sep 2026, with you logged in to GitHub and Cloudflare in the browser. Step 1 below is done; a backup of the database from just before the change is on your Desktop (`listinglab-backup-2026-09-09.sql`).
 
 ## What I could and could not verify here
 
 - **I verified** the backend: every new route has tests that run the real code against a real SQLite database, and the whole suite passes (`npm test` → 409 pass, 0 fail). I ran it before and after.
 - **I verified the app compiles and its unit tests pass** (10 Sep 2026, on your Mac, Xcode 26.6, iPhone 17 simulator): a clean build with no errors and no warnings, and 26 of 26 unit tests green. The app was written on a Linux machine with no Xcode; the first compile found nothing to fix. One test found a small bug in the HEIC-to-JPEG step (a file already called `.jpg` got a second `.jpg`), which is fixed.
-- **I could not run the server's tests for the Google door.** Your Mac has no Node installed, so `npm test` cannot run here. The 10 new tests in `backend/test/google-ios.test.js` are written in exactly the style of the Apple ones and walk the whole trip against the real router and a real database, but they have not been executed. Step 1 below runs them before anything deploys; if any fail, paste the output back to me.
-- **Nothing was tested against the live site with a real account** — I had no credentials. Section "What to test on your phone" is the checklist. Google sign-in in the app cannot work against the live site until step 1 is done, because the site does not yet know how to hand the app its code.
+- **I verified the server's tests** on your Mac on 10 Sep 2026 with a temporary copy of Node: `npm test` → 419 pass, 0 fail, including the 10 new Google tests in `backend/test/google-ios.test.js`.
+- **I verified the deploy** from the outside afterwards: the two hand-back pages load, Google sign-in started from the app is recognised as the app's, the code exchange refuses a made-up code with the right sentence, and the FAQ line is live.
+- **Nothing was tested against the live site with a real account** — I had no credentials. Section "What to test on your phone" is the checklist. The first real Continue with Google sign-in from the app is yours to do.
 
 ## What you need to do, in order
 
-### 1. The backend (about 10 minutes, from `backend/`)
+### 1. The backend — DONE 10 Sep 2026 (kept for the record, and for next time)
 
 ```bash
 npm install                                  # once, if node_modules is missing
