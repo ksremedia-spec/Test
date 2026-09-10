@@ -116,7 +116,7 @@ struct DeliveredResultBody: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             if let after {
-                BeforeAfterSlider(before: before, after: after)
+                BeforeAfterSlider(before: before, after: after, reveal: wording == .result)
             } else {
                 ZStack { Theme.surface3; ProgressView().tint(Theme.textSoft) }
                     .aspectRatio(4 / 3, contentMode: .fit)

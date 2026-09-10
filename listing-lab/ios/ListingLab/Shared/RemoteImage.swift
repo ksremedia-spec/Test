@@ -19,6 +19,7 @@ struct RemoteImage: View {
                 Color.clear
                     .overlay(Image(uiImage: image).resizable().scaledToFill())
                     .clipped()
+                    .transition(.opacity)
             } else if let image {
                 Image(uiImage: image)
                     .resizable()
@@ -36,7 +37,7 @@ struct RemoteImage: View {
         failed = false
         guard let path else { failed = true; return }
         if let data = try? await session.api.imageData(path), let ui = UIImage(data: data) {
-            image = ui
+            withAnimation(.easeOut(duration: 0.3)) { image = ui }
         } else {
             failed = true
         }

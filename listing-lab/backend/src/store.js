@@ -170,6 +170,19 @@ export class Store {
     return results;
   }
 
+  /** The lock-screen card's own token for one job (Live Activity, 10 Sep 2026). */
+  async putActivityToken({ jobId, accountId, token, environment, at }) {
+    await this.db.prepare(
+      `INSERT INTO activity_tokens (job_id, account_id, token, environment, created_at) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(job_id) DO UPDATE SET token = excluded.token, environment = excluded.environment, created_at = excluded.created_at`
+    ).bind(jobId, accountId, token, environment, at).run();
+  }
+
+  /** Take the card's token out — it is used exactly once, when the job finishes. */
+  async takeActivityToken(jobId) {
+    return this.db.prepare('DELETE FROM activity_tokens WHERE job_id = ? RETURNING *').bind(jobId).first();
+  }
+
   /** Forget a token: the phone signed out, or Apple said it is dead. `accountId` limits it to the caller's own. */
   async deleteDevice(token, accountId = null) {
     if (accountId) await this.db.prepare('DELETE FROM devices WHERE token = ? AND account_id = ?').bind(token, accountId).run();

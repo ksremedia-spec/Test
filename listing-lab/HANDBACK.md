@@ -4,7 +4,7 @@ Written 9 Sep 2026 for Kyle; updated 10 Sep 2026 when credits moved from in-app 
 
 ## The one-paragraph version
 
-The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the native things: Sign in with Apple, Face ID and push notifications (section 2c), Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (419 tests green, run on your Mac on 10 Sep 2026) and **deployed** — the database changes and the website update went live from your Mac on 10 Sep 2026, with you logged in to GitHub and Cloudflare in the browser. Step 1 below is done; a backup of the database from just before the change is on your Desktop (`listinglab-backup-2026-09-09.sql`).
+The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the native things: Sign in with Apple, Face ID and push notifications (section 2c), the lock-screen card, the widget, the reveal and the icons (section 2d), Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (419 tests green, run on your Mac on 10 Sep 2026) and **deployed** — the database changes and the website update went live from your Mac on 10 Sep 2026, with you logged in to GitHub and Cloudflare in the browser. Step 1 below is done; a backup of the database from just before the change is on your Desktop (`listinglab-backup-2026-09-09.sql`).
 
 ## What I could and could not verify here
 
@@ -26,6 +26,7 @@ npx wrangler d1 export listinglab --remote --output backup-$(date +%F).sql
 npx wrangler d1 execute listinglab --remote --file migrations/010-apple-sub.sql
 npx wrangler d1 execute listinglab --remote --file migrations/011-app-signins.sql
 npx wrangler d1 execute listinglab --remote --file migrations/012-devices.sql
+npx wrangler d1 execute listinglab --remote --file migrations/013-activity-tokens.sql
 npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"   # you should see apple_sub
 npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(app_signins)"   # you should see five columns
 npx wrangler deploy
@@ -70,6 +71,18 @@ cd ~/Desktop/iosapp/horizonhomemedia/push-relay/gameplan/Gameplan/Features/GameP
 **Done — you ran it on 10 Sep 2026 and the website now holds the key.** No redeploy needed; secrets take effect at once. The key file stays on your Desktop and is never put in the code.
 
 *I verified* the sending code against a stand-in for Apple's service with a real signing key of the same kind (8 tests), and the routes on the live site. **And the real thing: on 10 Sep 2026 your phone received "Your Twilight is ready." from a real job — the whole chain works.** A build you run from Xcode registers with Apple's test push service; the app knows this and tells the site, so it works for both TestFlight and Xcode builds.
+
+### 2d. The wow (added 10 Sep 2026, at your "let's do all but 4")
+
+Five things, all native, none of which the website can do:
+
+1. **A card on the lock screen and in the Dynamic Island while a photo is being worked on.** Start a job and put the phone away: the card shows the fix, "Working on it" and a running clock (and "Take 2" when the checks send it round again). When the job finishes it flips to **Ready — tap to see it**, or **Nothing delivered — credits returned**, and stays for half an hour. The flip happens even with the app closed: the card has its own push address, the app hands it to the site (`POST /api/devices/activity`), and the site uses it the moment the job finishes (new `activity_tokens` table, migration 013). Opening the app tidies up any card whose job is over. Needs iOS 16.1 or later, which every phone that runs this app has.
+2. **The reveal.** A fresh result no longer just appears: the original is on screen, the finished photo wipes across it, the phone gives a small tap when it lands, and then the slider settles at the middle. Opening a photo again from My photos skips the show.
+3. **A Home Screen widget** (small or medium): your latest finished photo with the fix's name, or "2 photos working"; before anything has run, the mark and "Nothing yet." Add it the usual way: press and hold the Home Screen, tap +, find Listing Lab. It refreshes itself whenever the app reads the list, through a shared folder the app and the widget both see (the "App Group" Apple asks for; Xcode set it up on the App ID by itself).
+4. **Small polish**: a light tap when a job starts and a firmer one when a photo is ready; My photos tiles fade in as their previews arrive; the credit chip counts down rather than snapping.
+5. **App icons**: Account → App icon offers Dark (the one it ships with), Light and Blue. iOS shows its own little confirmation when you switch.
+
+*I verified* all of it compiles and the two companion pieces (the card and the widget live in a small program of their own inside the app, `ListingLabWidgets`) build and sign with the app. *I could not* watch a real card flip or a real widget refresh on the simulator, because that needs a real job; the first ones are yours. Strings here are mine: "Working on it", "Take 2 — working on it", "Waiting on the image service", "Ready — tap to see it", "Nothing delivered — credits returned", the widget's "N photos working", and "Pick the one that suits your Home Screen."
 
 ### 3. Xcode (same steps as the Horizon Home Media app)
 

@@ -22,6 +22,9 @@
   <string>$(CURRENT_PROJECT_VERSION)</string>
   <key>LSRequiresIPhoneOS</key>
   <true/>
+  <!-- The lock-screen / Dynamic Island card while a photo is being worked on. -->
+  <key>NSSupportsLiveActivities</key>
+  <true/>
   <key>UIApplicationSceneManifest</key>
   <dict>
     <key>UIApplicationSupportsMultipleScenes</key>

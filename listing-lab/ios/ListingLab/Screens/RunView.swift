@@ -70,6 +70,7 @@ struct RunView: View {
         var base = context.startedAt ?? Date()
         var tick = 0
         var lastAttempts = 0
+        JobActivity.start(jobId: context.jobId, transformation: context.transformation, startedAt: base, session: session)
         while !Task.isCancelled {
             elapsed = Date().timeIntervalSince(base)
             if tick % 4 == 0 {
@@ -83,12 +84,16 @@ struct RunView: View {
                         base = Date()
                     }
                     if !job.jobStatus.isWorking {
+                        JobActivity.end(jobId: context.jobId, status: job.jobStatus)
+                        if job.jobStatus == .delivered { Haptics.success() } else { Haptics.warning() }
                         finish(job)
                         return
                     }
+                    JobActivity.update(jobId: context.jobId, take: take, startedAt: base, waiting: waiting)
                 } catch let e as APIError {
                     if e == .notSignedIn { return }
                     if case .server(let status, _, _) = e, status == 404 {
+                        JobActivity.end(jobId: context.jobId, status: .failed)
                         finish(status: "failed", note: "We lost track of that job.")
                         return
                     }

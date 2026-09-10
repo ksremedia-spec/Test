@@ -87,6 +87,18 @@ CREATE TABLE IF NOT EXISTS devices (
 
 CREATE INDEX IF NOT EXISTS idx_devices_account ON devices (account_id);
 
+-- The lock-screen card for a job in progress: the token the card issues for
+-- itself, so the website can flip it to "Ready" while the app is closed.
+-- One row per job, gone once the job finishes. Mirrored in
+-- migrations/013-activity-tokens.sql.
+CREATE TABLE IF NOT EXISTS activity_tokens (
+  job_id      TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
+  account_id  TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  token       TEXT NOT NULL,
+  environment TEXT NOT NULL CHECK (environment IN ('sandbox', 'production')),
+  created_at  TEXT NOT NULL
+);
+
 -- ------------------------------------------------------- listings and photos
 
 CREATE TABLE IF NOT EXISTS listings (

@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import UIKit
+import WidgetKit
 
 /// The signed-in state the whole app shares: who is signed in, their
 /// balance and the server's prices, the job list, and the toast. One object,
@@ -162,6 +163,7 @@ final class AppSession {
 
     /// A job just started: the first time, ask to send notifications — the moment it has a point.
     func jobStarted() {
+        Haptics.tap()
         Task { await Push.shared.askIfNeeded() }
     }
 
@@ -192,6 +194,10 @@ final class AppSession {
         googleSignInError = nil
         previewPrefetch?.cancel()
         prefetchedPaths = []
+        widgetLatest = nil
+        JobActivity.endAll()
+        SharedStore.clear()
+        WidgetCenter.shared.reloadAllTimelines()
         phase = .signedOut
     }
 
@@ -220,6 +226,38 @@ final class AppSession {
         jobs = r.jobs
         jobsLoaded = true
         prefetchPreviews()
+        JobActivity.reconcile(with: jobs)
+        updateWidget()
+    }
+
+    private var widgetLatest: String?
+
+    /// The Home Screen widget: the latest finished photo and the counts,
+    /// handed over through the shared folder, refreshed whenever the list changes.
+    private func updateWidget() {
+        let working = jobs.filter { $0.jobStatus.isWorking }.count
+        let ready = jobs.filter { $0.jobStatus == .delivered }.count
+        let latest = jobs.first { $0.jobStatus == .delivered }
+        let api = api
+        Task(priority: .utility) {
+            var image: Data? = nil
+            if let latest, let path = latest.thumbnailUrl, path != widgetLatest {
+                image = try? await api.imageData(path)
+                if image != nil { widgetLatest = path }
+            }
+            SharedStore.write(.init(working: working, ready: ready, latestLabel: latest?.kind?.label,
+                                    latestAt: ISO.date(latest?.finishedAt), hasLatestImage: latest != nil),
+                              latestImage: image)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    /// The lock-screen card's own push token, so the server can flip it to
+    /// "Ready" while the app is closed.
+    func sendActivityToken(jobId: String, token: String) async {
+        guard phase == .signedIn else { return }
+        let _: OkResponse? = try? await api.post("/api/devices/activity",
+                                                 ["jobId": jobId, "token": token, "environment": Push.environment])
     }
 
     private var previewPrefetch: Task<Void, Never>?

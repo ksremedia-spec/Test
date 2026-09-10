@@ -87,6 +87,8 @@ struct CreditChip: View {
             }
             .font(Theme.ui(12.5, weight: .semibold))
             .monospacedDigit()
+            .contentTransition(.numericText())
+            .animation(.snappy, value: session.balance)
             .lineLimit(1)
             .foregroundStyle(Theme.textSoft)
             .padding(EdgeInsets(top: 5, leading: 11, bottom: 5, trailing: 11))

@@ -10,6 +10,7 @@ struct AccountView: View {
     @State private var confirmDelete = false
     @State private var deleting = false
     @State private var deleteError: String?
+    @State private var showIcons = false
 
     var body: some View {
         NavigationStack {
@@ -59,6 +60,8 @@ struct AccountView: View {
                     NavigationLink { CreditStatementView() } label: { rowLabel("Credit statement") }
                         .buttonStyle(.plain)
                     Rectangle().fill(Theme.line).frame(height: 1)
+                    linkRow("App icon") { showIcons = true }
+                    Rectangle().fill(Theme.line).frame(height: 1)
                     linkRow("Terms of Service") { page = WebPage(Links.terms) }
                     Rectangle().fill(Theme.line).frame(height: 1)
                     linkRow("Privacy Policy") { page = WebPage(Links.privacy) }
@@ -89,6 +92,7 @@ struct AccountView: View {
         .task { await session.refreshCredits() }
         .sheet(item: $page) { page in SafariView(url: page.url).ignoresSafeArea() }
         .sheet(isPresented: $showSupport) { SupportSheet() }
+        .sheet(isPresented: $showIcons) { AppIconSheet() }
         .alert("Delete my account", isPresented: $confirmDelete) {
             Button("Delete my account", role: .destructive) { Task { await deleteAccount() } }
             Button("Cancel", role: .cancel) {}
@@ -169,5 +173,66 @@ struct CreditStatementView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(Theme.bg.opacity(0.92), for: .navigationBar)
         .task { await session.refreshCredits() }
+    }
+}
+
+/// Three looks for the icon on the Home Screen: the dark one it ships with,
+/// a light plate, and the brand blue. iOS shows its own confirmation.
+struct AppIconSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var current: String? = UIApplication.shared.alternateIconName
+    @State private var error: String?
+
+    private let choices: [(name: String?, title: String, preview: String)] = [
+        (nil, "Dark", "IconPreview-Dark"),
+        ("AppIcon-Light", "Light", "IconPreview-Light"),
+        ("AppIcon-Blue", "Blue", "IconPreview-Blue"),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            StudioPage {
+                VStack(alignment: .leading, spacing: 14) {
+                    CardHeading(title: "App icon", sub: "Pick the one that suits your Home Screen.")
+                    HStack(spacing: 18) {
+                        ForEach(choices, id: \.title) { choice in
+                            Button {
+                                Task { await choose(choice.name) }
+                            } label: {
+                                VStack(spacing: 8) {
+                                    Image(choice.preview)
+                                        .resizable().scaledToFit().frame(width: 60, height: 60)
+                                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                                        .overlay(RoundedRectangle(cornerRadius: 14)
+                                            .stroke(current == choice.name ? Theme.pine : Theme.line, lineWidth: current == choice.name ? 2 : 1))
+                                    Text(choice.title).font(Theme.ui(13, weight: current == choice.name ? .semibold : .regular))
+                                        .foregroundStyle(current == choice.name ? Theme.text : Theme.textSoft)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    if let error { ErrorBox(message: error) }
+                }
+                .card()
+            }
+            .navigationTitle("App icon")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Theme.bg.opacity(0.92), for: .navigationBar)
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func choose(_ name: String?) async {
+        guard name != current else { return }
+        do {
+            try await UIApplication.shared.setAlternateIconName(name)
+            current = name
+            error = nil
+            Haptics.tap()
+        } catch {
+            self.error = "Couldn't change the icon — try again."
+        }
     }
 }

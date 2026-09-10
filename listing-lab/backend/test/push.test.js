@@ -250,3 +250,41 @@ test('a job that came back says so, and with no APNs key nothing is sent at all'
   } finally { apple2.restore(); resetApnsTokenCache(); }
   db.close(); db2.close();
 });
+
+/* ------------------------------------------------ the lock-screen card */
+
+test("a job's lock-screen card is registered, flipped once when the job finishes, and forgotten", async () => {
+  resetApnsTokenCache();
+  const db = new TestD1(); const key = await makeKey(); const env = makeEnv(db, key); const ctx = testCtx();
+  const { cookie, account } = await signedUp(env, ctx);
+  const jobId = await jobFor(env, ctx, cookie, account.id);
+  const CARD = 'c'.repeat(64);
+
+  const reg = await worker.fetch(post('/api/devices/activity', { jobId, token: CARD.toUpperCase(), environment: 'sandbox' }, { cookie }), env, ctx);
+  assert.equal(reg.status, 200);
+  assert.equal((await worker.fetch(post('/api/devices/activity', { jobId: 'job_nope', token: CARD }, { cookie }), env, ctx)).status, 404, 'only your own job');
+  const other = await signedUp(env, ctx, 'b@example.com');
+  assert.equal((await worker.fetch(post('/api/devices/activity', { jobId, token: CARD }, { cookie: other.cookie }), env, ctx)).status, 404, "not someone else's job");
+
+  const apple = stubApple();
+  try {
+    await worker.fetch(resultReq(jobId, { jobId, outcome: 'delivered', attemptsUsed: 2, image: { filename: 'r.jpg', base64: btoa('stamped') } }), env, ctx);
+    await ctx.settled();
+    assert.equal(apple.sent.length, 1, 'no phones registered for alerts: only the card was pushed');
+    const call = apple.sent[0];
+    assert.equal(call.url, `${APNS_HOSTS.sandbox}/3/device/${CARD}`);
+    assert.equal(call.headers['apns-push-type'], 'liveactivity');
+    assert.equal(call.headers['apns-topic'], `${APP_BUNDLE_ID}.push-type.liveactivity`);
+    assert.equal(call.body.aps.event, 'end');
+    assert.equal(call.body.aps['dismissal-date'] - call.body.aps.timestamp, 30 * 60);
+    assert.deepEqual(Object.keys(call.body.aps['content-state']).sort(), ['startedAtUnix', 'status', 'take', 'waitingOnUpstream']);
+    assert.equal(call.body.aps['content-state'].status, 'delivered');
+    assert.equal(call.body.aps['content-state'].take, 2);
+    assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM activity_tokens').get().n, 0, 'used once, then gone');
+  } finally { apple.restore(); resetApnsTokenCache(); }
+
+  // Registering a card for a job that already finished is a polite no-op.
+  const late = await worker.fetch(post('/api/devices/activity', { jobId, token: CARD }, { cookie }), env, ctx);
+  assert.deepEqual(await late.json(), { ok: true, alreadyFinished: true });
+  db.close();
+});

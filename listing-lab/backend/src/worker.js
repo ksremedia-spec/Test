@@ -23,7 +23,7 @@ import {
 } from './auth.js';
 import { Store } from './store.js';
 import { verifyAppleIdentityToken, AppleVerificationError, APP_BUNDLE_ID } from './apple.js';
-import { pushConfigured, sendPush, jobFinishedMessage } from './apns.js';
+import { pushConfigured, sendPush, jobFinishedMessage, sendLiveActivityEnd } from './apns.js';
 import { zipStream } from './zip.js';
 import { GRADER_HTML } from './grader.js';
 import { livePage, liveJobsJson, liveJobJson } from './live-page.js';
@@ -501,6 +501,9 @@ export async function notifyJobFinished(env, store, job, ctx = null) {
   if (!pushConfigured(env) || !job?.account_id) return;
   const work = (async () => {
     try {
+      // The lock-screen card first, so it flips before the banner arrives.
+      const card = await store.takeActivityToken(job.id);
+      if (card) await sendLiveActivityEnd(env, card, job);
       const devices = await store.devicesForAccount(job.account_id);
       const body = jobFinishedMessage(job);
       for (const device of devices) {
@@ -522,6 +525,20 @@ export async function notifyJobFinished(env, store, job, ctx = null) {
     } catch (err) { console.error('push fan-out failed', job.id, err?.message || err); }
   })();
   if (ctx?.waitUntil) ctx.waitUntil(work); else await work;
+}
+
+/** `POST /api/devices/activity` { jobId, token, environment } — the app registering one job's lock-screen card. */
+async function registerActivityToken(request, account, store) {
+  const body = await readJson(request);
+  const token = String(body.token || '').toLowerCase();
+  const jobId = String(body.jobId || '');
+  const environment = body.environment === 'sandbox' ? 'sandbox' : 'production';
+  if (!/^[0-9a-f]{32,400}$/.test(token)) return fail(400, 'DEVICE_TOKEN_REQUIRED', 'That device token is not one Apple would issue.');
+  const job = await store.jobById(jobId);
+  if (!job || job.account_id !== account.id) return fail(404, 'NOT_FOUND', 'No such job.');
+  if (job.finished_at) return json({ ok: true, alreadyFinished: true });
+  await store.putActivityToken({ jobId, accountId: account.id, token, environment, at: nowISO() });
+  return json({ ok: true });
 }
 
 /** `POST /api/devices` { token, environment } — the app registering a phone. */
@@ -1203,6 +1220,9 @@ async function route(request, url, env, ctx, store) {
   // The iPhone app's push registration (10 Sep 2026): a phone that wants to
   // hear when a photo finishes, and the same phone forgetting itself at sign-out.
   if (path === '/api/devices' && method === 'POST') return registerDevice(request, account, store);
+  // The lock-screen card's own token for one job, so the site can flip the
+  // card to "Ready" while the app is closed.
+  if (path === '/api/devices/activity' && method === 'POST') return registerActivityToken(request, account, store);
   const deviceMatch = path.match(/^\/api\/devices\/([0-9a-fA-F]{32,400})$/);
   if (deviceMatch && method === 'DELETE') {
     await store.deleteDevice(deviceMatch[1].toLowerCase(), account.id);
@@ -2591,7 +2611,7 @@ async function pipelineResult(jobId, request, env, store, ctx = null) {
       jobId, status: 'delivered', resultKey: key, variantKeys,
       costUsd: body.audit?.spend?.cost, at: nowISO(),
     });
-    if (delivered.changed) await notifyJobFinished(env, store, { ...job, status: 'delivered' }, ctx);
+    if (delivered.changed) await notifyJobFinished(env, store, { ...job, status: 'delivered', attempts_used: body.attemptsUsed || job.attempts_used }, ctx);
     // Keep the record for jobs that SUCCEEDED too, not only the ones that broke.
     // Kyle reported a colour cast on a delivered bathroom on 26 Aug 2026 and there
     // was nothing stored to answer "what did the checks conclude?" — every audit
@@ -2681,7 +2701,7 @@ async function pipelineResult(jobId, request, env, store, ctx = null) {
       costUsd: body.audit?.spend?.cost,
       at: nowISO(),
     });
-    if (finished.changed) await notifyJobFinished(env, store, { ...job, status: body.outcome === 'error' ? 'failed' : 'rejected' }, ctx);
+    if (finished.changed) await notifyJobFinished(env, store, { ...job, status: body.outcome === 'error' ? 'failed' : 'rejected', attempts_used: body.attemptsUsed || job.attempts_used }, ctx);
     // The refund race, callback edition (audit, 3 Sep 2026): a late rejection
     // callback for a job that already delivered (a retried container, a stale
     // slot) must not return the credits for a photo the customer has.

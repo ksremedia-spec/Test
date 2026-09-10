@@ -10,5 +10,10 @@
        "production" by itself when the app is archived for TestFlight. -->
   <key>aps-environment</key>
   <string>development</string>
+  <!-- Shared with the widget: the latest finished photo and the counts. -->
+  <key>com.apple.security.application-groups</key>
+  <array>
+    <string>group.com.horizonhomemedia.listinglab</string>
+  </array>
 </dict>
 </plist>

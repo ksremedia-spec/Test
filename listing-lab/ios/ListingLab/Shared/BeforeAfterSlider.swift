@@ -7,7 +7,12 @@ import SwiftUI
 struct BeforeAfterSlider: View {
     let before: UIImage?
     let after: UIImage
+    /// A fresh delivery: the original is on screen first and the result
+    /// wipes across it, with a tap when it lands, before the slider settles
+    /// at the middle. A revisit from the library skips the show.
+    var reveal = false
     @State private var split: CGFloat = 0.5
+    @State private var revealed = false
 
     var body: some View {
         GeometryReader { geo in
@@ -54,6 +59,19 @@ struct BeforeAfterSlider: View {
         }
         .aspectRatio(after.size.width / max(after.size.height, 1), contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: Theme.rMd))
+        .onAppear {
+            guard reveal, before != nil, !revealed else { return }
+            revealed = true
+            split = 1
+            Task {
+                try? await Task.sleep(for: .seconds(0.5))
+                withAnimation(.easeInOut(duration: 1.5)) { split = 0 }
+                try? await Task.sleep(for: .seconds(1.5))
+                Haptics.success()
+                try? await Task.sleep(for: .seconds(0.6))
+                withAnimation(.easeInOut(duration: 0.6)) { split = 0.5 }
+            }
+        }
         .accessibilityLabel(before == nil ? "The finished result" : "Original on the left, result on the right")
     }
 

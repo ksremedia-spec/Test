@@ -103,3 +103,52 @@ export async function sendPush(env, device, { body, jobId }, opts = {}) {
     return { ok: false, status: 0, reason: String(err?.message || err), gone: false };
   }
 }
+
+/**
+ * Flip a job's lock-screen card (Live Activity) to its final state while the
+ * app is closed. Apple's rules for this kind of push: `apns-push-type:
+ * liveactivity`, the topic is the app's bundle id with `.push-type.liveactivity`
+ * on the end, and the `content-state` must carry exactly the keys the card
+ * declares (see JobActivity.swift: status, take, startedAtUnix,
+ * waitingOnUpstream). `event: end` with a `dismissal-date` keeps the finished
+ * card on the lock screen for half an hour. Never throws.
+ */
+export async function sendLiveActivityEnd(env, row, job, opts = {}) {
+  const doFetch = opts.fetch || fetch;
+  const host = APNS_HOSTS[row.environment] || APNS_HOSTS.production;
+  const now = Math.floor((opts.now ?? Date.now()) / 1000);
+  const bundle = env.APPLE_BUNDLE_ID || APP_BUNDLE_ID;
+  try {
+    const token = await apnsToken(env, opts.now);
+    const res = await doFetch(`${host}/3/device/${row.token}`, {
+      method: 'POST',
+      headers: {
+        authorization: `bearer ${token}`,
+        'apns-topic': `${bundle}.push-type.liveactivity`,
+        'apns-push-type': 'liveactivity',
+        'apns-priority': '10',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        aps: {
+          timestamp: now,
+          event: 'end',
+          'dismissal-date': now + 30 * 60,
+          'content-state': {
+            status: job.status === 'delivered' ? 'delivered' : 'returned',
+            take: Math.max(1, Number(job.attempts_used) || 1),
+            startedAtUnix: Math.floor(Date.parse(job.created_at || 0) / 1000) || now,
+            waitingOnUpstream: false,
+          },
+        },
+      }),
+    });
+    let reason = null;
+    if (!res.ok) { try { reason = (await res.json())?.reason || null; } catch { reason = null; } }
+    if (!res.ok) console.warn('live activity push refused', res.status, reason, row.environment);
+    return { ok: res.ok, status: res.status, reason };
+  } catch (err) {
+    console.error('live activity push failed', err?.message || err);
+    return { ok: false, status: 0, reason: String(err?.message || err) };
+  }
+}
