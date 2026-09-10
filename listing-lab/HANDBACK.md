@@ -78,7 +78,7 @@ cd ~/Desktop/iosapp/horizonhomemedia/push-relay/gameplan/Gameplan/Features/GameP
 3. Bundle identifier is `com.horizonhomemedia.listinglab`. If App Store Connect says it is taken, change it here **and** tell me — the server checks it on Apple sign-in (`APP_BUNDLE_ID` in `backend/src/apple.js`).
 4. Xcode will ask to add the **Sign in with Apple** capability to the App ID — say yes (or enable it on the App ID in the developer portal first).
 5. **Product → Build** (⌘B). Fix any red lines (see above). Then **Product → Test** (⌘U) runs the unit tests.
-6. Plug in your iPhone, press Run. Sign in with your test account.
+6. Plug in your iPhone, press Run. Sign in with your test account. **After that first cable connection the phone installs over Wi-Fi** (checked 10 Sep 2026): this Xcode does it by itself, with no box to tick. It needs the phone unlocked with the screen on, on the same Wi-Fi as the Mac; a phone that has been locked a while drops off and comes back when woken.
 7. TestFlight: **Product → Archive → Distribute App → TestFlight & App Store → Upload.** Add yourself as an internal tester.
 
 ### 4. App Store Connect
