@@ -39,6 +39,7 @@ Data collected, all linked to the user, none used for tracking:
 | Photos | App functionality | Uploaded to our server to produce the result; stored under the account; deletable by account deletion |
 | Purchase history | App functionality | Credit purchases made on the website through Stripe, shown in the app's credit statement |
 | Customer support messages | App functionality | If they message support |
+| Device ID (push token) | App functionality | Only if they allow notifications; used to say when a photo finishes; forgotten at sign-out |
 
 Not collected: location, contacts, identifiers for advertising, usage analytics, crash data (no third-party SDKs).
 

@@ -62,6 +62,9 @@
   <string>Listing Lab saves your finished photos to your library.</string>
   <key>NSCameraUsageDescription</key>
   <string>Take a photo of the room to enhance it.</string>
+  <!-- Face ID is optional: a switch on the Account screen. -->
+  <key>NSFaceIDUsageDescription</key>
+  <string>Unlock Listing Lab with Face ID.</string>
   <!-- Stripe's return page on the website opens listinglab://purchase?status=…
        to bring the person back after paying in Safari, and the site's sign-in
        return page opens listinglab://signin?code=… after Google sign-in. -->

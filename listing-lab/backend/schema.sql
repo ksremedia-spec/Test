@@ -73,6 +73,20 @@ CREATE TABLE IF NOT EXISTS app_signins (
 
 CREATE INDEX IF NOT EXISTS idx_app_signins_expiry ON app_signins (expires_at);
 
+-- Push notifications for the iPhone app: the phones that want to hear when
+-- a photo finishes. One row per Apple device token; `environment` says which
+-- of Apple's two push services it belongs to. Deleted with the account.
+-- Mirrored in migrations/012-devices.sql.
+CREATE TABLE IF NOT EXISTS devices (
+  token       TEXT PRIMARY KEY,
+  account_id  TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+  environment TEXT NOT NULL CHECK (environment IN ('sandbox', 'production')),
+  created_at  TEXT NOT NULL,
+  seen_at     TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_devices_account ON devices (account_id);
+
 -- ------------------------------------------------------- listings and photos
 
 CREATE TABLE IF NOT EXISTS listings (

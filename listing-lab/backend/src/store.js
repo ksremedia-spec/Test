@@ -151,6 +151,31 @@ export class Store {
     await this.db.prepare('DELETE FROM app_signins WHERE expires_at <= ?').bind(nowISO).run();
   }
 
+  /* ------------------------------------------------------ the iPhone app's devices */
+
+  /**
+   * A phone that wants to hear when a photo finishes (push, 10 Sep 2026).
+   * The same token registered again — after a reinstall, or by another
+   * account on the same phone — simply moves to the account asking.
+   */
+  async putDevice({ token, accountId, environment, at }) {
+    await this.db.prepare(
+      `INSERT INTO devices (token, account_id, environment, created_at, seen_at) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(token) DO UPDATE SET account_id = excluded.account_id, environment = excluded.environment, seen_at = excluded.seen_at`
+    ).bind(token, accountId, environment, at, at).run();
+  }
+
+  async devicesForAccount(accountId) {
+    const { results } = await this.db.prepare('SELECT * FROM devices WHERE account_id = ?').bind(accountId).all();
+    return results;
+  }
+
+  /** Forget a token: the phone signed out, or Apple said it is dead. `accountId` limits it to the caller's own. */
+  async deleteDevice(token, accountId = null) {
+    if (accountId) await this.db.prepare('DELETE FROM devices WHERE token = ? AND account_id = ?').bind(token, accountId).run();
+    else await this.db.prepare('DELETE FROM devices WHERE token = ?').bind(token).run();
+  }
+
   /* --------------------------------------------------------------- ledger */
 
   /**

@@ -4,6 +4,7 @@ import SwiftUI
 /// support, sign out, and the deletion Apple requires.
 struct AccountView: View {
     @Environment(AppSession.self) private var session
+    @Environment(AppLock.self) private var lock
     @State private var page: WebPage?
     @State private var showSupport = false
     @State private var confirmDelete = false
@@ -54,6 +55,20 @@ struct AccountView: View {
                     }
                 }
                 .card()
+
+                // Face ID (10 Sep 2026): shown only on a phone that has it set up.
+                if let biometry = AppLock.biometryName {
+                    HStack {
+                        Text("Unlock with \(biometry)").font(Theme.ui(15)).foregroundStyle(Theme.text)
+                        Spacer()
+                        Toggle("Unlock with \(biometry)", isOn: Binding(
+                            get: { lock.enabled },
+                            set: { on in Task { await lock.setEnabled(on) } }))
+                            .labelsHidden()
+                            .tint(Theme.pine)
+                    }
+                    .card()
+                }
 
                 VStack(spacing: 0) {
                     linkRow("Terms of Service") { page = WebPage(Links.terms) }

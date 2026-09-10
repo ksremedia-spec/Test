@@ -212,6 +212,7 @@ struct MyPhotosView: View {
         do {
             let res: TransformResponse = try await session.api.post("/api/transform", request)
             session.balance = res.balance
+            session.jobStarted()
             session.toasts.show("Running it again — a fresh attempt, right here.")
             await session.refreshJobs()
         } catch let e as APIError {

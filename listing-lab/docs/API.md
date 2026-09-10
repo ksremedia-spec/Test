@@ -615,6 +615,8 @@ A job moves `queued → running → (delivered | rejected | failed)`, possibly b
 | GET | `/api/auth/google` | none | — | 302 → Google |
 | GET | `/api/auth/google/callback` | none (state cookie) | — | 302 → `/app`, or `/signin/return` for the app |
 | POST | `/api/auth/google/exchange` | none | 10/min | 200 + cookie |
+| POST | `/api/devices` | required | — | 200 |
+| DELETE | `/api/devices/:token` | required | — | 200 |
 | POST | `/api/support` | optional | 3/min | 200 |
 | GET | `/api/me` | required | — | 200 |
 | GET | `/api/credits` | required | — | 200 |
@@ -711,6 +713,14 @@ Two routes exist only for the native app, plus one option on checkout, plus Goog
   The native app stores `session` in the Keychain and sends `Cookie: ll_session=<session>` itself.
 - Errors: 400 `APPLE_TOKEN_REQUIRED`; 401 `APPLE_TOKEN` "That Apple sign-in could not be verified — try again."; 401 `APPLE_EMAIL` (Apple shared no email and no account exists yet); 409 `APPLE_PASSWORD_ACCOUNT` "That email already has a password account — sign in with your password."; 409 `APPLE_GOOGLE_ACCOUNT` "That email signed up with Google — sign in with Google."; 502 `APPLE_KEYS_UNREACHABLE`; 429 `RATE_LIMITED`.
 - `POST /api/signin` on an Apple account now answers 401 `APPLE_ACCOUNT` "That email signed up with Apple — use Sign in with Apple." (and 401 `GOOGLE_ACCOUNT` for Google accounts). Every other wrong sign-in is still `BAD_CREDENTIALS`.
+
+### 11.3 `POST /api/devices` and `DELETE /api/devices/:token` — push notifications (10 Sep 2026)
+
+- Auth: required (the account the phone belongs to).
+- `POST /api/devices` body: `{ "token": "<Apple device token, hex>", "environment": "sandbox" | "production" }`. `environment` is which of Apple's two push services the token belongs to: an Xcode build's token is `sandbox`, a TestFlight or App Store build's is `production`; anything else is treated as `production`. The token is stored lowercase; registering a token that already exists moves it to the account asking (a reinstall, or another person signing in on the same phone). **200** `{ "ok": true }`; **400** `DEVICE_TOKEN_REQUIRED` for anything that is not 32–400 hex characters.
+- `DELETE /api/devices/:token` — the phone forgetting itself at sign-out. Only removes the token if it belongs to the calling account. **200** `{ "ok": true }` either way.
+- **What is sent.** When a job finishes — delivered, rejected or failed — every phone on the account gets one alert with no title (the app's name shows) and the body `Your <label> is ready.` or `Your <label> came back — credits returned.`, `<label>` being Declutter, Empty Room, Virtual Staging or Twilight; `sound: default`; a custom key `jobId`. It is sent from the result callback and from every sweep that gives a job up, after the job row has actually changed, so a late duplicate callback never sends twice. A push is a courtesy on top of polling: nothing about it can fail the job.
+- **Server configuration.** Three secrets: `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY` (the `.p8` file's PEM contents). With any missing, nothing is sent and the routes above still work. A token Apple reports as dead (410, or 400 `BadDeviceToken`/`Unregistered`/`DeviceTokenNotForTopic`) is deleted. Source: `src/apns.js`; tests: `test/push.test.js`.
 
 ### 11.2 `POST /api/checkout` with `platform: "ios"` — buying credits from the app
 

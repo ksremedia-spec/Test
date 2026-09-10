@@ -34,6 +34,7 @@ struct PickView: View {
         do {
             let res: TransformResponse = try await session.api.post("/api/transform", request)
             session.balance = res.balance
+            session.jobStarted()
             let ctx = RunContext(jobId: res.jobId, transformation: t, photoId: item.photoId,
                                  originalPath: item.originalPath, startedAt: Date())
             flow.path = [.run(ctx)]

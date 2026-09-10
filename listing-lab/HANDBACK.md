@@ -4,7 +4,7 @@ Written 9 Sep 2026 for Kyle; updated 10 Sep 2026 when credits moved from in-app 
 
 ## The one-paragraph version
 
-The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the five native things: Sign in with Apple, Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (419 tests green, run on your Mac on 10 Sep 2026) and **deployed** — the database changes and the website update went live from your Mac on 10 Sep 2026, with you logged in to GitHub and Cloudflare in the browser. Step 1 below is done; a backup of the database from just before the change is on your Desktop (`listinglab-backup-2026-09-09.sql`).
+The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, SwiftUI, no third-party code). It does everything the web app does — sign in, upload, choose a fix, watch it run, see the checked result, save it, the My photos library with select mode, buy credits, promo codes, report a problem, message support — with the same words and the same decisions, plus the native things: Sign in with Apple, Face ID and push notifications (section 2c), Continue with Google (the website's own Google sign-in, shown in a sheet inside the app — section 2b), buying credits on the website from inside the app (Stripe, opened in Safari, returning to the app), "Save to Camera Roll" that writes straight into Photos, and Delete my account. The server additions those need are built, tested (419 tests green, run on your Mac on 10 Sep 2026) and **deployed** — the database changes and the website update went live from your Mac on 10 Sep 2026, with you logged in to GitHub and Cloudflare in the browser. Step 1 below is done; a backup of the database from just before the change is on your Desktop (`listinglab-backup-2026-09-09.sql`).
 
 ## What I could and could not verify here
 
@@ -25,6 +25,7 @@ npm test                                     # should say 419 pass (409 before, 
 npx wrangler d1 export listinglab --remote --output backup-$(date +%F).sql
 npx wrangler d1 execute listinglab --remote --file migrations/010-apple-sub.sql
 npx wrangler d1 execute listinglab --remote --file migrations/011-app-signins.sql
+npx wrangler d1 execute listinglab --remote --file migrations/012-devices.sql
 npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(accounts)"   # you should see apple_sub
 npx wrangler d1 execute listinglab --remote --command "PRAGMA table_info(app_signins)"   # you should see five columns
 npx wrangler deploy
@@ -54,6 +55,23 @@ You asked for Google sign-in in the app, and for it to stay in the app rather th
 
 **New wording, none in the app.** The button and both error sentences are the website's. The return page reuses lines from the credits return page ("Returning you to the app…", "Open Listing Lab", "You can also just switch back to the app.") with the small heading "Sign in".
 
+### 2c. Face ID and push notifications (added 10 Sep 2026)
+
+**Face ID.** On the Account screen there is a switch, **Unlock with Face ID** (it says Touch ID on a phone with that, and does not appear on a phone with neither set up). Off to start with. Turning it on asks for Face ID once, so the switch can never be on without working. With it on, the app locks every time it goes to the background and shows a small locked screen — the launch picture, "Listing Lab is locked", and an **Unlock with Face ID** button — with the Face ID prompt coming up by itself; your phone passcode is the fallback Apple offers inside that prompt. The setting lives on the phone only. Strings here are mine: "Unlock with Face ID", "Listing Lab is locked", "Couldn't unlock — try again.", and the prompt line "Unlock Listing Lab".
+
+**Push notifications.** A buzz when a photo finishes. The app asks for permission the first time you start a job (the moment a notification has a point), never on the sign-in screen. The message is one line, with the app's name above it: **"Your Twilight is ready."** or **"Your Twilight came back — credits returned."** (Declutter, Empty Room, Virtual Staging or Twilight, as the website names them). Tapping it opens My photos. When the app is open in front of you nothing pops up, because the screen is already updating itself. Signing out tells the site to stop notifying that phone; deleting the account removes it. These two sentences are mine — say the word to change them.
+
+**The one thing only you can do — the push key.** Apple lets a website send notifications only with a key from your developer account, and that key is a secret only you should hold. Until it is in place the app and site work exactly as before and simply send nothing. Ten minutes, once:
+
+1. Go to https://developer.apple.com/account → **Certificates, Identifiers & Profiles** → **Keys** → the blue **+**.
+2. Name it "Listing Lab push", tick **Apple Push Notifications service (APNs)**, Continue, Register.
+3. **Download** the `.p8` file and keep it somewhere safe — Apple only lets you download it once. Note the ten-character **Key ID** shown on that page.
+4. In Terminal, from `listing-lab/backend/`, run these three, pasting when asked:
+   `npx wrangler secret put APNS_KEY_ID` (the Key ID) · `npx wrangler secret put APNS_TEAM_ID` (type `6YCK9MG5RD`) · `npx wrangler secret put APNS_PRIVATE_KEY` (open the `.p8` file in TextEdit, copy everything including the BEGIN and END lines, paste).
+5. That is all — no redeploy. The next photo to finish will buzz your phone. (On the Mac, `wrangler` is the copy in `~/.local/listinglab-tools/node/bin`; if Terminal says it cannot find it, run `export PATH="$HOME/.local/listinglab-tools/node/bin:$PATH"` first.)
+
+*I verified* the sending code against a stand-in for Apple's service with a real signing key of the same kind (7 tests), and the routes on the live site. *I could not* send a real notification, because there is no key yet. A build you run from Xcode registers with Apple's test push service; the app knows this and tells the site, so it works for both TestFlight and Xcode builds.
+
 ### 3. Xcode (same steps as the Horizon Home Media app)
 
 1. Open `ios/ListingLab.xcodeproj`.
@@ -79,7 +97,7 @@ The FAQ answer "Are my photos private?" now ends with: *"You can also delete you
 
 ## What to test on your phone (the definition of done, §8.3 of the brief)
 
-Sign in with email · Create an account · Sign in with Apple (first time, and again) · Continue with Google (first time, again, and with an address that already has a password account — it should refuse with the password sentence; then tap Done on the sheet without choosing an account — nothing should appear) · upload a HEIC from the library, a JPEG, several at once · take a photo with the camera · Browse from Files · the four fixes (staging with a style and room) · the run screen, then leave it for My photos and tap the WORKING card to come back · Save to Camera Roll · "or download the file" · the versions pills on a staging with more than one · "Stage this room" after an Empty Room · a returned job's sheet and "Run it again" / "Try Empty Room" · Select → Save N to Camera Roll and Download N as .zip · Buy credits (a real card, or a Stripe test card if you switch Stripe to test mode; check that Safari closes and the balance rises, and that "Check again" appears if it has not) · Have a promo code · Something not right with this photo? · Message support (signed in, and signed out from the sign-in screen) · Sign out · Delete my account.
+Sign in with email · Create an account · Sign in with Apple (first time, and again) · Unlock with Face ID on, then leave the app and come back · Continue with Google (first time, again, and with an address that already has a password account — it should refuse with the password sentence; then tap Done on the sheet without choosing an account — nothing should appear) · upload a HEIC from the library, a JPEG, several at once · take a photo with the camera · Browse from Files · the four fixes (staging with a style and room) · the run screen, then leave it for My photos and tap the WORKING card to come back · Save to Camera Roll · "or download the file" · the versions pills on a staging with more than one · "Stage this room" after an Empty Room · a returned job's sheet and "Run it again" / "Try Empty Room" · Select → Save N to Camera Roll and Download N as .zip · Buy credits (a real card, or a Stripe test card if you switch Stripe to test mode; check that Safari closes and the balance rises, and that "Check again" appears if it has not) · Have a promo code · Something not right with this photo? · Message support (signed in, and signed out from the sign-in screen) · Sign out · Delete my account.
 
 ## What I built, in more detail
 

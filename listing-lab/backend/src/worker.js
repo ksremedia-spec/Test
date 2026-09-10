@@ -23,6 +23,7 @@ import {
 } from './auth.js';
 import { Store } from './store.js';
 import { verifyAppleIdentityToken, AppleVerificationError, APP_BUNDLE_ID } from './apple.js';
+import { pushConfigured, sendPush, jobFinishedMessage } from './apns.js';
 import { zipStream } from './zip.js';
 import { GRADER_HTML } from './grader.js';
 import { livePage, liveJobsJson, liveJobJson } from './live-page.js';
@@ -384,7 +385,7 @@ export async function sweepRetries(env, store) {
     const overdue = await store.jobsPastGiveUp(new Date(now - GIVE_UP_AFTER_MS).toISOString());
     for (const job of overdue) {
       await failJobAndRefund(store, job,
-        'This one took longer than we are willing to keep you waiting, so it was stopped. Your credits have been returned — please try again.');
+        'This one took longer than we are willing to keep you waiting, so it was stopped. Your credits have been returned — please try again.', env);
       console.warn('wait cutoff: job stopped and refunded', job.id, job.status, job.transformation);
       timedOut++;
     }
@@ -417,7 +418,7 @@ export async function sweepRetries(env, store) {
     if (age > GIVE_UP_AFTER_MS || (job.outage_retries || 0) >= OUTAGE_RETRY_LIMIT) {
       // Long past any honest hope. End it, and give the credit back.
       await failJobAndRefund(store, job,
-        'That job stopped responding and we could not finish it. Your credits have been returned — please try again.');
+        'That job stopped responding and we could not finish it. Your credits have been returned — please try again.', env);
       abandoned++;
       continue;
     }
@@ -447,7 +448,7 @@ export async function sweepRetries(env, store) {
     // hopeful than the last twenty — end it and give the credits back.
     if (Date.now() - Date.parse(job.created_at) > GIVE_UP_AFTER_MS) {
       await failJobAndRefund(store, job,
-        'The image service stayed busy longer than we are willing to keep you waiting. Your credits have been returned — please try again.');
+        'The image service stayed busy longer than we are willing to keep you waiting. Your credits have been returned — please try again.', env);
       abandoned++;
       continue;
     }
@@ -455,7 +456,7 @@ export async function sweepRetries(env, store) {
     if (!photo) {
       // The photograph is gone, so there is nothing left to retry. Finish the
       // job honestly rather than sweeping it forever.
-      await failJobAndRefund(store, job, 'That photo is no longer available, so the job was stopped. Your credits have been returned.');
+      await failJobAndRefund(store, job, 'That photo is no longer available, so the job was stopped. Your credits have been returned.', env);
       continue;
     }
     await dispatchToPipeline(env, job, photo, store);
@@ -490,8 +491,39 @@ async function rateLimited(env, request, path, method) {
     { status: 429, headers: { 'retry-after': '60' } });
 }
 
-/** Finish a job as failed and put the credits back. Safe to call twice. */
-export async function failJobAndRefund(store, job, note) {
+/**
+ * Tell the account's phones a job finished (push, 10 Sep 2026). A courtesy
+ * on top of the polling the app already does: nothing here can fail the
+ * job, and with no APNs key configured it does nothing at all. A token
+ * Apple declares dead is forgotten so it is never tried again.
+ */
+export async function notifyJobFinished(env, store, job, ctx = null) {
+  if (!pushConfigured(env) || !job?.account_id) return;
+  const work = (async () => {
+    try {
+      const devices = await store.devicesForAccount(job.account_id);
+      const body = jobFinishedMessage(job);
+      for (const device of devices) {
+        const out = await sendPush(env, device, { body, jobId: job.id });
+        if (out.gone) await store.deleteDevice(device.token);
+      }
+    } catch (err) { console.error('push fan-out failed', job.id, err?.message || err); }
+  })();
+  if (ctx?.waitUntil) ctx.waitUntil(work); else await work;
+}
+
+/** `POST /api/devices` { token, environment } — the app registering a phone. */
+async function registerDevice(request, account, store) {
+  const body = await readJson(request);
+  const token = String(body.token || '').toLowerCase();
+  const environment = body.environment === 'sandbox' ? 'sandbox' : 'production';
+  if (!/^[0-9a-f]{32,400}$/.test(token)) return fail(400, 'DEVICE_TOKEN_REQUIRED', 'That device token is not one Apple would issue.');
+  await store.putDevice({ token, accountId: account.id, environment, at: nowISO() });
+  return json({ ok: true });
+}
+
+/** Finish a job as failed and put the credits back. Safe to call twice. `env` (optional) lets the phones be told. */
+export async function failJobAndRefund(store, job, note, env = null) {
   try {
     /**
      * THE REFUND RACE (audit, 3 Sep 2026). finishJob is atomic — only the first
@@ -512,6 +544,7 @@ export async function failJobAndRefund(store, job, note) {
       delivered: !!(now && now.status === 'delivered'),
     });
     if (applied) await store.appendEntry(job.account_id, { ...entry, jobId: job.id });
+    if (changed && env) await notifyJobFinished(env, store, { ...job, status: 'failed' });
   } catch (err) {
     console.error('could not fail and refund', job.id, err?.code || err?.message || err);
   }
@@ -528,7 +561,7 @@ async function route(request, url, env, ctx, store) {
   // The container reporting a finished job. Also not session-authenticated — it
   // carries a shared secret instead, because it is our own code, not a browser.
   const resultMatch = path.match(/^\/internal\/jobs\/([A-Za-z0-9_-]+)\/result$/);
-  if (resultMatch && method === 'POST') return pipelineResult(resultMatch[1], request, env, store);
+  if (resultMatch && method === 'POST') return pipelineResult(resultMatch[1], request, env, store, ctx);
 
   // The container's pulse — see HB_STALE_MS. Same shared-secret guard as the
   // result callback; a finished job ignores late beats at the database.
@@ -1154,6 +1187,15 @@ async function route(request, url, env, ctx, store) {
   // Photos page"). Checked before the job route below so "zip" is never read
   // as a job id.
   if (path === '/api/jobs/zip' && method === 'GET') return jobsZip(url, account, env, store);
+
+  // The iPhone app's push registration (10 Sep 2026): a phone that wants to
+  // hear when a photo finishes, and the same phone forgetting itself at sign-out.
+  if (path === '/api/devices' && method === 'POST') return registerDevice(request, account, store);
+  const deviceMatch = path.match(/^\/api\/devices\/([0-9a-fA-F]{32,400})$/);
+  if (deviceMatch && method === 'DELETE') {
+    await store.deleteDevice(deviceMatch[1].toLowerCase(), account.id);
+    return json({ ok: true });
+  }
 
   const jobMatch = path.match(/^\/api\/jobs\/([A-Za-z0-9_-]+)$/);
   if (jobMatch && method === 'GET') return jobStatus(jobMatch[1], account, store);
@@ -2476,7 +2518,7 @@ async function dispatchToPipeline(env, job, photo, store) {
       }
     }
     await failJobAndRefund(store, job,
-      'We could not start that job. Your credits have been returned — please try again.');
+      'We could not start that job. Your credits have been returned — please try again.', env);
   }
 }
 
@@ -2495,7 +2537,7 @@ function variantUrlsFor(job) {
   } catch { return []; }
 }
 
-async function pipelineResult(jobId, request, env, store) {
+async function pipelineResult(jobId, request, env, store, ctx = null) {
   if (!env.PIPELINE_SECRET || request.headers.get('x-pipeline-secret') !== env.PIPELINE_SECRET) {
     return fail(401, 'NOT_AUTHORISED', 'Rejected.');
   }
@@ -2533,10 +2575,11 @@ async function pipelineResult(jobId, request, env, store) {
         variantKeys.push(vKey);
       } catch (e) { console.error('variant store failed', jobId, e?.message || e); }
     }
-    await store.finishJob({
+    const delivered = await store.finishJob({
       jobId, status: 'delivered', resultKey: key, variantKeys,
       costUsd: body.audit?.spend?.cost, at: nowISO(),
     });
+    if (delivered.changed) await notifyJobFinished(env, store, { ...job, status: 'delivered' }, ctx);
     // Keep the record for jobs that SUCCEEDED too, not only the ones that broke.
     // Kyle reported a colour cast on a delivered bathroom on 26 Aug 2026 and there
     // was nothing stored to answer "what did the checks conclude?" — every audit
@@ -2626,6 +2669,7 @@ async function pipelineResult(jobId, request, env, store) {
       costUsd: body.audit?.spend?.cost,
       at: nowISO(),
     });
+    if (finished.changed) await notifyJobFinished(env, store, { ...job, status: body.outcome === 'error' ? 'failed' : 'rejected' }, ctx);
     // The refund race, callback edition (audit, 3 Sep 2026): a late rejection
     // callback for a job that already delivered (a retried container, a stale
     // slot) must not return the credits for a photo the customer has.

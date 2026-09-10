@@ -73,6 +73,7 @@ struct BatchView: View {
             do {
                 let res: TransformResponse = try await session.api.post("/api/transform", request)
                 session.balance = res.balance
+                session.jobStarted()
                 started += 1
             } catch let e as APIError {
                 if e == .notSignedIn { return }

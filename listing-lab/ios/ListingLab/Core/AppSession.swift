@@ -44,6 +44,8 @@ final class AppSession {
 
     init() {
         Task { await api.setSessionLostHandler { [weak self] in await self?.sessionLost() } }
+        Push.shared.onToken = { [weak self] in Task { await self?.sendDeviceToken() } }
+        Push.shared.onOpen = { [weak self] jobId in self?.openFromNotification(jobId) }
     }
 
     // MARK: - Boot and sessions
@@ -58,6 +60,8 @@ final class AppSession {
             phase = .signedIn
             await refreshCredits()
             await refreshJobs()
+            await Push.shared.registerIfAllowed()
+            await sendDeviceToken()
         } catch APIError.server(let status, _, _) where status == 401 {
             await sessionLost()
         } catch {
@@ -134,11 +138,37 @@ final class AppSession {
         phase = .signedIn
         await refreshCredits()
         await refreshJobs()
+        await Push.shared.registerIfAllowed()
+        await sendDeviceToken()
     }
 
     func signOut() async {
+        // This phone stops hearing about this account's photos first.
+        if let token = Push.shared.token {
+            let _: OkResponse? = try? await api.delete("/api/devices/\(token)")
+        }
         let _: OkResponse? = try? await api.post("/api/signout", [String: String]())
         await forget()
+    }
+
+    // MARK: - Push notifications
+
+    /// Apple's token for this phone goes to the server, which sends one line
+    /// when a job finishes. Sent whenever it is known and someone is signed in.
+    func sendDeviceToken() async {
+        guard phase == .signedIn, let token = Push.shared.token else { return }
+        let _: OkResponse? = try? await api.post("/api/devices", ["token": token, "environment": Push.environment])
+    }
+
+    /// A job just started: the first time, ask to send notifications — the moment it has a point.
+    func jobStarted() {
+        Task { await Push.shared.askIfNeeded() }
+    }
+
+    /// A notification was tapped: My photos, freshly read.
+    func openFromNotification(_ jobId: String?) {
+        selectedTab = .library
+        Task { await refreshJobs() }
     }
 
     /// Any 401 from a signed-in endpoint: the session is gone.

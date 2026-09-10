@@ -6,5 +6,9 @@
   <array>
     <string>Default</string>
   </array>
+  <!-- Push notifications: a buzz when a photo finishes. Xcode swaps this to
+       "production" by itself when the app is archived for TestFlight. -->
+  <key>aps-environment</key>
+  <string>development</string>
 </dict>
 </plist>
