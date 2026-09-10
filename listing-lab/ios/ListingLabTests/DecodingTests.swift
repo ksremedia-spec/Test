@@ -71,6 +71,7 @@ final class DecodingTests: XCTestCase {
             "originalUrl": "/api/photos/acct_1%2Fpho_2%2Foriginal",
             "resultUrl": "/api/photos/acct_1%2Fpho_2%2Fjob_2-result.jpg",
             "variantUrls": ["/api/photos/acct_1%2Fpho_2%2Fjob_2-result-v2.jpg"], "rejectUrl": null, "note": null,
+            "previewUrl": "/api/photos/acct_1%2Fpho_2%2Fjob_2-result.jpg?preview=1",
             "startedAt": "2026-09-09T14:02:11.123Z", "finishedAt": "2026-09-09T14:05:40.001Z" },
           { "jobId": "job_3", "photoId": "pho_3", "transformation": "declutter", "status": "rejected",
             "originalUrl": null, "resultUrl": null, "rejectUrl": "/api/photos/x", "note": "Too full.", "startedAt": "2026-09-09T14:00:00.000Z", "finishedAt": null } ] }
@@ -78,7 +79,8 @@ final class DecodingTests: XCTestCase {
         XCTAssertEqual(list.jobs.count, 2)
         XCTAssertEqual(list.jobs[0].kind, .empty)
         XCTAssertEqual(list.jobs[0].variants.count, 1)
-        XCTAssertEqual(list.jobs[0].thumbnailUrl, "/api/photos/acct_1%2Fpho_2%2Fjob_2-result.jpg")
+        XCTAssertEqual(list.jobs[0].thumbnailUrl, "/api/photos/acct_1%2Fpho_2%2Fjob_2-result.jpg?preview=1", "the grid takes the server's small copy")
+        XCTAssertEqual(list.jobs[0].resultUrl, "/api/photos/acct_1%2Fpho_2%2Fjob_2-result.jpg", "the viewer still gets the full photo")
         XCTAssertEqual(list.jobs[1].jobStatus, .rejected)
         XCTAssertNil(list.jobs[1].thumbnailUrl, "a returned job with no original has nothing to show")
         XCTAssertEqual(JobStatus("something-new"), .unknown, "an unknown status never crashes the grid")

@@ -437,6 +437,8 @@ Used for "Stage this room" after an Empty Room job: the server copies the **clea
 - Originals are served **as uploaded**, including any EXIF orientation tag — render them honouring EXIF (UIImage does). Results are produced upright by the pipeline.
 - No range requests, no HEAD handling documented; treat as simple GET.
 
+- **`?preview=1`** (10 Sep 2026, for the app's My photos grid): a small copy, 640 px wide, JPEG quality 82, same disclosure stamp. Made once by Cloudflare's image tool the first time it is asked for — old photos included — and kept in R2 as `<key>-preview.jpg`, so every later request is a plain read. If the tool is unavailable, the photo is over its 20 MB input limit, or the shrink fails, the **full photo is served instead** with the same headers — a preview problem never hides a photo. Ignored with `download=1`. Never applies to `-result-clean.jpg` keys.
+
 ### 4.5 Disclosure watermark
 
 Every deliverable image (`resultUrl`, `variantUrls`) is stamped by the pipeline with a small white sentence-case disclosure in a corner: `Virtually decluttered`, `Virtually emptied`, `Virtually staged`, or `Virtual twilight` (`WATERMARK_TEXT` in `pipeline/prompts.js`; twilight has carried a mark since 5 Sep 2026). **There is no unstamped variant available through any customer endpoint**, and the app must not attempt to remove or crop it. `rejectUrl` frames are not deliverables and may or may not carry a stamp.
@@ -554,6 +556,7 @@ Exact, closed sets enforced server-side (`src/worker.js`; the pipeline validates
   ```
 
   - `originalUrl` — the source photo (may be `null` if the photo row is gone).
+  - `previewUrl` — the grid's small copy: `resultUrl || originalUrl` with `?preview=1` (§4.4); `null` when there is neither. Added 10 Sep 2026; the web still shows the full photo.
   - `rejectUrl` — the frame a `rejected` job produced but the checks refused; deliberately separate from `resultUrl` so it is never shown as a finished result. The web client does not display it.
   - `startedAt` = job creation; `finishedAt` = null while unfinished.
   - No pagination; there is no way to fetch more than the latest 60.

@@ -101,6 +101,15 @@ database_id = "2d6c3b46-7ea7-4a59-8494-19623e4247c3"
 binding = "PHOTOS"
 bucket_name = "listinglab-photos"
 
+# Cloudflare's image tool, used for exactly one thing: shrinking a photo to a
+# small preview for the app's My photos grid, once per photo, the first time
+# it is asked for (10 Sep 2026 — Kyle's phone downloaded sixty full-size
+# photos to fill a grid of tiles). Free for 5,000 unique shrinks a month; a
+# preview is kept in R2 beside its photo, so each photo is shrunk once ever.
+# If the binding is missing or the tool fails, the full photo is served.
+[images]
+binding = "IMAGES"
+
 # The pipeline. `standard` is the smallest instance with enough memory to hold a
 # 4K frame and its crops at once; sharp is memory-hungry and an out-of-memory kill
 # looks exactly like a mysteriously failing job.

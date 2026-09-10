@@ -75,7 +75,7 @@ export class TestR2 {
   async get(key) {
     const o = this.objects.get(key);
     if (!o) return null;
-    return { body: o.bytes, httpMetadata: o.httpMetadata, arrayBuffer: async () => o.bytes.buffer };
+    return { body: o.bytes, size: o.bytes.length, httpMetadata: o.httpMetadata, arrayBuffer: async () => o.bytes.buffer };
   }
   async delete(key) {
     // R2 accepts one key or an array of up to 1000 (account deletion uses the array form).
@@ -88,5 +88,28 @@ export class TestR2 {
     const page = keys.slice(start, start + limit);
     const truncated = start + limit < keys.length;
     return { objects: page.map(key => ({ key })), truncated, cursor: truncated ? String(start + limit) : undefined };
+  }
+}
+
+/**
+ * A stand-in for the Images binding (previews, 10 Sep 2026). Records each
+ * call and answers with bytes that say what was asked for, so a test can tell
+ * a preview from the photo it was made from. `fail` makes every call throw,
+ * for the "a preview problem never hides a photo" rule.
+ */
+export class TestImages {
+  constructor({ fail = false } = {}) { this.calls = []; this.fail = fail; }
+  input(stream) {
+    if (this.fail) throw new Error('image tool down');
+    const call = { input: stream, transform: null, output: null };
+    this.calls.push(call);
+    return {
+      transform(opts) { call.transform = opts; return this; },
+      async output(opts) {
+        call.output = opts;
+        const bytes = new TextEncoder().encode(`PREVIEW width=${call.transform?.width} ${opts.format}`);
+        return { response: () => new Response(bytes, { headers: { 'content-type': opts.format } }) };
+      },
+    };
   }
 }

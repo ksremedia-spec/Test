@@ -1161,7 +1161,7 @@ async function route(request, url, env, ctx, store) {
   const photoMatch = path.match(/^\/api\/photos\/(.+)$/);
   if (photoMatch && method === 'GET') {
     return servePhoto(decodeURIComponent(photoMatch[1]), env, account,
-      url.searchParams.get('download') === '1');
+      url.searchParams.get('download') === '1', url.searchParams.get('preview') === '1');
   }
 
   return fail(404, 'NOT_FOUND', 'No such endpoint.');
@@ -2229,11 +2229,20 @@ function attachmentName(key) {
   return `listing-lab-${clean.endsWith('.jpg') ? clean : clean + '.jpg'}`;
 }
 
-async function servePhoto(key, env, account, asDownload = false) {
+/** Previews are this wide: a grid tile is 150–320 points, so 640 px covers a 2× screen. */
+const PREVIEW_WIDTH = 640;
+/** Cloudflare's image tool takes at most 20 MB in; a bigger photo is served whole. */
+const PREVIEW_INPUT_LIMIT = 20 * 1024 * 1024;
+
+async function servePhoto(key, env, account, asDownload = false, asPreview = false) {
   if (!key.startsWith(`${account.id}/`)) return fail(404, 'NOT_FOUND', 'No such photo.');
   // The clean (pre-watermark) copies exist only to feed chained edits. They are
   // never served: every image a customer can reach carries its disclosure stamp.
-  if (key.endsWith('-result-clean.jpg')) return fail(404, 'NOT_FOUND', 'No such photo.');
+  if (key.includes('-result-clean.jpg')) return fail(404, 'NOT_FOUND', 'No such photo.');
+  if (asPreview && !asDownload && !key.endsWith('-preview.jpg')) {
+    const preview = await servePreview(key, env);
+    if (preview) return preview;
+  }
   const object = await env.PHOTOS.get(key);
   if (!object) return fail(404, 'NOT_FOUND', 'No such photo.');
   const headers = {
@@ -2243,6 +2252,46 @@ async function servePhoto(key, env, account, asDownload = false) {
   };
   if (asDownload) headers['content-disposition'] = `attachment; filename="${attachmentName(key)}"`;
   return new Response(object.body, { headers });
+}
+
+/**
+ * A small copy of a photo for the app's My photos grid (Kyle's phone, 10 Sep
+ * 2026: the grid pulled sixty full-size photos, several megabytes each, to
+ * fill tiles a few hundred pixels wide, and sat empty while it waited).
+ *
+ * Made once, by Cloudflare's image tool, the first time anyone asks — old
+ * photos included, no migration — and kept in R2 beside the photo as
+ * `<key>-preview.jpg`, so every later request is a plain read. The width is
+ * the only parameter, which keeps it to one billable shrink per photo, ever.
+ *
+ * Anything that stops a preview being made — no binding, a photo over the
+ * tool's input limit, a transform error — answers null and the caller serves
+ * the full photo, so a preview problem can never hide a photo. The preview
+ * carries the same disclosure stamp as the photo it was shrunk from.
+ */
+async function servePreview(key, env) {
+  const previewKey = `${key}-preview.jpg`;
+  const headers = {
+    'content-type': 'image/jpeg',
+    'cache-control': 'private, max-age=31536000, immutable',
+  };
+  const stored = await env.PHOTOS.get(previewKey);
+  if (stored) return new Response(stored.body, { headers });
+  if (!env.IMAGES) return null;
+  const object = await env.PHOTOS.get(key);
+  if (!object || object.size > PREVIEW_INPUT_LIMIT) return null;
+  try {
+    const made = await env.IMAGES.input(object.body)
+      .transform({ width: PREVIEW_WIDTH })
+      .output({ format: 'image/jpeg', quality: 82 });
+    const bytes = await made.response().arrayBuffer();
+    if (!bytes.byteLength) return null;
+    await env.PHOTOS.put(previewKey, bytes, { httpMetadata: { contentType: 'image/jpeg' } });
+    return new Response(bytes, { headers });
+  } catch (err) {
+    console.error('preview failed', key, err?.message || err);
+    return null;
+  }
 }
 
 /* ------------------------------------------------------------------ pipeline */
@@ -2820,6 +2869,11 @@ async function jobList(account, store) {
       // What it produced but we would not deliver. Deliberately a separate field
       // from resultUrl so nothing can render a rejected frame as a finished one.
       rejectUrl: j.reject_key ? `/api/photos/${encodeURIComponent(j.reject_key)}` : null,
+      // The grid's small copy: the result if there is one, else the original,
+      // shrunk on first request (see servePreview). The web still shows the
+      // full photo; the app asks for this.
+      previewUrl: (j.result_key || j.original_key)
+        ? `/api/photos/${encodeURIComponent(j.result_key || j.original_key)}?preview=1` : null,
       note: j.rejection_note,
       startedAt: j.created_at,
       finishedAt: j.finished_at,

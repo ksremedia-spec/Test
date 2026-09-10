@@ -128,6 +128,8 @@ struct JobSummary: Decodable, Identifiable, Sendable, Equatable {
     let resultUrl: String?
     let variantUrls: [String]?
     let rejectUrl: String?
+    /// The server's small copy for the grid (`?preview=1`), added 10 Sep 2026.
+    let previewUrl: String?
     let note: String?
     let startedAt: String?
     let finishedAt: String?
@@ -136,8 +138,9 @@ struct JobSummary: Decodable, Identifiable, Sendable, Equatable {
     var jobStatus: JobStatus { JobStatus(status) }
     var kind: Transformation? { Transformation(rawValue: transformation) }
     var variants: [String] { variantUrls ?? [] }
-    /// The web's `resultUrl || originalUrl` thumbnail rule.
-    var thumbnailUrl: String? { resultUrl ?? originalUrl }
+    /// The grid's picture: the server's small preview when it offers one,
+    /// else the web's `resultUrl || originalUrl` rule (an older server).
+    var thumbnailUrl: String? { previewUrl ?? resultUrl ?? originalUrl }
 }
 struct JobsResponse: Decodable, Sendable { let jobs: [JobSummary] }
 
