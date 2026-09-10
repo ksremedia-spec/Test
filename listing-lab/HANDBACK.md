@@ -12,6 +12,7 @@ The native iPhone app is written and sits in `ios/` (`ListingLab.xcodeproj`, Swi
 - **I verified the app compiles and its unit tests pass** (10 Sep 2026, on your Mac, Xcode 26.6, iPhone 17 simulator): a clean build with no errors and no warnings, and 26 of 26 unit tests green. The app was written on a Linux machine with no Xcode; the first compile found nothing to fix. One test found a small bug in the HEIC-to-JPEG step (a file already called `.jpg` got a second `.jpg`), which is fixed.
 - **I verified the server's tests** on your Mac on 10 Sep 2026 with a temporary copy of Node: `npm test` → 419 pass, 0 fail, including the 10 new Google tests in `backend/test/google-ios.test.js`.
 - **I verified the deploy** from the outside afterwards: the two hand-back pages load, Google sign-in started from the app is recognised as the app's, the code exchange refuses a made-up code with the right sentence, and the FAQ line is live.
+- **I verified the previews on the live site** (10 Sep 2026) with a throwaway account that I deleted afterwards: one uploaded test photo, 322 KB, came back as a 640-pixel preview of 67 KB, and the second request was served from the kept copy.
 - **Nothing was tested against the live site with a real account** — I had no credentials. Section "What to test on your phone" is the checklist. The first real Continue with Google sign-in from the app is yours to do.
 
 ## What you need to do, in order
