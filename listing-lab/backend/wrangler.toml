@@ -32,6 +32,13 @@ compatibility_flags = ["nodejs_compat"]
 # Overwrite with the real address after the first deploy — it is used to build
 # the Stripe return links and the callback URL handed to the container.
 SITE_URL = "https://thelistinglab.app"
+# Push notifications (10 Sep 2026). These two are identifiers, not secrets:
+# the Apple Developer team and the id of its push key. The key itself
+# (`AuthKey_7GF2569W58.p8`) is the secret APNS_PRIVATE_KEY, set with
+# `npx wrangler secret put` and never committed. One key serves every app
+# on the team - the Horizon Home Media app uses the same one.
+APNS_KEY_ID = "7GF2569W58"
+APNS_TEAM_ID = "6YCK9MG5RD"
 
 # WHICH DOOR THE IMAGE MODEL IS REACHED THROUGH FIRST.
 #

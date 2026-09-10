@@ -61,14 +61,13 @@ You asked for Google sign-in in the app, and for it to stay in the app rather th
 
 **Push notifications.** A buzz when a photo finishes. The app asks for permission the first time you start a job (the moment a notification has a point), never on the sign-in screen. The message is one line, with the app's name above it: **"Your Twilight is ready."** or **"Your Twilight came back — credits returned."** (Declutter, Empty Room, Virtual Staging or Twilight, as the website names them). Tapping it opens My photos. When the app is open in front of you nothing pops up, because the screen is already updating itself. Signing out tells the site to stop notifying that phone; deleting the account removes it. These two sentences are mine — say the word to change them.
 
-**The one thing only you can do — the push key.** Apple lets a website send notifications only with a key from your developer account, and that key is a secret only you should hold. Until it is in place the app and site work exactly as before and simply send nothing. Ten minutes, once:
+**The one thing only you can do — the push key.** Apple lets a website send notifications only with a signing key from your developer account, and that key is a secret only you should hold. Your Horizon Home Media app already has one, and Apple's push keys work for every app on the same developer team, so Listing Lab reuses it — no trip to Apple's site. The key's id and your team id are identifiers, not secrets, and are already in place. What is left is handing the key file itself to the website, which is one line in Terminal (it reads the file straight from your Desktop, so nothing is pasted by hand):
 
-1. Go to https://developer.apple.com/account → **Certificates, Identifiers & Profiles** → **Keys** → the blue **+**.
-2. Name it "Listing Lab push", tick **Apple Push Notifications service (APNs)**, Continue, Register.
-3. **Download** the `.p8` file and keep it somewhere safe — Apple only lets you download it once. Note the ten-character **Key ID** shown on that page.
-4. In Terminal, from `listing-lab/backend/`, run these three, pasting when asked:
-   `npx wrangler secret put APNS_KEY_ID` (the Key ID) · `npx wrangler secret put APNS_TEAM_ID` (type `6YCK9MG5RD`) · `npx wrangler secret put APNS_PRIVATE_KEY` (open the `.p8` file in TextEdit, copy everything including the BEGIN and END lines, paste).
-5. That is all — no redeploy. The next photo to finish will buzz your phone. (On the Mac, `wrangler` is the copy in `~/.local/listinglab-tools/node/bin`; if Terminal says it cannot find it, run `export PATH="$HOME/.local/listinglab-tools/node/bin:$PATH"` first.)
+```bash
+cd ~/Desktop/iosapp/horizonhomemedia/push-relay/gameplan/Gameplan/Features/GamePlan/.claude/worktrees/sad-ishizaka-0f16e8/listing-lab/backend && PATH="$HOME/.local/listinglab-tools/node/bin:$PATH" npx wrangler secret put APNS_PRIVATE_KEY < ~/Desktop/AuthKey_7GF2569W58.p8
+```
+
+That is all — no redeploy; secrets take effect at once. Until it is done, the app and site work exactly as before and simply send nothing. The key file stays on your Desktop and is never put in the code.
 
 *I verified* the sending code against a stand-in for Apple's service with a real signing key of the same kind (7 tests), and the routes on the live site. *I could not* send a real notification, because there is no key yet. A build you run from Xcode registers with Apple's test push service; the app knows this and tells the site, so it works for both TestFlight and Xcode builds.
 

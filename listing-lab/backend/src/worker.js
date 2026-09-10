@@ -504,7 +504,19 @@ export async function notifyJobFinished(env, store, job, ctx = null) {
       const devices = await store.devicesForAccount(job.account_id);
       const body = jobFinishedMessage(job);
       for (const device of devices) {
-        const out = await sendPush(env, device, { body, jobId: job.id });
+        let out = await sendPush(env, device, { body, jobId: job.id });
+        // A token the app filed under the wrong one of Apple's two services
+        // (an Xcode build that said production, say) answers BadDeviceToken:
+        // try the other once and, if that works, remember it (a lesson from
+        // the Horizon Home Media app).
+        if (out.reason === 'BadDeviceToken') {
+          const other = device.environment === 'sandbox' ? 'production' : 'sandbox';
+          const retry = await sendPush(env, { ...device, environment: other }, { body, jobId: job.id });
+          if (retry.ok) {
+            await store.putDevice({ token: device.token, accountId: device.account_id, environment: other, at: nowISO() });
+            continue;
+          }
+        }
         if (out.gone) await store.deleteDevice(device.token);
       }
     } catch (err) { console.error('push fan-out failed', job.id, err?.message || err); }

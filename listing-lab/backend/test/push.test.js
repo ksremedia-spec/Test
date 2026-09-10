@@ -204,6 +204,26 @@ test('a delivered result tells every phone on the account, once, and a dead phon
   db.close();
 });
 
+test('a token filed under the wrong Apple service is tried on the other, and remembered there', async () => {
+  resetApnsTokenCache();
+  const db = new TestD1(); const key = await makeKey(); const env = makeEnv(db, key); const ctx = testCtx();
+  const { cookie, account } = await signedUp(env, ctx);
+  await worker.fetch(post('/api/devices', { token: TOKEN_A, environment: 'production' }, { cookie }), env, ctx);
+  const jobId = await jobFor(env, ctx, cookie, account.id);
+  // Apple's production host says the token is not one of its; the sandbox host takes it.
+  const apple = stubApple(call => call.url.startsWith(APNS_HOSTS.production)
+    ? new Response(JSON.stringify({ reason: 'BadDeviceToken' }), { status: 400 })
+    : new Response('{}', { status: 200 }));
+  try {
+    await worker.fetch(resultReq(jobId, { jobId, outcome: 'delivered', attemptsUsed: 1, image: { filename: 'r.jpg', base64: btoa('stamped') } }), env, ctx);
+    await ctx.settled();
+    assert.deepEqual(apple.sent.map(c => new URL(c.url).host), ['api.push.apple.com', 'api.sandbox.push.apple.com']);
+    const [device] = await new Store(db).devicesForAccount(account.id);
+    assert.equal(device.environment, 'sandbox', 'the phone is kept, now filed under the service that took it');
+  } finally { apple.restore(); resetApnsTokenCache(); }
+  db.close();
+});
+
 test('a job that came back says so, and with no APNs key nothing is sent at all', async () => {
   resetApnsTokenCache();
   const db = new TestD1(); const key = await makeKey(); const env = makeEnv(db, key); const ctx = testCtx();

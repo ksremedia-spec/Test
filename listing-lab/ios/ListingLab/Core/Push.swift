@@ -4,8 +4,7 @@ import UserNotifications
 /// Push notifications (10 Sep 2026): a buzz when a photo finishes. The app
 /// asks the first time a job starts — the moment a notification has a point —
 /// registers with Apple, and hands the phone's token to the server
-/// (`POST /api/devices`). In the foreground nothing is shown: the screen is
-/// already polling. Tapping a notification opens My photos.
+/// (`POST /api/devices`). Tapping a notification opens My photos.
 @MainActor
 @Observable
 final class Push {
@@ -21,10 +20,23 @@ final class Push {
         #endif
     }()
 
-    /// Apple's token for this phone, as hex, once granted.
-    var token: String? { didSet { if token != nil { onToken?() } } }
+    private static let tokenKey = "pushDeviceToken"
+
+    /// Apple's token for this phone, as hex. Kept on disk as well: after a
+    /// relaunch iOS may not hand it over again, and sign-out needs it to tell
+    /// the site to stop (a lesson from the Horizon Home Media app).
+    var token: String? {
+        didSet {
+            UserDefaults.standard.set(token, forKey: Self.tokenKey)
+            if token != nil { onToken?() }
+        }
+    }
     var onToken: (() -> Void)?
     var onOpen: ((String?) -> Void)?
+
+    private init() {
+        token = UserDefaults.standard.string(forKey: Self.tokenKey)
+    }
 
     /// Ask once, when it matters. Already answered: just make sure Apple knows this phone.
     func askIfNeeded() async {
@@ -74,9 +86,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         // The simulator, or no network: the app simply keeps polling.
     }
 
-    /// In the foreground the screen is already polling: no banner over it.
+    /// A push that lands while the app is open still shows — iOS hides it
+    /// otherwise, and the person may be on another tab (Kyle's rule from the
+    /// Horizon Home Media app).
     func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification) async -> UNNotificationPresentationOptions { [] }
+                                willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .sound, .list]
+    }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let info = response.notification.request.content.userInfo
