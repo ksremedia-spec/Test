@@ -301,7 +301,10 @@ body.wide .wrap,body.wide .bar-in{max-width:1180px;}
 .pcard .pcheck{
   position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:99px;
   border:2px solid rgba(255,255,255,.85);background:rgba(9,13,21,.55);
-  display:none;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;
+  /* An empty circle until the photo is picked; the tick only appears on a
+     picked one (Kyle, 10 Sep 2026 — every tile wearing a tick read as "all
+     selected"). The picked rule below gives the tick its colour. */
+  display:none;align-items:center;justify-content:center;color:transparent;font-size:14px;font-weight:700;
 }
 #queueRows.selecting .pcard:not(.dim) .pcheck{display:flex;}
 #queueRows.selecting .pcard.picked{border-color:var(--pine);box-shadow:0 0 0 2px var(--pine) inset;}
