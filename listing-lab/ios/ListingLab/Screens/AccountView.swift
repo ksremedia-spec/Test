@@ -36,23 +36,6 @@ struct AccountView: View {
                         Spacer()
                         Button("Buy credits") { session.showBuyCredits = true }.buttonStyle(GhostButtonStyle(small: true))
                     }
-                    FieldLabel(text: "Credit statement")
-                    if session.statement.isEmpty {
-                        Text("Nothing yet.").font(Theme.ui(13)).foregroundStyle(Theme.textFaint)
-                    }
-                    ForEach(session.statement) { entry in
-                        HStack(alignment: .firstTextBaseline, spacing: 10) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(entry.description).font(Theme.ui(14)).foregroundStyle(Theme.text)
-                                Text(ISO.date(entry.at).map { $0.formatted(date: .abbreviated, time: .shortened) } ?? entry.at)
-                                    .font(Theme.ui(11)).foregroundStyle(Theme.textFaint)
-                            }
-                            Spacer()
-                            Text(entry.delta > 0 ? "+\(entry.delta)" : "\(entry.delta)")
-                                .font(Theme.ui(14, weight: .semibold)).monospacedDigit()
-                                .foregroundStyle(entry.delta > 0 ? Theme.readyBadge : Theme.textSoft)
-                        }
-                    }
                 }
                 .card()
 
@@ -71,6 +54,11 @@ struct AccountView: View {
                 }
 
                 VStack(spacing: 0) {
+                    // The statement on its own page (Kyle, 10 Sep 2026: inline it
+                    // pushed everything else off the bottom of the screen).
+                    NavigationLink { CreditStatementView() } label: { rowLabel("Credit statement") }
+                        .buttonStyle(.plain)
+                    Rectangle().fill(Theme.line).frame(height: 1)
                     linkRow("Terms of Service") { page = WebPage(Links.terms) }
                     Rectangle().fill(Theme.line).frame(height: 1)
                     linkRow("Privacy Policy") { page = WebPage(Links.privacy) }
@@ -110,16 +98,18 @@ struct AccountView: View {
     }
 
     private func linkRow(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
-                Text(title).font(Theme.ui(15)).foregroundStyle(Theme.text)
-                Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textFaint)
-            }
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
+        Button(action: action) { rowLabel(title) }
+            .buttonStyle(.plain)
+    }
+
+    private func rowLabel(_ title: String) -> some View {
+        HStack {
+            Text(title).font(Theme.ui(15)).foregroundStyle(Theme.text)
+            Spacer()
+            Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.textFaint)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
     }
 
     private func deleteAccount() async {
@@ -134,5 +124,50 @@ struct AccountView: View {
         } catch {
             deleteError = "Something went wrong."
         }
+    }
+}
+
+/// The credit statement, on its own page: every entry, newest first, as the
+/// website lists them under the balance.
+struct CreditStatementView: View {
+    @Environment(AppSession.self) private var session
+
+    var body: some View {
+        StudioPage {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    if let balance = session.balance {
+                        (Text("\(balance)").bold() + Text(balance == 1 ? " credit" : " credits"))
+                            .font(Theme.ui(16)).foregroundStyle(Theme.text)
+                    } else {
+                        Text("— credits").font(Theme.ui(16)).foregroundStyle(Theme.textSoft)
+                    }
+                    Spacer()
+                    Button("Buy credits") { session.showBuyCredits = true }.buttonStyle(GhostButtonStyle(small: true))
+                }
+                FieldLabel(text: "Credit statement")
+                if session.statement.isEmpty {
+                    Text("Nothing yet.").font(Theme.ui(13)).foregroundStyle(Theme.textFaint)
+                }
+                ForEach(session.statement) { entry in
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(entry.description).font(Theme.ui(14)).foregroundStyle(Theme.text)
+                            Text(ISO.date(entry.at).map { $0.formatted(date: .abbreviated, time: .shortened) } ?? entry.at)
+                                .font(Theme.ui(11)).foregroundStyle(Theme.textFaint)
+                        }
+                        Spacer()
+                        Text(entry.delta > 0 ? "+\(entry.delta)" : "\(entry.delta)")
+                            .font(Theme.ui(14, weight: .semibold)).monospacedDigit()
+                            .foregroundStyle(entry.delta > 0 ? Theme.readyBadge : Theme.textSoft)
+                    }
+                }
+            }
+            .card()
+        }
+        .navigationTitle("Credit statement")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(Theme.bg.opacity(0.92), for: .navigationBar)
+        .task { await session.refreshCredits() }
     }
 }
