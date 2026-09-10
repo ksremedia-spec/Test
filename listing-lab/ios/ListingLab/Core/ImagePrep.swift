@@ -71,6 +71,9 @@ enum ImagePrep {
         for ext in [".heic", ".heif", ".HEIC", ".HEIF"] where name.hasSuffix(ext) {
             name = String(name.dropLast(ext.count))
         }
+        // A HEIC that was already renamed .jpg keeps its name rather than becoming "x.jpg.jpg".
+        let lower = name.lowercased()
+        if lower.hasSuffix(".jpg") || lower.hasSuffix(".jpeg") { return name }
         return name + ".jpg"
     }
 
