@@ -247,7 +247,7 @@ test('the password form tells Apple and Google accounts which door to use', asyn
 
   const google = await worker.fetch(post('/api/signin', { email: 'g@example.com', password: 'anything-at-all' }), env, ctx);
   assert.equal(google.status, 401);
-  assert.deepEqual((await google.json()).error, { code: 'GOOGLE_ACCOUNT', message: 'That email signed up with Google — sign in with Google on the website.' });
+  assert.deepEqual((await google.json()).error, { code: 'GOOGLE_ACCOUNT', message: 'That email signed up with Google — sign in with Google.' });
 
   // A plain password account and an unknown address still get the one answer.
   await worker.fetch(post('/api/signup', { email: 'p@example.com', password: 'password-one-two' }), env, ctx);

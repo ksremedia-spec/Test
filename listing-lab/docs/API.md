@@ -706,7 +706,7 @@ Two routes exist only for the native app, plus one option on checkout, plus Goog
   ```
 
   The native app stores `session` in the Keychain and sends `Cookie: ll_session=<session>` itself.
-- Errors: 400 `APPLE_TOKEN_REQUIRED`; 401 `APPLE_TOKEN` "That Apple sign-in could not be verified — try again."; 401 `APPLE_EMAIL` (Apple shared no email and no account exists yet); 409 `APPLE_PASSWORD_ACCOUNT` "That email already has a password account — sign in with your password."; 409 `APPLE_GOOGLE_ACCOUNT` "That email signed up with Google — sign in with Google on the website."; 502 `APPLE_KEYS_UNREACHABLE`; 429 `RATE_LIMITED`.
+- Errors: 400 `APPLE_TOKEN_REQUIRED`; 401 `APPLE_TOKEN` "That Apple sign-in could not be verified — try again."; 401 `APPLE_EMAIL` (Apple shared no email and no account exists yet); 409 `APPLE_PASSWORD_ACCOUNT` "That email already has a password account — sign in with your password."; 409 `APPLE_GOOGLE_ACCOUNT` "That email signed up with Google — sign in with Google."; 502 `APPLE_KEYS_UNREACHABLE`; 429 `RATE_LIMITED`.
 - `POST /api/signin` on an Apple account now answers 401 `APPLE_ACCOUNT` "That email signed up with Apple — use Sign in with Apple." (and 401 `GOOGLE_ACCOUNT` for Google accounts). Every other wrong sign-in is still `BAD_CREDENTIALS`.
 
 ### 11.2 `POST /api/checkout` with `platform: "ios"` — buying credits from the app

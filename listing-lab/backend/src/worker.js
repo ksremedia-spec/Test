@@ -1219,7 +1219,7 @@ async function signin(request, env, store) {
       return fail(401, 'APPLE_ACCOUNT', 'That email signed up with Apple — use Sign in with Apple.');
     }
     if (account?.password_hash === '$google-only$') {
-      return fail(401, 'GOOGLE_ACCOUNT', 'That email signed up with Google — sign in with Google on the website.');
+      return fail(401, 'GOOGLE_ACCOUNT', 'That email signed up with Google — sign in with Google.');
     }
     return fail(401, 'BAD_CREDENTIALS', 'That email and password do not match.');
   }
@@ -1488,7 +1488,7 @@ async function appleSignIn(request, env, store) {
     const existing = await store.accountByEmail(email);
     if (existing) {
       if (existing.password_hash === '$google-only$') {
-        return fail(409, 'APPLE_GOOGLE_ACCOUNT', 'That email signed up with Google — sign in with Google on the website.');
+        return fail(409, 'APPLE_GOOGLE_ACCOUNT', 'That email signed up with Google — sign in with Google.');
       }
       if (existing.password_hash === '$apple-only$') {
         return fail(409, 'APPLE_OTHER_ACCOUNT', 'That email already belongs to a different Apple sign-in.');
