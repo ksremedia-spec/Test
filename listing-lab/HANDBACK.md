@@ -67,7 +67,7 @@ You asked for Google sign-in in the app, and for it to stay in the app rather th
 cd ~/Desktop/iosapp/horizonhomemedia/push-relay/gameplan/Gameplan/Features/GamePlan/.claude/worktrees/sad-ishizaka-0f16e8/listing-lab/backend && PATH="$HOME/.local/listinglab-tools/node/bin:$PATH" npx wrangler secret put APNS_PRIVATE_KEY < ~/Desktop/AuthKey_7GF2569W58.p8
 ```
 
-That is all — no redeploy; secrets take effect at once. Until it is done, the app and site work exactly as before and simply send nothing. The key file stays on your Desktop and is never put in the code.
+**Done — you ran it on 10 Sep 2026 and the website now holds the key.** No redeploy needed; secrets take effect at once. The key file stays on your Desktop and is never put in the code.
 
 *I verified* the sending code against a stand-in for Apple's service with a real signing key of the same kind (7 tests), and the routes on the live site. *I could not* send a real notification, because there is no key yet. A build you run from Xcode registers with Apple's test push service; the app knows this and tells the site, so it works for both TestFlight and Xcode builds.
 
