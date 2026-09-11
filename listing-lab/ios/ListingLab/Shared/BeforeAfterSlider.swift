@@ -11,6 +11,9 @@ struct BeforeAfterSlider: View {
     /// wipes across it, with a tap when it lands, before the slider settles
     /// at the middle. A revisit from the library skips the show.
     var reveal = false
+    /// Told when the handle is first touched — the sign-in screen's carousel
+    /// stops advancing once someone is working it themselves (11 Sep 2026).
+    var onTouch: (() -> Void)? = nil
     @State private var split: CGFloat = 0.5
     @State private var revealed = false
 
@@ -53,6 +56,7 @@ struct BeforeAfterSlider: View {
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
                         guard before != nil, width > 0 else { return }
+                        onTouch?()
                         split = min(1, max(0, value.location.x / width))
                     }
             )

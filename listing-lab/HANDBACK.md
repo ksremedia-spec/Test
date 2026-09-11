@@ -241,3 +241,15 @@ Select shots in Photos, tap Share, choose **Listing Lab**: a small sheet asks wh
 **What it needed on Apple's side**, done on 11 Sep with you signed in: a third App ID, `com.horizonhomemedia.listinglab.share`, with the same shared folder attached (Xcode created the identifier itself; the folder had to be attached by hand, as with the app and the widget). Nothing recurring.
 
 **Not signed in?** The sheet says "Sign in to Listing Lab first." rather than failing quietly.
+
+## The signed-out screen, and the brand gradient (11 Sep 2026)
+
+**The website's proof now opens the app.** On the site nobody reaches the sign-in box without scrolling past the before-and-afters; from the App Store the form was the first thing there was, and a stranger had seen no evidence any of this works. The top of the signed-out screen now shows the product doing all four things — Declutter, Empty Room, Virtual Staging, Twilight — on the same before/after slider the results screen uses. It moves on every four seconds and **stops for good the moment you take over**, by tapping a name or dragging the handle. Under it, the one line nobody else can say (every image is checked against your original) and the price anchor. It is on the signed-out screen only; once you are in, the app is a tool again.
+
+Deliberately not ported: the founder section, and the four-transformations explainer, which the app teaches better by just showing the four buttons after an upload.
+
+**The pills use the short names**, Empty Room and Virtual Staging, which are the ones your owner board already uses — "Empty the room" and "Virtual staging" do not fit four across. Say the word and they go on two rows with the studio's longer wording.
+
+**The brand gradient was missing from the app entirely** (you spotted it). `assets/brand.md` says the "LAB" of the wordmark wears `linear-gradient(105deg, #5CC7F0, #7FA8EC 45%, #8A7FE8)`, and the app was painting it flat blue. It is now on the wordmark everywhere in the app, on the launch screen's lockup (regenerated, with the gradient clipped to the actual letters), and on the lit pill of the four.
+
+**The eight sample photographs** come from the website's own `web/img/site/` frames and add about 860 KB to the app.

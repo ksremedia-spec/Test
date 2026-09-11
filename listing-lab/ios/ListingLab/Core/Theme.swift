@@ -25,6 +25,22 @@ enum Theme {
     /// Text on a primary button: near-black on blue.
     static let onPine = Color(hex: 0x08131F)
 
+    /// THE BRAND GRADIENT (assets/brand.md): the "LAB" of the wordmark and
+    /// one italic keyword per heading on the website wear it, and the app was
+    /// painting them flat blue instead (Kyle spotted it, 11 Sep 2026).
+    /// `linear-gradient(105deg, #5CC7F0 0%, #7FA8EC 45%, #8A7FE8 100%)` — 105°
+    /// is measured from straight up, clockwise, so it runs left to right with
+    /// a slight lift.
+    static let gradientStart = Color(hex: 0x5CC7F0)
+    static let gradientMid = Color(hex: 0x7FA8EC)
+    static let gradientEnd = Color(hex: 0x8A7FE8)
+    static let brandGradient = LinearGradient(
+        stops: [.init(color: gradientStart, location: 0),
+                .init(color: gradientMid, location: 0.45),
+                .init(color: gradientEnd, location: 1)],
+        startPoint: UnitPoint(x: 0, y: 0.63),
+        endPoint: UnitPoint(x: 1, y: 0.37))
+
     // States.
     static let ok = Color(hex: 0x46B98A)
     static let warn = Color(hex: 0xD9A441)
@@ -208,7 +224,7 @@ struct Wordmark: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 36, height: 36)
-            (Text("LISTING ").foregroundStyle(Theme.text) + Text("LAB").foregroundStyle(Theme.pine))
+            (Text("LISTING ").foregroundStyle(Theme.text) + Text("LAB").foregroundStyle(Theme.brandGradient))
                 .font(Theme.display(size, weight: .bold, relativeTo: .title2))
         }
         .accessibilityLabel("Listing Lab")
