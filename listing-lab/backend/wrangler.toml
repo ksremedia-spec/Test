@@ -127,7 +127,7 @@ class_name = "PipelineContainer"
 # never enters a layer) and push a TAG here. To build via wrangler on a machine
 # with clean egress instead, set image back to "./container/Dockerfile" with
 # image_build_context = ".".
-image = "registry.cloudflare.com/3555e81671c92dbf94b1a7218828d65d/listinglab-pipeline:hearth1"
+image = "registry.cloudflare.com/3555e81671c92dbf94b1a7218828d65d/listinglab-pipeline:twilightlook1"
 instance_type = "standard-1"
 # Deliberately far above what the pool needs.
 #
