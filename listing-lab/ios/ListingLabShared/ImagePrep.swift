@@ -29,6 +29,10 @@ enum ImagePrepError: Error, Equatable {
 /// downscale, and refuse anything over 25 MiB or unreadable.
 enum ImagePrep {
     static let jpegQuality: CGFloat = 0.92
+    /// The server's ceiling, 25 MiB. It lives here rather than in the app's
+    /// `Catalog` because the share extension converts photos too, and cannot
+    /// see the app's own types (11 Sep 2026). `maxBytes` is this.
+    static let maxBytes = 25 * 1024 * 1024
 
     /// Magic bytes, so a HEIC renamed .jpg is caught (it killed a real job on 31 Aug 2026).
     static func sniff(_ data: Data) -> ImageFormat {
@@ -44,7 +48,7 @@ enum ImagePrep {
     }
 
     static func prepare(data: Data, filename: String) throws -> PreparedImage {
-        guard data.count <= Catalog.maxUploadBytes else { throw ImagePrepError.tooLarge }
+        guard data.count <= maxBytes else { throw ImagePrepError.tooLarge }
         let lower = filename.lowercased()
         let namedHeic = lower.hasSuffix(".heic") || lower.hasSuffix(".heif")
         switch sniff(data) {
@@ -94,7 +98,7 @@ enum ImagePrep {
             let jpeg = renderer.jpegData(withCompressionQuality: quality) { _ in
                 image.draw(in: CGRect(origin: .zero, size: image.size))
             }
-            if jpeg.count <= Catalog.maxUploadBytes {
+            if jpeg.count <= maxBytes {
                 return PreparedImage(data: jpeg, contentType: "image/jpeg", filename: filename)
             }
         }

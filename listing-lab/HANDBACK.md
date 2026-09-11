@@ -229,3 +229,15 @@ You said it still felt like something pulling from the website. Four changes, al
 **4. Your latest shots, on the New photos screen.** A row of your most recent camera-roll photos sits above Choose photos. Tap one or several, tap Add, and they upload — no picker, no scrolling. This is the one new permission: iOS asks once for permission to show your photos, on that screen. Say no and the strip simply does not appear; everything else is unchanged. (This changes one App Store privacy answer: the app now reads the photo library as well as adding to it. `docs/APP-STORE.md` is updated.)
 
 **And one thing that got quieter.** The app used to ask the server "done yet?" every few seconds. Now that notifications work, the server says so, and the app only asks every fifteen seconds on the run screen and once a minute in the library, as a backstop against a push that never lands. If you have notifications switched off, it goes back to asking briskly — otherwise your photos would never appear.
+
+## Sharing photos straight into the app (11 Sep 2026)
+
+Select shots in Photos, tap Share, choose **Listing Lab**: a small sheet asks what to do, and the photos upload and the jobs start without the app being opened at all. The notification arrives later as usual. Virtual staging shows a style and a room menu in the sheet, because the server needs both and guessing a room type is how the nursery went wrong.
+
+**One thing to know: keep the sheet open until it says Started.** iOS destroys a share sheet the moment it is dismissed, and anything still uploading goes with it. The sheet says so while it works. For a few photos this is seconds. A whole shoot is still better done in the app, where the upload now carries on in the background — which is also why the sheet accepts at most 20 photos at a time.
+
+**How it signs in.** It reuses the session the app already holds. The token moved from the app's own keychain into the shared group's keychain, which the app group already provided — no new capability and no second sign-in. Anyone already signed in stays signed in: the token is moved across the first time the new build reads it.
+
+**What it needed on Apple's side**, done on 11 Sep with you signed in: a third App ID, `com.horizonhomemedia.listinglab.share`, with the same shared folder attached (Xcode created the identifier itself; the folder had to be attached by hand, as with the app and the widget). Nothing recurring.
+
+**Not signed in?** The sheet says "Sign in to Listing Lab first." rather than failing quietly.

@@ -158,7 +158,7 @@ enum Catalog {
                             "Nursery / Kids Room", "Basement / Rec Room", "Home Office", "Other"]
     /// Twilight is one look. There is no picker.
     static let twilightMood = "Dusk"
-    static let maxUploadBytes = 25 * 1024 * 1024
+    static let maxUploadBytes = ImagePrep.maxBytes
     static let jobsListLimit = 60
 }
 

@@ -21,10 +21,18 @@
 			remoteGlobalIDString = A1000040;
 			remoteInfo = ListingLabWidgets;
 		};
+		A100006C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1000060;
+			remoteInfo = ListingLabShare;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXBuildFile section */
 		A1000051 /* ListingLabWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1000041 /* ListingLabWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A100006A /* ListingLabShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1000061 /* ListingLabShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +43,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				A1000051 /* ListingLabWidgets.appex in Embed Foundation Extensions */,
+				A100006A /* ListingLabShare.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -49,6 +58,14 @@
 				ListingLab.entitlements,
 			);
 			target = A1000002 /* ListingLab */;
+		};
+		A1000066 /* Exceptions for "ListingLabShare" folder in "ListingLabShare" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				ListingLabShare.entitlements,
+			);
+			target = A1000060 /* ListingLabShare */;
 		};
 		A1000046 /* Exceptions for "ListingLabWidgets" folder in "ListingLabWidgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -87,12 +104,21 @@
 			path = ListingLabShared;
 			sourceTree = "<group>";
 		};
+		A1000065 /* ListingLabShare */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1000066 /* Exceptions for "ListingLabShare" folder in "ListingLabShare" target */,
+			);
+			path = ListingLabShare;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFileReference section */
 		A1000003 /* ListingLab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ListingLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000021 /* ListingLabTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ListingLabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000041 /* ListingLabWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ListingLabWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000061 /* ListingLabShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ListingLabShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +130,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A1000024 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1000063 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -126,6 +159,7 @@
 				A1000005 /* ListingLab */,
 				A1000054 /* ListingLabShared */,
 				A1000045 /* ListingLabWidgets */,
+				A1000065 /* ListingLabShare */,
 				A1000022 /* ListingLabTests */,
 				A1000004 /* Products */,
 			);
@@ -137,6 +171,7 @@
 				A1000003 /* ListingLab.app */,
 				A1000021 /* ListingLabTests.xctest */,
 				A1000041 /* ListingLabWidgets.appex */,
+				A1000061 /* ListingLabShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -157,6 +192,7 @@
 			);
 			dependencies = (
 				A1000052 /* PBXTargetDependency */,
+				A100006B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A1000005 /* ListingLab */,
@@ -191,6 +227,29 @@
 			productName = ListingLabTests;
 			productReference = A1000021 /* ListingLabTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A1000060 /* ListingLabShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000067 /* Build configuration list for PBXNativeTarget "ListingLabShare" */;
+			buildPhases = (
+				A1000062 /* Sources */,
+				A1000063 /* Frameworks */,
+				A1000064 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A1000065 /* ListingLabShare */,
+				A1000054 /* ListingLabShared */,
+			);
+			name = ListingLabShare;
+			packageProductDependencies = (
+			);
+			productName = ListingLabShare;
+			productReference = A1000061 /* ListingLabShare.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		A1000040 /* ListingLabWidgets */ = {
 			isa = PBXNativeTarget;
@@ -253,6 +312,7 @@
 			targets = (
 				A1000002 /* ListingLab */,
 				A1000040 /* ListingLabWidgets */,
+				A1000060 /* ListingLabShare */,
 				A1000020 /* ListingLabTests */,
 			);
 		};
@@ -267,6 +327,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A1000025 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1000064 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -297,6 +364,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1000062 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A1000042 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -307,6 +381,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		A100006B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1000060 /* ListingLabShare */;
+			targetProxy = A100006C /* PBXContainerItemProxy */;
+		};
 		A1000029 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A1000002 /* ListingLab */;
@@ -483,6 +562,58 @@
 			};
 			name = Release;
 		};
+		A1000068 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ListingLabShare/ListingLabShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ListingLabShare/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.horizonhomemedia.listinglab.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A1000069 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ListingLabShare/ListingLabShare.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ListingLabShare/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.horizonhomemedia.listinglab.share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		A1000048 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -561,6 +692,15 @@
 			buildConfigurations = (
 				A1000027 /* Debug */,
 				A1000028 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000067 /* Build configuration list for PBXNativeTarget "ListingLabShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000068 /* Debug */,
+				A1000069 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
