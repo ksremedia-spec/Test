@@ -209,3 +209,9 @@ listing-lab/
 **What this means in practice.** Deploys now use `npm run deploy` from `backend/` instead of `npx wrangler deploy` — that is what carries the version across. The old manual command still works if it is ever needed in an emergency. The runbook (`backend/OPERATIONS.md` §3) has the three-step recipe.
 
 **Still yours, and only these:** the two one-off sign-ins (Apple's developer site for the lock-screen card, and anything needing your Apple or Google password), and anything that spends money. Nothing routine.
+
+## The shared folder, and what it was blocking (11 Sep 2026)
+
+The widget and the app share a small folder, and Apple requires that folder to be registered once on your developer account. It never had been. That did not just stop the widget — the setting sits on the main app too, so **no app update could reach your phone at all** while it was missing, and I had wrongly told you the lock-screen card, reveal, widget, haptics and icon choices were already on there. They were not; your phone was still on the build from before them.
+
+Done now, with you signed in and me clicking: the group `group.com.horizonhomemedia.listinglab` is registered and attached to both `com.horizonhomemedia.listinglab` and `com.horizonhomemedia.listinglab.widgets`. The phone build succeeds again and the whole app, widget included, is installed. This was one-time; it does not come back with future changes.
