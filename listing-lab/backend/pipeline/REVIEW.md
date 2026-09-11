@@ -1635,3 +1635,39 @@ requests spread over twenty seconds pass where six in one instant do not.
 **Deploying is a failure mode.** Every deploy today killed something in flight.
 The system now survives it; that was not free, and it should be assumed rather
 than discovered.
+
+## Round 39 — the twilight look (10 Sep 2026)
+
+### Every delivered twilight, a quarter stop down with a gentle curve
+
+Kyle ran three real twilights through a four-way comparison and chose one
+look by eye: exposure −0.25 EV and a soft contrast S-curve around mid-grey.
+It is now applied to every Twilight delivery, in `pipeline/tone.js`, as
+plain pixel arithmetic — a 256-entry table and one pass over the frame,
+instant and identical every time. Not another model call.
+
+Where it sits is the whole point. It runs **after** every check has passed
+and **immediately before** the disclosure stamp, through one door
+(`deliveryLook` in `transform.js`) that every delivery site uses. So the
+inspector, colour lock, pixel guard and frame lock keep judging the raw
+render — nothing about pass/fail moves — the stamp lands on the final look,
+its verification still gets the matching pre-stamp frame, and the clean
+copy kept for chained edits is the toned frame, so anything derived from a
+twilight starts from what the customer saw. The other three transformations
+pass through untouched.
+
+The two numbers are knobs (`TWILIGHT_EV`, `TWILIGHT_CONTRAST`, forwarded by
+the Worker only when set), `0` and `0` together is an exact no-op, and the
+delivered attempt's audit records `tone: { ev, contrast, applied }`. The
+Node table is held to Kyle's NumPy reference value for value (±1) in
+`test/tone.test.js`.
+
+One thing worth knowing: the reference applies the curve to the ordinary
+picture value after the exposure step, not in linear light as the brief's
+prose describes, and its exposure step lowers pure white to 241 rather than
+leaving it. The reference is what Kyle chose from, so the reference wins.
+
+### Standing rules from this round
+
+- A look is applied after the checks and before the stamp, never earlier.
+- One delivery door per pipeline; a new look goes through it or not at all.

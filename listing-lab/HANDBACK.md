@@ -177,3 +177,15 @@ listing-lab/
   backend/                    the server, with the three additions (see backend/README.md "The iOS app's three doors")
   docs/APP-STORE.md           listing copy, privacy answers, review notes — ready to paste
 ```
+
+## The twilight look (10 Sep 2026, from `TWILIGHT-LOOK.md`)
+
+**What shipped in the code.** Every delivered Twilight now gets your chosen look — exposure down a quarter stop and a gentle contrast curve — as plain pixel arithmetic in `backend/pipeline/tone.js`, applied after every check has passed and right before the disclosure stamp, through one door that all five delivery paths use. The other three fixes are untouched. The delivered job's audit shows `tone: { ev: -0.25, contrast: 0.35, applied: true }` on the Live board. Seven new tests hold the Node maths to your NumPy reference value for value; the whole suite is 438 of 439 green — the one failure (`backup-judge.test.js`, "without the key…") fails identically on the code before this change, so it is a pre-existing, timing-related test and not this work.
+
+**Two places the brief disagreed with itself; I followed the reference each time, as it told me to, and changed nothing:**
+1. Section 2 describes the contrast curve in linear light; the reference code in section 7 (the one that made the comparison you chose from) applies it to the ordinary picture value after the exposure step. They differ — a mid-grey comes out 115 the reference way and 106 the other. The code matches the reference.
+2. The checklist says pure white comes back unchanged. The curve does taper to nothing at the ends, but the quarter-stop exposure step still lowers white, to 241 by the reference maths. The test asserts 241.
+
+**Changing the two numbers later**, without rebuilding anything: from `backend/`, `npx wrangler secret put TWILIGHT_EV` (type the number, e.g. `-0.3`) and/or `npx wrangler secret put TWILIGHT_CONTRAST`, then `npx wrangler deploy`. Setting both to `0` switches the look off exactly. Unset means the values above.
+
+**Not yet deployed — this Mac has no Docker.** The container image has to be built and pushed (steps 1–2 of the brief's recipe) before the Worker deploy and fleet cycle (steps 3–4). Docker is not installed here, so I stopped before step 1. Two ways forward: install Docker Desktop on this Mac and tell me, and I will run the four steps; or run them on the machine that built the current image (`hearth1`). Until then the live site delivers twilights exactly as before. The image tag to use is `listinglab-pipeline:twilightlook1`; the rollback is `image =` back to `…/listinglab-pipeline:hearth1` in `wrangler.toml`, `npx wrangler deploy`, cycle again.

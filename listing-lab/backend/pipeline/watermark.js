@@ -71,13 +71,16 @@ function escapeXml(s) {
   return String(s).replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c]));
 }
 
+/** The JPEG quality of every delivered frame — the stamp's encode, and the twilight look's. */
+const DELIVERY_JPEG_QUALITY = 92;
+
 async function applyWatermark(inputBuffer, text) {
   const img = sharp(inputBuffer);
   const meta = await img.metadata();
   const W = meta.width, H = meta.height;
   return img
     .composite([{ input: Buffer.from(markSvg(W, H, text)), top: 0, left: 0 }])
-    .jpeg({ quality: 92 })
+    .jpeg({ quality: DELIVERY_JPEG_QUALITY })
     .toBuffer();
 }
 
@@ -142,4 +145,4 @@ async function verifyWatermark(watermarkedBuffer, text, originalBuffer = null) {
   };
 }
 
-module.exports = { applyWatermark, verifyWatermark, markGeometry, markSvg };
+module.exports = { applyWatermark, verifyWatermark, markGeometry, markSvg, DELIVERY_JPEG_QUALITY };

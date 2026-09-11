@@ -2802,6 +2802,8 @@ export function auditSummary(audit) {
     source: audit.source ?? null,
     colour: audit.colour ?? null,
     watermark: audit.watermark ?? null,
+    // The twilight look that was applied at delivery (10 Sep 2026).
+    tone: audit.tone ?? null,
     timing: audit.timing?.totalSeconds ?? null,
     // Staging only, and small: the brief that produced a look and the ranking
     // that chose it. Kyle called one staging result "perfect staging" on 26 Aug

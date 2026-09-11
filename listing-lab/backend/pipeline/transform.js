@@ -412,6 +412,7 @@ const { parseClientNotes } = require('./intent');
 const { vsaiStage } = require('./vsai');
 const crypto = require('crypto');
 const { applyWatermark, verifyWatermark } = require('./watermark');
+const { lookForType, DEFAULT_EV: TWILIGHT_DEFAULT_EV, DEFAULT_CONTRAST: TWILIGHT_DEFAULT_CONTRAST } = require('./tone');
 const { lockColour, matchDimensions, targetSize, imageSizeFor } = require('./colorlock');
 const sharp = require('sharp');
 const { classifyRemovals, clutterLine, keeperLine, gatingClutterLine } = require('./scope');
@@ -610,6 +611,33 @@ const MASKED_EXTRA_S = parseInt(process.env.MASKED_EXTRA_SECONDS || process.env.
 // and keeps three simultaneous requests from tripping a per-minute rate limit.
 const CANDIDATE_STAGGER_MS = parseInt(process.env.CANDIDATE_STAGGER_MS || '4000', 10);
 const MIN_DESIGN_SCORE = parseFloat(process.env.MIN_DESIGN_SCORE || '6');
+/**
+ * THE TWILIGHT LOOK (Kyle, 10 Sep 2026). A fixed tone adjustment on every
+ * delivered twilight — exposure −0.25 EV and a gentle contrast S-curve —
+ * applied after the checks and before the stamp (pipeline/tone.js). Both
+ * numbers are knobs the Worker forwards when set; unset means the values
+ * Kyle approved. 0 and 0 together is an exact no-op.
+ */
+const readNumber = (name, fallback) => {
+  const v = parseFloat(process.env[name] ?? '');
+  return Number.isFinite(v) ? v : fallback;
+};
+const TWILIGHT_EV = readNumber('TWILIGHT_EV', TWILIGHT_DEFAULT_EV);
+const TWILIGHT_CONTRAST = readNumber('TWILIGHT_CONTRAST', TWILIGHT_DEFAULT_CONTRAST);
+
+/**
+ * Every delivery passes through here on its way to the stamp: a twilight
+ * gets its look and the audit records it; the other three transformations
+ * come back untouched. One door, so no path can ship an untoned twilight.
+ */
+async function deliveryLook(type, buf, audit) {
+  const out = await lookForType(type, buf, { ev: TWILIGHT_EV, contrast: TWILIGHT_CONTRAST });
+  if (type === 'twilight') {
+    audit.tone = { ev: TWILIGHT_EV, contrast: TWILIGHT_CONTRAST, applied: out !== buf };
+    console.log(`  twilight look: ev ${TWILIGHT_EV}, contrast ${TWILIGHT_CONTRAST}`);
+  }
+  return out;
+}
 // Which generator produces each staging candidate slot. 'nano' = our Nano Banana pipeline
 // (brief + layout + draw); 'vsai' = Virtual Staging AI (room+style only). Default all nano;
 // e.g. STAGING_SOURCES=nano,nano,vsai to A/B VSAI as the third candidate, or vsai,vsai,vsai
@@ -1092,7 +1120,7 @@ async function main() {
       }
       const best = ordered[0];
       const wmText = WATERMARK_TEXT[type];
-      const preWmBuf = Buffer.from(best.gen.data, 'base64');
+      const preWmBuf = await deliveryLook(type, Buffer.from(best.gen.data, 'base64'), audit);
       const finalBuf = await applyWatermark(preWmBuf, wmText);
       // Pass the pre-watermark frame so the check can confirm those pixels
       // actually changed, rather than inferring presence from brightness.
@@ -1128,7 +1156,7 @@ async function main() {
       audit.variants = [];
       for (let vi = 1; vi <= 2 && ordered[vi]; vi++) {
         const vPath = path.join(OUT_DIR, `${stem}.${tag}.approved.v${vi + 1}.jpg`);
-        const vPre = Buffer.from(ordered[vi].gen.data, 'base64');
+        const vPre = await deliveryLook(type, Buffer.from(ordered[vi].gen.data, 'base64'), audit);
         const vBuf = await applyWatermark(vPre, wmText);
         const vCheck = await verifyWatermark(vBuf, wmText, vPre);
         if (!vCheck.present) { console.error(`  version ${vi + 1} watermark FAILED — not shipped`); continue; }
@@ -1416,7 +1444,7 @@ async function main() {
         if (ev.verdict) console.log(`  verdict: ${ev.pass ? 'PASS' : 'FAIL'} (${ev.verdict.passes}/${ev.verdict.votes})` + ((ev.verdict.violations || []).length ? ' — ' + ev.verdict.violations[0].slice(0, 110) : ''));
         if (ev.pass) {
           const wmText = WATERMARK_TEXT[type];
-          const preWmBuf = asm.buf;
+          const preWmBuf = await deliveryLook(type, asm.buf, audit);
           const finalBuf = await applyWatermark(preWmBuf, wmText);
           const wmCheck = await verifyWatermark(finalBuf, wmText, preWmBuf);
           if (!wmCheck.present) { console.error('  watermark verification FAILED — next round'); continue; }
@@ -1530,7 +1558,7 @@ async function main() {
         const wmText = WATERMARK_TEXT[type];
         let finalBuf;
         if (wmText) {
-          const preWmBuf = Buffer.from(best.gen.data, 'base64');
+          const preWmBuf = await deliveryLook(type, Buffer.from(best.gen.data, 'base64'), audit);
           finalBuf = await applyWatermark(preWmBuf, wmText);
           const wmCheck = await verifyWatermark(finalBuf, wmText, preWmBuf);
           if (!wmCheck.present) { console.error('  watermark verification FAILED — next round'); continue; }
@@ -1849,7 +1877,7 @@ Change NOTHING else. Every other pixel of this photograph is already correct: sa
       let finalBuf;
       if (wmText) {
         console.log('  applying disclosure watermark…');
-        const preWmBuf = Buffer.from(gen.data, 'base64');
+        const preWmBuf = await deliveryLook(type, Buffer.from(gen.data, 'base64'), audit);
         finalBuf = await applyWatermark(preWmBuf, wmText);
         const wmCheck = await verifyWatermark(finalBuf, wmText, preWmBuf);
         if (!wmCheck.present) {

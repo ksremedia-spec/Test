@@ -220,6 +220,8 @@ for exactly what is plumbed). Defaults are the shipped values.
 | `LEFTOVER_DELIVER_PCT` | `1.5` | tiny leftovers under this % of frame deliver |
 | `MASKED_FIRST`, `MASKED_FIRST_MAX_PCT`, `MASKED_FIRST_MAX_REGION_PCT` | on, `25`, `8` | the coverage router: masked path leads on small jobs |
 | `PIXEL_GUARD` | on | fixed-feature pixel snap |
+| `TWILIGHT_EV` | `-0.25` | the twilight look's exposure, in stops, on every delivered twilight (Kyle's choice by eye, 10 Sep 2026); `0` with `TWILIGHT_CONTRAST=0` is an exact no-op |
+| `TWILIGHT_CONTRAST` | `0.35` | the twilight look's contrast S-curve strength |
 | `JOB_POOL_SIZE` | `15` | container slots (×2 jobs each) |
 | `IMAGE_SIZE` | `2K` | render size, every job |
 

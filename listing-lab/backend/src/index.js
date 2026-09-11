@@ -146,6 +146,9 @@ export class PipelineContainer extends Container {
       ...(env.FAL_FIRST ? { FAL_FIRST: env.FAL_FIRST } : {}),
       // PIXEL_GUARD=0 disables the fixed-feature pixel snap (on by default).
       ...(env.PIXEL_GUARD ? { PIXEL_GUARD: env.PIXEL_GUARD } : {}),
+      // The twilight look's two numbers (10 Sep 2026); unset means Kyle's approved values.
+      ...(env.TWILIGHT_EV ? { TWILIGHT_EV: env.TWILIGHT_EV } : {}),
+      ...(env.TWILIGHT_CONTRAST ? { TWILIGHT_CONTRAST: env.TWILIGHT_CONTRAST } : {}),
       ...(env.PROVIDER ? { PROVIDER: env.PROVIDER } : {}),
       JUDGE_MODEL: env.JUDGE_MODEL || 'gemini-3.6-flash',
     };
