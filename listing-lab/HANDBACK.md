@@ -253,3 +253,11 @@ Deliberately not ported: the founder section, and the four-transformations expla
 **The brand gradient was missing from the app entirely** (you spotted it). `assets/brand.md` says the "LAB" of the wordmark wears `linear-gradient(105deg, #5CC7F0, #7FA8EC 45%, #8A7FE8)`, and the app was painting it flat blue. It is now on the wordmark everywhere in the app, on the launch screen's lockup (regenerated, with the gradient clipped to the actual letters), and on the lit pill of the four.
 
 **The eight sample photographs** come from the website's own `web/img/site/` frames and add about 860 KB to the app.
+
+## "Something not right with this photo?" said nothing back (11 Sep 2026)
+
+You reported a photo, the box closed, and nothing else happened. The app's code was in fact right — it closes the box and shows the website's own thank-you, "Thanks — we've got it and we'll take a look." (or "We've already got your note on this one — it's in the queue."). The trouble was where that message is drawn: on the root of the app, and a sheet sits **in front** of the root. So every confirmation raised from inside a sheet was rendering behind it, unseen.
+
+The report was the one you noticed. The same bug was hiding **"Credits added — thank you!"** after a purchase, and every error message inside the buy sheet, the support sheet and the photo viewer.
+
+Fixed in one place: every sheet with content in the app is built from the same wrapper, so the message is now drawn on the sheet as well as the root. Nothing about the wording or the sending changed.

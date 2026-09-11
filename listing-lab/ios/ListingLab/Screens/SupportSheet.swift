@@ -90,6 +90,21 @@ struct SheetChrome<Content: View>: View {
             .frame(maxWidth: 560, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+        /**
+         * THE TOAST HAS TO BE ON THE SHEET (Kyle, 11 Sep 2026).
+         *
+         * "Something not right with this photo?" sent the note and said
+         * nothing back. The code was right — it closes the box and shows the
+         * website's own thank-you — but the toast is drawn on the root view,
+         * and a sheet sits in front of the root view, so every confirmation
+         * raised from inside a sheet was rendering behind it, unseen. The
+         * report was only the one he noticed; "Credits added — thank you!"
+         * after a purchase was invisible in the same way.
+         *
+         * Every sheet with content is built from this, so saying it once here
+         * covers the viewer, the returned chooser, buy credits and support.
+         */
+        .toastOverlay()
         .scrollDismissesKeyboard(.interactively)
         .presentationDragIndicator(.visible)
         .presentationDetents([.medium, .large])
