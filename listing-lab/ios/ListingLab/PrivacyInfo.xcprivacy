@@ -11,7 +11,30 @@
   <key>NSPrivacyTrackingDomains</key>
   <array/>
   <key>NSPrivacyAccessedAPITypes</key>
-  <array/>
+  <array>
+    <!-- Apple requires a declared reason for these two, and the app uses both.
+         UserDefaults: the push token, kept so sign-out can tell the server to
+         stop even after a relaunch. File timestamps: the photo cache on the
+         phone reads and sets modification dates so the oldest-looked-at
+         pictures are the ones pruned (Core/LocalLibrary.swift). Both are the
+         app's own container, which is what these two reasons cover. -->
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>CA92.1</string>
+      </array>
+    </dict>
+    <dict>
+      <key>NSPrivacyAccessedAPIType</key>
+      <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+      <key>NSPrivacyAccessedAPITypeReasons</key>
+      <array>
+        <string>C617.1</string>
+      </array>
+    </dict>
+  </array>
   <key>NSPrivacyCollectedDataTypes</key>
   <array>
     <dict>

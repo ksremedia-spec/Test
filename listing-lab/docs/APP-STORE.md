@@ -43,12 +43,12 @@ Data collected, all linked to the user, none used for tracking:
 
 Not collected: location, contacts, identifiers for advertising, usage analytics, crash data (no third-party SDKs).
 
-`PrivacyInfo.xcprivacy`: `NSPrivacyTracking = false`; collected data types as above; required-reason API usage: `UserDefaults` (CA92.1) if used, file timestamp (C617.1) if used. Add only what the code actually uses.
+`PrivacyInfo.xcprivacy`: `NSPrivacyTracking = false`; collected data types as above; required-reason API usage is declared as `UserDefaults` (CA92.1, the push token) and file timestamp (C617.1, the photo cache's prune) — both added 11 Sep 2026 because the code now uses them. Nothing else is declared.
 
 ## Permissions (Info.plist strings)
 
 - `NSPhotoLibraryAddUsageDescription`: "Listing Lab saves your finished photos to your library."
-- `NSPhotoLibraryUsageDescription` is NOT needed — use PHPicker (no library permission) for choosing photos.
+- `NSPhotoLibraryUsageDescription`: "Listing Lab shows your latest photos so you can start one without hunting for it." (Added 11 Sep 2026 for the Recents strip on the New photos screen. Apple's picker itself still needs no permission, and refusing this leaves everything but the strip working.)
 - `NSCameraUsageDescription`: "Take a photo of the room to enhance it."
 
 ## Buying credits *(decided 10 Sep 2026 — no In-App Purchases)*
