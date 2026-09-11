@@ -285,6 +285,8 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(sweepRetries(env, new Store(env.DB)));
     ctx.waitUntil(watchBudget(env, new Store(env.DB)));
+    // A container deploy cycles the fleet itself now — nobody has to POST for it.
+    ctx.waitUntil(autoCycleIfNewImage(env, new Store(env.DB)));
     // Keep the classify container WARM (1 Sep 2026). Its idle timeout is three
     // minutes and this cron fires every one, so the first photo of a session
     // no longer pays a cold boot while the customer stares at 100%. Costs one
@@ -360,6 +362,90 @@ export async function watchBudget(env, store) {
   }
   await store.setSetting('budgetAlerted', String(level));
   return { ok: true, spent, alertSent: level };
+}
+
+/**
+ * Tell every pool slot to finish its current job and exit, so the fleet boots
+ * fresh on the deployed image. Safe mid-traffic: a draining instance refuses
+ * new work (the probe skips it) and running jobs finish before the exit.
+ */
+export async function cycleFleet(env, { attempts = 3 } = {}) {
+  // The pool, plus the classify slot — same class, its own name.
+  const names = [...Array(JOB_POOL_SIZE).keys()].map(i => `pipeline-${i}`).concat('classify');
+  const done = new Map();
+  /**
+   * A slot can miss its turn because the instance is being created or evicted
+   * at that moment — transient, and it cost a 15/16 on the first automatic
+   * cycle (11 Sep 2026). Nobody reads the result now that this is automatic,
+   * so the retry is here rather than in a person's eyes.
+   */
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const todo = names.filter(n => done.get(n)?.status !== 200);
+    if (!todo.length) break;
+    for (const name of todo) {
+      try {
+        const c = env.PIPELINE.get(env.PIPELINE.idFromName(name));
+        const r = await c.fetch('https://pipeline.internal/cycle', { method: 'POST' });
+        done.set(name, { slot: name, status: r.status, body: await r.json().catch(() => null) });
+      } catch (e) {
+        done.set(name, { slot: name, error: String(e && e.message || e).slice(0, 100) });
+      }
+    }
+  }
+  return names.map(n => done.get(n));
+}
+
+/**
+ * CYCLE ITSELF AFTER A CONTAINER DEPLOY (11 Sep 2026).
+ *
+ * Instances keep serving the old image until they are cycled, so every
+ * container deploy ended with a human POSTing to /internal/board/cycle with
+ * the dashboard key. Kyle had to do that by hand every single time, and
+ * forgetting it means debugging code that is not running — the documented
+ * classic mistake in OPERATIONS.md.
+ *
+ * The deploy now carries the image's tag as CONTAINER_TAG (scripts/deploy.mjs
+ * reads it straight off the `image =` line, so there is one source of truth).
+ * The minute cron compares it with the tag last cycled, recorded in settings,
+ * and cycles the fleet itself when they differ. A Worker-only deploy leaves
+ * the tag alone and nothing is cycled.
+ *
+ * The tag is claimed BEFORE cycling, so a slow cycle cannot be started twice
+ * by the next tick, and put back if the cycle reached nothing at all, so the
+ * next tick tries again. Cycling an already-fresh fleet is harmless; never
+ * cycling is not, which is why the failure path retries.
+ */
+export async function autoCycleIfNewImage(env, store) {
+  const tag = env.CONTAINER_TAG;
+  if (!tag) return null;
+  const last = await store.getSetting(CYCLED_TAG_KEY);
+  if (last === tag) return null;
+  await store.setSetting(CYCLED_TAG_KEY, tag, nowISO());
+  let cycled = [];
+  try {
+    cycled = await cycleFleet(env);
+  } catch (e) {
+    cycled = [];
+    console.error('auto-cycle threw', String(e && e.message || e).slice(0, 200));
+  }
+  const ok = cycled.filter(s => s.status === 200).length;
+  const missed = cycled.filter(s => s.status !== 200).map(s => s.slot);
+  if (!ok) {
+    // Nothing accepted it — undo the claim so the next tick has another go.
+    if (last === null || last === undefined) await store.setSetting(CYCLED_TAG_KEY, '', nowISO());
+    else await store.setSetting(CYCLED_TAG_KEY, last, nowISO());
+    console.error(`auto-cycle after deploy FAILED for image ${tag} — retrying next tick`);
+    return { tag, cycled, ok: false };
+  }
+  /**
+   * A slot that still will not answer after the retries is almost certainly
+   * not running, and an instance that is not running boots on the new image
+   * by itself — so this is named and left, not retried every minute, which
+   * would re-cycle the healthy slots forever for the sake of a cold one.
+   */
+  console.log(`auto-cycle after deploy: image ${tag}, ${ok}/${cycled.length} slots cycled`
+    + (missed.length ? ` — no answer from ${missed.join(', ')} (they boot fresh on the new image anyway)` : ''));
+  return { tag, cycled, ok: true, missed };
 }
 
 export async function sweepRetries(env, store) {
@@ -805,24 +891,7 @@ async function route(request, url, env, ctx, store) {
      * jobs finish before the exit.
      */
     if (path === '/internal/board/cycle' && method === 'POST') {
-      const out = [];
-      for (let i = 0; i < JOB_POOL_SIZE; i++) {
-        const name = `pipeline-${i}`;
-        try {
-          const c = env.PIPELINE.get(env.PIPELINE.idFromName(name));
-          const r = await c.fetch('https://pipeline.internal/cycle', { method: 'POST' });
-          out.push({ slot: name, status: r.status, body: await r.json().catch(() => null) });
-        } catch (e) {
-          out.push({ slot: name, error: String(e && e.message || e).slice(0, 100) });
-        }
-      }
-      // The classify slot cycles too — same class, its own name.
-      try {
-        const c = env.PIPELINE.get(env.PIPELINE.idFromName('classify'));
-        const r = await c.fetch('https://pipeline.internal/cycle', { method: 'POST' });
-        out.push({ slot: 'classify', status: r.status });
-      } catch (e) { out.push({ slot: 'classify', error: String(e && e.message || e).slice(0, 100) }); }
-      return json({ cycled: out });
+      return json({ cycled: await cycleFleet(env) });
     }
 
     if (path === '/internal/board/slots.json' && method === 'GET') {
@@ -2403,6 +2472,8 @@ async function servePreview(key, env) {
 // generations wait in fal's queue (the queue fallback holds the ticket), so
 // more slots buy parallel judging/compositing, not infinite generation.
 const JOB_POOL_SIZE = 15;
+/** Where the auto-cycle records the image tag it last cycled the fleet onto. */
+const CYCLED_TAG_KEY = 'cycled_container_tag';
 
 /**
  * Stable, evenly-spread slot for a job id — but a RETRY HOPS to a different

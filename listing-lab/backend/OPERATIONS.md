@@ -13,7 +13,7 @@ into this file, a chat, or a commit.**
 | Live jobs (last 24h, errors in plain English) | `/internal/board/live?s=…` |
 | Slot health (dispatch probes, quarantine) | `/internal/board/slots.json?s=…` |
 | Grading tool | `/internal/grade` (cookie, see above) — add `?since=YYYY-MM-DD` for one day's crop, or `?since=2026-09-04T02:20:00Z` for one batch |
-| Fleet cycle (after every container deploy) | `POST /internal/board/cycle?s=…` |
+| Fleet cycle | automatic after a container deploy (see §3); the manual door is `POST /internal/board/cycle?s=…` |
 | Cloudflare | Worker `listinglab`, D1 `listinglab`, R2 `listinglab-photos`, container app `listinglab-pipelinecontainer` |
 | Vendors | fal.ai (prepaid — generation first door, judge fallback), Google AI Studio (prepaid — judges, twilight scoring, Google image fallback), Vertex/GCP (Google image door), Stripe, Cloudflare (Workers Paid) |
 
@@ -56,13 +56,19 @@ deploy. The script is idempotent.
 
 ### Container (anything under `pipeline/` or `container/`)
 
-Instances keep serving the **old image until they are cycled**. Every container
-deploy is four steps, and skipping the last one means debugging code that is
-not running.
+Instances keep serving the **old image until they are cycled**. That cycle used
+to be a fourth step somebody had to remember, with the dashboard key, and
+forgetting it meant debugging code that was not running. **The Worker does it
+itself now** (11 Sep 2026): `npm run deploy` reads the tag off the `image =`
+line and hands it to the Worker as `CONTAINER_TAG`, and the minute cron cycles
+the fleet the first time it sees a tag it has not cycled onto. So a container
+deploy is three steps.
 
 ```bash
 # 1. build — pick a NEW tag every time (old tags are immutable in the registry)
-docker build -f container/Dockerfile -t listinglab-pipeline:<tag> .
+docker build --platform linux/amd64 -f container/Dockerfile -t listinglab-pipeline:<tag> .
+#    --platform matters on an Apple-silicon Mac: Cloudflare runs amd64, and an
+#    arm64 image pushes happily and then will not start.
 #    (from the launch sandbox the build used /tmp/Dockerfile.deploy, which
 #     mounts that sandbox's TLS CA for npm — a normal machine uses the
 #     Dockerfile above as-is)
@@ -70,24 +76,33 @@ docker build -f container/Dockerfile -t listinglab-pipeline:<tag> .
 # 2. push
 npx wrangler containers push listinglab-pipeline:<tag>
 #    → prints "Pushed image: registry.cloudflare.com/…/listinglab-pipeline:<tag>"
+#    A first attempt that dies with "blob unknown to registry" is transient —
+#    run it again (seen twice, 11 Sep 2026; the retry succeeded both times).
 
 # 3. point wrangler.toml at it and deploy
 #    image = "registry.cloudflare.com/3555e81671c92dbf94b1a7218828d65d/listinglab-pipeline:<tag>"
-npx wrangler deploy
-#    → the diff must show "+ image = …:<tag>"
-
-# 4. cycle the fleet
-curl -s -X POST "https://thelistinglab.app/internal/board/cycle?s=$DIAG_SECRET"
-#    → expect 16/16 slots at status 200. Each drains (finishes running jobs,
-#      refuses new ones, exits when idle); an instance too old to know /cycle
-#      is destroyed outright by the Durable Object.
+npm run deploy
+#    → the diff must show "+ image = …:<tag>", and the script prints the tag
+#      it is handing over. Within a minute the Worker log says
+#      "auto-cycle after deploy: image <tag>, 16/16 slots cycled".
 ```
+
+**Use `npm run deploy`, not `npx wrangler deploy`**, for every deploy. A plain
+`wrangler deploy` carries no `CONTAINER_TAG`, so the fleet is not cycled and a
+container change silently does not take effect. (Nothing else breaks: the
+Worker treats a missing tag as "nothing to do".)
+
+A cold slot may not answer the cycle; it is retried, and then named in the log
+and left, because an instance that is not running boots on the new image by
+itself. The manual door is still there for an emergency —
+`curl -s -X POST "https://thelistinglab.app/internal/board/cycle?s=$DIAG_SECRET"`.
 
 Verify: `npx wrangler containers list` shows state `ready`; run one cheap job
 (a twilight) end to end; `/internal/board/slots.json` shows the slot it landed
 on with `last_ok_at` set.
 
-**Rollback:** set `image =` back to the previous tag, `npx wrangler deploy`, cycle.
+**Rollback:** set `image =` back to the previous tag, `npm run deploy` — the
+tag changed, so the fleet cycles itself back.
 
 ### Database changes
 

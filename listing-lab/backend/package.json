@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test \"test/*.test.js\""
+    "test": "node --test \"test/*.test.js\"",
+    "deploy": "node scripts/deploy.mjs"
   },
   "dependencies": {
     "@cloudflare/containers": "^0.3.7"

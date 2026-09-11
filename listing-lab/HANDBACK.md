@@ -197,3 +197,15 @@ listing-lab/
 **Image tag `nursery1`**, built on your Mac and live. It contains the twilight look as well, since it is built from the same source. All 439 tests pass, including the check that the app's room list and the pipeline's agree.
 
 **Rollback:** set `image =` back to `…/listinglab-pipeline:twilightlook1` in `backend/wrangler.toml`, `npx wrangler deploy`, cycle the fleet.
+
+## No more terminal steps after a change (11 Sep 2026)
+
+**The problem.** Every change to the photo engine ended with you pasting a command and your dashboard key into Terminal, to tell the running engines to restart on the new version. I had been handing you that step because the key is a password and I do not handle your passwords. You said, fairly, that there will be many more changes and you should not have to do this.
+
+**It is gone.** The website restarts its own engines now. When a new engine is published, the deploy tells the site which version it is, and the site's minute-by-minute housekeeping notices the version changed and restarts the engines itself, once. A change that does not touch the engine restarts nothing. A slot that misses its turn is asked again, and if it still does not answer it is named in the log and left alone, because an engine that is not running comes up on the new version by itself anyway.
+
+**Proved on the nursery change**, which was the first one through it: the site logged `auto-cycle after deploy: image nursery1, 15/16 slots cycled` about a minute after the deploy, with nothing typed by you. The retry was added straight afterwards so that 15/16 becomes 16/16.
+
+**What this means in practice.** Deploys now use `npm run deploy` from `backend/` instead of `npx wrangler deploy` — that is what carries the version across. The old manual command still works if it is ever needed in an emergency. The runbook (`backend/OPERATIONS.md` §3) has the three-step recipe.
+
+**Still yours, and only these:** the two one-off sign-ins (Apple's developer site for the lock-screen card, and anything needing your Apple or Google password), and anything that spends money. Nothing routine.
