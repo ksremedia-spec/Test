@@ -38,6 +38,7 @@ struct UploadView: View {
     @State private var picked: [PhotosPickerItem] = []
     @State private var showCamera = false
     @State private var showFiles = false
+    @State private var recents = RecentPhotos()
 
     private var flow: StudioFlow { session.flow }
 
@@ -47,6 +48,9 @@ struct UploadView: View {
             VStack(alignment: .leading, spacing: 14) {
                 CardHeading(title: "Start with your photos",
                             sub: "Pick one or several. Choose what to do with each, start them together, and put your phone away.")
+                RecentStrip(recents: recents, disabled: flow.upload != nil) { ids in
+                    Task { await importFromRecents(ids) }
+                }
                 PhotosPicker(selection: $picked, maxSelectionCount: nil, matching: .images, photoLibrary: .shared()) {
                     dropZone
                 }
@@ -66,6 +70,9 @@ struct UploadView: View {
             .card()
         }
         .toolbar(.hidden, for: .navigationBar)
+        // Asked for on the screen whose whole job is choosing a photo, and
+        // nowhere else. Refused, the strip stays away and nothing else changes.
+        .task { await recents.loadIfPossible() }
         .onChange(of: picked) { _, items in
             guard !items.isEmpty else { return }
             let chosen = items
@@ -131,6 +138,16 @@ struct UploadView: View {
             guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
             let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
             files.append(PickedFile(name: "photo-\(i + 1).\(ext)", data: data))
+        }
+        guard !files.isEmpty else { flow.uploadError = "Nothing to upload."; return }
+        await flow.uploadAll(files, session: session)
+    }
+
+    /// The strip's chosen shots, through the same door as the picker's.
+    private func importFromRecents(_ ids: [String]) async {
+        var files: [PickedFile] = []
+        for (i, id) in ids.enumerated() {
+            if let file = await recents.file(for: id, index: i) { files.append(file) }
         }
         guard !files.isEmpty else { flow.uploadError = "Nothing to upload."; return }
         await flow.uploadAll(files, session: session)

@@ -47,6 +47,9 @@ final class AppSession {
         Task { await api.setSessionLostHandler { [weak self] in await self?.sessionLost() } }
         Push.shared.onToken = { [weak self] in Task { await self?.sendDeviceToken() } }
         Push.shared.onOpen = { [weak self] jobId in self?.openFromNotification(jobId) }
+        // A push says a job finished, so the list is stale: read it now,
+        // which is what lets the screens stop asking on a timer.
+        Push.shared.onArrive = { [weak self] in Task { await self?.refreshJobs(); await self?.refreshCredits() } }
     }
 
     // MARK: - Boot and sessions
@@ -55,6 +58,9 @@ final class AppSession {
     func boot() async {
         guard let token = Keychain.load() else { phase = .signedOut; return }
         await api.setToken(token)
+        // What the phone already holds, before a single thing is asked of the
+        // network: My photos opens full and instantly, signal or not.
+        loadLibraryFromDisk()
         do {
             let me: AccountResponse = try await api.get("/api/me", allow401: true)
             account = me.account
@@ -69,6 +75,14 @@ final class AppSession {
             // No signal: keep the session and let the screens report as they go.
             phase = .signedIn
         }
+    }
+
+    /// The library as it was left, read off the phone. Costs a few
+    /// milliseconds and removes every empty-grid-then-spinner launch.
+    private func loadLibraryFromDisk() {
+        guard let saved = LocalLibrary.loadJobs(), !saved.isEmpty else { return }
+        jobs = saved
+        jobsLoaded = true
     }
 
     func signIn(email: String, password: String) async throws {
@@ -197,6 +211,8 @@ final class AppSession {
         widgetLatest = nil
         JobActivity.endAll()
         SharedStore.clear()
+        // The next person on this phone must not find the last one's photographs.
+        LocalLibrary.clear()
         WidgetCenter.shared.reloadAllTimelines()
         phase = .signedOut
     }
@@ -225,6 +241,7 @@ final class AppSession {
         guard let r: JobsResponse = try? await api.get("/api/jobs") else { return }
         jobs = r.jobs
         jobsLoaded = true
+        LocalLibrary.saveJobs(r.jobs)
         prefetchPreviews()
         JobActivity.reconcile(with: jobs)
         updateWidget()
@@ -291,6 +308,7 @@ final class AppSession {
                     group.addTask { _ = try? await api.imageData(path) }
                 }
             }
+            LocalLibrary.pruneImages()
         }
     }
 
@@ -300,9 +318,16 @@ final class AppSession {
     /// and balance may have moved on (a purchase finished in Safari, say).
     func foregroundRefresh() async {
         guard phase == .signedIn else { return }
+        // The person may have changed their mind about notifications while
+        // they were away; how hard the screens poll depends on the answer.
+        await Push.shared.refreshAuthorization()
         await refreshJobs()
         await refreshCredits()
     }
+
+    /// True when the server can reach this phone, so a screen watching a job
+    /// can sit quietly instead of asking every few seconds.
+    var pushDelivering: Bool { Push.shared.isDelivering }
 
     /// `listinglab://purchase?status=…` — the return from the website's checkout —
     /// or `listinglab://signin?code=…` — the return from Google sign-in.

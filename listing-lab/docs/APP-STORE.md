@@ -36,7 +36,7 @@ Data collected, all linked to the user, none used for tracking:
 |---|---|---|
 | Email address | App functionality (account) | Sign in with Apple may give a relay address |
 | Name | App functionality | Optional, from Sign in with Apple or sign-up |
-| Photos | App functionality | Uploaded to our server to produce the result; stored under the account; deletable by account deletion |
+| Photos | App functionality | Uploaded to our server to produce the result; stored under the account; deletable by account deletion. From 11 Sep 2026 the app also READS the library, to show a strip of the latest few on the New photos screen (`NSPhotoLibraryUsageDescription`); those are never sent anywhere unless the person picks one. |
 | Purchase history | App functionality | Credit purchases made on the website through Stripe, shown in the app's credit statement |
 | Customer support messages | App functionality | If they message support |
 | Device ID (push token) | App functionality | Only if they allow notifications; used to say when a photo finishes; forgotten at sign-out |

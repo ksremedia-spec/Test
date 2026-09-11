@@ -116,7 +116,7 @@ struct JobPoll: Decodable, Sendable {
 }
 
 /// One row of `GET /api/jobs`.
-struct JobSummary: Decodable, Identifiable, Sendable, Equatable {
+struct JobSummary: Codable, Identifiable, Sendable, Equatable {
     let jobId: String
     let photoId: String?
     let transformation: String

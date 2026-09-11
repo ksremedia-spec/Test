@@ -215,3 +215,17 @@ listing-lab/
 The widget and the app share a small folder, and Apple requires that folder to be registered once on your developer account. It never had been. That did not just stop the widget — the setting sits on the main app too, so **no app update could reach your phone at all** while it was missing, and I had wrongly told you the lock-screen card, reveal, widget, haptics and icon choices were already on there. They were not; your phone was still on the build from before them.
 
 Done now, with you signed in and me clicking: the group `group.com.horizonhomemedia.listinglab` is registered and attached to both `com.horizonhomemedia.listinglab` and `com.horizonhomemedia.listinglab.widgets`. The phone build succeeds again and the whole app, widget included, is installed. This was one-time; it does not come back with future changes.
+
+## Four things that make it an app, not a website in a wrapper (11 Sep 2026)
+
+You said it still felt like something pulling from the website. Four changes, all on the phone side.
+
+**1. It works with no signal.** The list and its pictures are now written to the phone as they arrive, so My photos opens full and instantly — in a basement, in a lift, on one bar — and the network refresh just updates what is already on screen. Before, every launch began with an empty grid and a spinner. The pictures live in the phone's cache, which iOS may reclaim if the phone runs out of room (the right trade: a lost thumbnail costs one refetch, and your photographs should never be why a phone fills up), and the whole lot is deleted when you sign out. Six tests cover it.
+
+**2. Uploads carry on when you leave the app.** Before, locking the phone or switching to Messages halfway through a batch killed the upload and you started again. The transfer is now handed to iOS, which carries it on outside the app and wakes the app when it is done. The stall rule you already had — give up after a minute with nothing moving — is now the system's to keep, so there is one less timer in the app. **Worth testing on purpose:** start a batch of several photos, lock the phone for a minute, come back.
+
+**3. Hold a photo for a menu.** In My photos, press and hold any finished photo: Save to Camera Roll, Share, Run it again. No need to open it first.
+
+**4. Your latest shots, on the New photos screen.** A row of your most recent camera-roll photos sits above Choose photos. Tap one or several, tap Add, and they upload — no picker, no scrolling. This is the one new permission: iOS asks once for permission to show your photos, on that screen. Say no and the strip simply does not appear; everything else is unchanged. (This changes one App Store privacy answer: the app now reads the photo library as well as adding to it. `docs/APP-STORE.md` is updated.)
+
+**And one thing that got quieter.** The app used to ask the server "done yet?" every few seconds. Now that notifications work, the server says so, and the app only asks every fifteen seconds on the run screen and once a minute in the library, as a backstop against a push that never lands. If you have notifications switched off, it goes back to asking briskly — otherwise your photos would never appear.

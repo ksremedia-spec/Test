@@ -73,7 +73,16 @@ struct RunView: View {
         JobActivity.start(jobId: context.jobId, transformation: context.transformation, startedAt: base, session: session)
         while !Task.isCancelled {
             elapsed = Date().timeIntervalSince(base)
-            if tick % 4 == 0 {
+            /**
+             * ASKING, OR BEING TOLD (11 Sep 2026). When notifications are
+             * working the server says the moment this job finishes, and the
+             * push refreshes the list itself — so this loop is only a
+             * backstop against a missed push, once every fifteen seconds.
+             * When the person has said no to notifications it is the only
+             * mechanism there is, and stays brisk.
+             */
+            let every = session.pushDelivering ? 15 : 4
+            if tick % every == 0 {
                 do {
                     let job: JobPoll = try await session.api.get("/api/jobs/\(context.jobId)")
                     waiting = job.waitingOnUpstream ?? false

@@ -59,10 +59,13 @@
     <string>Fraunces-600-Italic.ttf</string>
     <string>Fraunces-700.ttf</string>
   </array>
-  <!-- Choosing photos uses PHPicker, which needs no library permission.
+  <!-- Apple's picker needs no permission; the Recents strip on the New photos
+       screen does, because the app reads the latest few itself (11 Sep 2026).
        Saving results is add-only; the camera is optional. -->
   <key>NSPhotoLibraryAddUsageDescription</key>
   <string>Listing Lab saves your finished photos to your library.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>Listing Lab shows your latest photos so you can start one without hunting for it.</string>
   <key>NSCameraUsageDescription</key>
   <string>Take a photo of the room to enhance it.</string>
   <!-- Face ID is optional: a switch on the Account screen. -->

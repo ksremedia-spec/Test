@@ -164,17 +164,27 @@ actor APIClient {
     /// Bytes of `/api/photos/<key>`, with the session attached. Cached: a key is never rewritten.
     func imageData(_ path: String) async throws -> Data {
         if let cached = imageCache.object(forKey: path as NSString) { return cached as Data }
+        // Then the phone itself: this is what makes My photos open full and
+        // instantly with no signal at all (11 Sep 2026).
+        if let onDisk = LocalLibrary.imageData(for: path) {
+            imageCache.setObject(onDisk as NSData, forKey: path as NSString, cost: onDisk.count)
+            return onDisk
+        }
         if let running = inFlight[path] { return try await running.value }
         let task = Task { try await self.rawGET(path) }
         inFlight[path] = task
         defer { inFlight[path] = nil }
         let data = try await task.value
         imageCache.setObject(data as NSData, forKey: path as NSString, cost: data.count)
+        LocalLibrary.saveImage(data, for: path)
         return data
     }
 
-    /// True when a photo is already in memory — the pre-fetch skips these.
-    func hasImage(_ path: String) -> Bool { imageCache.object(forKey: path as NSString) != nil }
+    /// True when a photo is already to hand, in memory or on the phone — the
+    /// pre-fetch skips these.
+    func hasImage(_ path: String) -> Bool {
+        imageCache.object(forKey: path as NSString) != nil || LocalLibrary.hasImage(for: path)
+    }
 
     /// A file download (the ZIP, or a result for saving). Not cached in memory.
     func fileData(_ path: String) async throws -> Data {
@@ -213,38 +223,20 @@ actor APIClient {
         request.setValue(prepared.contentType, forHTTPHeaderField: "content-type")
         if let token { request.setValue("ll_session=\(token)", forHTTPHeaderField: "Cookie") }
 
-        let watchdog = UploadWatchdog()
-        let delegate = UploadProgressDelegate { sent, total in
-            watchdog.touch()
-            progress(sent, total)
-        }
-        let uploadTask = Task { [session] in
-            try await session.upload(for: request, from: prepared.data, delegate: delegate)
-        }
-        let watchdogTask = Task {
-            while !Task.isCancelled {
-                try await Task.sleep(for: .seconds(1))
-                if watchdog.secondsSinceProgress > APIClient.uploadStallTimeout {
-                    watchdog.markStalled()
-                    uploadTask.cancel()
-                    return
-                }
-            }
-        }
-        defer { watchdogTask.cancel() }
-
         let data: Data
         let response: HTTPURLResponse
         do {
-            let (d, r) = try await uploadTask.value
-            data = d
-            guard let http = r as? HTTPURLResponse else { throw APIError.uploadNetwork }
-            response = http
-        } catch is CancellationError {
-            throw watchdog.stalled ? APIError.uploadStalled : APIError.uploadNetwork
+            // Carried by the system, so locking the phone or switching apps
+            // mid-batch no longer kills it (11 Sep 2026).
+            (data, response) = try await BackgroundUploader.shared.upload(prepared.data, request: request, progress: progress)
         } catch let e as URLError {
-            if watchdog.stalled || e.code == .cancelled { throw APIError.uploadStalled }
-            throw APIError.uploadNetwork
+            // The session's own inactivity limit is the stall rule now, so a
+            // timeout here means exactly what the watchdog used to mean.
+            switch e.code {
+            case .timedOut: throw APIError.uploadStalled
+            case .cancelled: throw APIError.uploadStalled
+            default: throw APIError.uploadNetwork
+            }
         } catch let e as APIError {
             throw e
         } catch {
@@ -265,26 +257,3 @@ actor APIClient {
     }
 }
 
-/// Tracks the last moment an upload made progress. Locked, because URLSession
-/// reports progress on its own queue.
-final class UploadWatchdog: @unchecked Sendable {
-    private let lock = NSLock()
-    private var last = Date()
-    private var _stalled = false
-
-    func touch() { lock.lock(); last = Date(); lock.unlock() }
-    func markStalled() { lock.lock(); _stalled = true; lock.unlock() }
-    var stalled: Bool { lock.lock(); defer { lock.unlock() }; return _stalled }
-    var secondsSinceProgress: TimeInterval { lock.lock(); defer { lock.unlock() }; return Date().timeIntervalSince(last) }
-}
-
-/// Forwards `didSendBodyData` — the one delegate call an upload needs.
-final class UploadProgressDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
-    private let onProgress: @Sendable (Int64, Int64) -> Void
-    init(onProgress: @escaping @Sendable (Int64, Int64) -> Void) { self.onProgress = onProgress }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64,
-                    totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
-        onProgress(totalBytesSent, totalBytesExpectedToSend)
-    }
-}

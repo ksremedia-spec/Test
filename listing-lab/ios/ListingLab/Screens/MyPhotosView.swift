@@ -86,7 +86,46 @@ struct MyPhotosView: View {
                         rerunning: rerunning.contains(job.jobId)) {
                     tap(job)
                 }
+                // Hold a photo for what you would otherwise open it to do
+                // (Kyle, 11 Sep 2026). Suppressed in select mode, where a
+                // long press means nothing.
+                .contextMenu { if !selecting { cardMenu(job) } }
             }
+        }
+    }
+
+    /// What a held photo offers: the finished ones can be saved or shared and
+    /// run again; a returned one only offers its choices, which is what its
+    /// sheet says anyway.
+    @ViewBuilder
+    private func cardMenu(_ job: JobSummary) -> some View {
+        if job.jobStatus == .delivered {
+            Button { Task { await saveSelected([job.jobId]) } } label: {
+                Label("Save to Camera Roll", systemImage: "square.and.arrow.down")
+            }
+            Button { Task { await shareOne(job) } } label: {
+                Label("Share", systemImage: "square.and.arrow.up")
+            }
+        }
+        if let kind = job.kind, job.photoId != nil, job.jobStatus != .queued, job.jobStatus != .running {
+            Button { Task { await rerun(job, as: kind) } } label: {
+                Label("Run it again", systemImage: "arrow.clockwise")
+            }
+        }
+    }
+
+    /// One finished photo, named as the web names its downloads, to the share sheet.
+    private func shareOne(_ job: JobSummary) async {
+        guard let result = job.resultUrl else { return }
+        gathering = true
+        defer { gathering = false }
+        do {
+            let data = try await session.api.fileData(result)
+            share = ShareFile(url: try TempFile.write(data, named: resultFilename(job.transformation)))
+        } catch let e as APIError {
+            session.toasts.show(e.message)
+        } catch {
+            session.toasts.show("Could not share that just now.")
         }
     }
 
@@ -117,10 +156,13 @@ struct MyPhotosView: View {
         session.selectedTab = .studio
     }
 
-    /// Every 6s while something is queued or running, credits too; stops itself.
+    /// While something is queued or running, credits too; stops itself.
+    /// Every 6s when the app has to ask, once a minute when notifications
+    /// are doing the telling (11 Sep 2026) — the push refreshes this list on
+    /// arrival, so the timer is only there for a push that never lands.
     private func pollWhileWorking() async {
         while session.hasWorkingJobs, !Task.isCancelled {
-            try? await Task.sleep(for: .seconds(6))
+            try? await Task.sleep(for: .seconds(session.pushDelivering ? 60 : 6))
             guard !Task.isCancelled else { return }
             await session.refreshJobs()
             await session.refreshCredits()
