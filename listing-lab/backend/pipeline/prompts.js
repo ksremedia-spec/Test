@@ -58,7 +58,13 @@ const ROOM_TYPES = {
   'Dining Room': { anchor: 'a dining table with chairs, centered on the room/fixture', program: 'dining table with 4–8 chairs sized to the room, area rug under the table, a sideboard or buffet only if a wall clearly suits it, a centerpiece, wall art', never: 'a sofa, bed, desk, or sectional' },
   'Primary Bedroom': { anchor: 'a queen or king bed with headboard on the longest uninterrupted wall', program: 'bed with headboard and layered bedding, two nightstands with lamps, a dresser or bench only if space allows, area rug, wall art above the bed, a plant', never: 'a sofa, dining table, desk as the main piece, or crib' },
   'Guest Bedroom': { anchor: 'a full or queen bed with headboard on the longest uninterrupted wall', program: 'bed with headboard and bedding, one or two nightstands with lamps, a small dresser or chair if space allows, area rug, wall art', never: 'a sofa, dining table, or sectional' },
-  'Nursery / Kids Room': { anchor: 'a crib or twin bed on the longest uninterrupted wall', program: 'crib or twin bed, a dresser or changing table, a rocking chair or small reading chair, a soft rug, gentle wall art, a toy basket', never: 'a sofa, dining table, desk, or adult king bed' },
+  // Rewritten 11 Sep 2026 after Kyle saw a delivery that met the old program
+  // to the letter (twin bed, rocker, rug, art, basket) and still read as an
+  // adult guest room — grey upholstered bed, figure line-art, empty rope
+  // basket. "This is not a kids room nursery." A child's room has to be
+  // unmistakable at a glance, so the cues are named and adult styling is
+  // banned outright. (Keep colon-space out of these comments.)
+  'Nursery / Kids Room': { anchor: 'a crib with a mobile hanging above it (nursery), or a child-sized bed dressed in clearly children\'s bedding (kids room), on the longest uninterrupted wall', program: 'crib or child-sized bed with children\'s bedding (a colourful or patterned quilt with a stuffed animal on it), a dresser or changing table, a rocking chair or small reading chair, a soft playful rug, children\'s wall art (animals, letters, shapes, a name banner), a low bookshelf with picture books, a toy basket with toys visibly in it — the room must read as a child\'s room at a glance, with at least three unmistakable child cues clearly visible', never: 'adult-styled bedroom furniture — an upholstered adult headboard, grey or charcoal adult bedding, abstract or figure line-art, neutral guest-room styling — or a sofa, dining table, desk, or adult king or queen bed' },
   // Rewritten 31 Aug 2026 after Kyle saw a sofa-and-coffee-table delivery —
   // "If you're doing basement and rec room, there should be dartboards, pool
   // tables, not a couch." The room is sold as a place to PLAY — games lead,

@@ -34,9 +34,27 @@ async function writeStagingBrief(apiKey, imageB64, mime, model, roomType, style,
   const { intentText } = require('./intent');
   const spec = ROOM_TYPES[roomType];
   const draw = drawChoices(style, variantSeed) || {};
+  /**
+   * A CHILD'S ROOM IS NOT A SMALL ADULT ROOM (11 Sep 2026). The seeded draw
+   * hands the stager a sofa silhouette in an adult upholstery colour and an
+   * adult art subject; applied to a nursery that produced a charcoal
+   * upholstered twin bed under a figure line-art print — a guest room with a
+   * basket. For this room type the anchor and art are drawn from children's
+   * options instead, and the brief is told, in so many words, that the room
+   * must be unmistakably a child's.
+   */
+  const kids = roomType === 'Nursery / Kids Room';
+  if (kids) {
+    const h = crypto.createHash('sha256').update(String(variantSeed)).digest();
+    const pick = (arr, i) => arr[h[i] % arr.length];
+    draw.silhouette = pick(['spindle crib', 'sleigh crib', 'low child-sized bed with a simple headboard', 'house-frame child bed', 'panel twin bed with a low headboard'], 0);
+    draw.seatColor = pick(['soft white painted wood with a pale-blue-and-white patterned quilt', 'natural maple with a sunny yellow-and-white quilt', 'white painted wood with a mint-and-cream animal-print quilt', 'light oak with a blush-and-white star quilt', 'white wood with a rainbow-striped quilt'], 1);
+    draw.art = pick(['framed watercolour animal prints', 'an alphabet poster and a small animal print', 'illustrated woodland animals', 'a hot-air-balloon print and a name banner', 'simple shape-and-colour prints for a child'], 5);
+  }
   const prompt = `You are a professional interior stager writing the furnishing brief for ONE virtual-staging job. Look at the photo.
 
-ROOM TYPE (fixed by the customer): ${roomType}. Anchor piece: ${spec.anchor}. Typical program: ${spec.program}. Never: ${spec.never}.
+ROOM TYPE (fixed by the customer): ${roomType}. Anchor piece: ${spec.anchor}. Typical program: ${spec.program}. Never: ${spec.never}.${kids ? `
+THIS IS A CHILD'S ROOM. It must be unmistakable at a glance to a parent scrolling a listing: children's bedding, children's art, toys visibly in the basket, picture books on a low shelf, a stuffed animal on the bed, a mobile over a crib. Never neutral "guest room" styling — no adult upholstered headboard, no grey or charcoal bedding, no abstract or figure line-art. Art subjects for this room are animals, letters, shapes, and illustration, not the adult categories listed below.` : ''}
 STYLE (fixed by the customer): ${style} — ${STAGING_STYLES[style]}.
 ${layout ? require('./layout').layoutText(layout) : ''}
 YOU are responsible for placement. Every piece you specify must sit outside every KEEP CLEAR box above, must not overlap any window, door, opening, fireplace, switch, or vent, and must not require changing any wall or opening. If the room is small or has many openings, specify fewer pieces. Never suggest closing, covering, or walling over an opening.
