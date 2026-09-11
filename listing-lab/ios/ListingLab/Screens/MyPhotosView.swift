@@ -75,6 +75,13 @@ struct MyPhotosView: View {
             .fixedSize(horizontal: true, vertical: false)
             Text(session.flow.batchNotice ?? "Everything you've run. Finished ones stay here — you can close the app and come back whenever.")
                 .font(Theme.ui(14.5)).foregroundStyle(Theme.textSoft)
+            // The hold-for-a-menu is invisible until someone tries it, so say
+            // so once, quietly, and only where there is something to hold
+            // (Kyle, 11 Sep 2026).
+            if !session.jobs.isEmpty, !selecting {
+                Text("Hold a photo to save, share or run it again.")
+                    .font(Theme.ui(13)).foregroundStyle(Theme.textFaint)
+            }
         }
         .padding(.top, 6)
     }
